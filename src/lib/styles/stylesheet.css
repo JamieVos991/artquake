@@ -1,0 +1,53 @@
+:root {
+  /* colors */
+  --color-bg: #0b0b0b;
+  --color-fg: #f4f1ea;
+  --color-accent: #f2a81c;
+  --color-primary: #8a19e8;
+  --color-primary-dark: #4a0ba0;
+  --color-primary-light: #b57bf5;
+  --color-border: #242424;
+  --color-muted: #9a9a9a;
+
+  /* type */
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  /* spacing */
+  --space-xs: 8px;
+  --space-sm: 14px;
+  --space-md: 22px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+
+  /* misc */
+  --radius-pill: 20px;
+  --border-width: 4px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-display);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
