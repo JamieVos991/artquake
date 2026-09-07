@@ -1,7 +1,6 @@
 <script>
   import logo from "$lib/assets/artquake-logo.avif";
-
-  let menuOpen = $state(false);
+  import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
 
   const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.avif", {
     eager: true,
@@ -20,6 +19,36 @@
     return () => clearInterval(id);
   });
 
+  let videoEl = $state();
+  let videoMuted = $state(true);
+
+  function toggleVideoMute() {
+    if (!videoEl) return;
+    videoEl.muted = !videoEl.muted;
+    videoMuted = videoEl.muted;
+  }
+
+  $effect(() => {
+    if (!videoEl) return;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reducedMotion) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          videoEl.play().catch(() => {});
+        } else {
+          videoEl.pause();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(videoEl);
+    return () => observer.disconnect();
+  });
+
   const ticks = [
     "OPTREDENS",
     "EXPOSITIES",
@@ -33,22 +62,29 @@
   const services = [
     {
       id: "01",
-      title: "OPTRE\nD 	ENS",
-      text: "Van kelderpodium tot festivalhoofdact. Wij boeken je, jij knalt.",
+      title: "TALENT\nNIGHT",
+      text: "Dé uitgaansavond voor en door jongeren. Bomvol jong, aanstormend talent — voor liefhebbers van live-muziek, dansen en feesten.",
       bg: "purple",
       big: true,
     },
     { id: "02", title: "EXPO\nSITIES", bg: "cream" },
-    { id: "03", title: "EVENTS", bg: "cream", outline: true },
+    { id: "03", title: "JAM\nSESSIES", bg: "cream", outline: true },
     {
       id: "04",
-      title: "WORK\nSHOPS",
+      title: "STREEKMARKT\nBROEKERVEILING",
       bg: "cream",
       wide: true,
-      tag: "ELKE\nDONDERDAG",
+      long: true,
     },
-    { id: "05", title: "MASTER\nCLASSES", bg: "purple" },
-    { id: "06 / 07", title: "COACHING\n+ PROMOTIE", bg: "orange" },
+    { id: "05", title: "FOTO\nSHOOTS", bg: "purple" },
+    {
+      id: "06",
+      title: "WORKSHOPS\nEN MASTERCLASSES",
+      bg: "orange",
+      long: true,
+    },
+    { id: "07", title: "COACHING", bg: "cream" },
+    { id: "08", title: "IN\nOPDRACHT", bg: "purple" },
   ];
 
   const agenda = [
@@ -121,33 +157,9 @@
 </svelte:head>
 
 <header class="hero-shell">
-  <!-- <nav class="topbar" aria-label="Hoofdmenu">
-    <a class="brand" href="/">
-       <img class="brand-logo" src={logo} alt="Artquake — creative space" />
-    </a>
-    <button
-      class="menu-toggle"
-      type="button"
-      aria-expanded={menuOpen}
-      aria-controls="mobile-menu"
-      aria-label={menuOpen ? "Sluit menu" : "Open menu"}
-      onclick={() => (menuOpen = !menuOpen)}
-    >
-      <span aria-hidden="true">{menuOpen ? "✕" : "☰"}</span>
-    </button>
-    <ul
-      class="nav-pills"
-      id="mobile-menu"
-      class:open={menuOpen}
-      onclick={() => (menuOpen = false)}
-    >
-      <li><a class="pill pill-cream" href="#agenda">AGENDA</a></li>
-      <li><a class="pill" href="#talent">TALENT</a></li>
-      <li><a class="pill" href="#services">WORKSHOPS</a></li>
-      <li><a class="pill" href="#crew">OVER ONS</a></li>
-      <li><a class="pill pill-orange" href="#doe-mee">DOE MEE →</a></li>
-    </ul>
-  </nav> -->
+  <a class="brand" href="/">
+    <img class="brand-logo" src={logo} alt="Artquake — creative space" />
+  </a>
 
   <section class="hero" id="hero" aria-label="Introductie">
     <figure class="hero-image">
@@ -203,6 +215,7 @@
           class:service-big={s.big}
           class:service-wide={s.wide}
           class:service-outline={s.outline}
+          class:service-long={s.long}
         >
           <span class="service-id">☆ {s.id}</span>
           <h3 class="service-title">
@@ -210,10 +223,6 @@
                 />{/if}{line}{/each}
           </h3>
           {#if s.text}<p class="service-text">{s.text}</p>{/if}
-          {#if s.tag}<span class="service-tag"
-              >{#each s.tag.split("\n") as line, i}{#if i > 0}<br
-                  />{/if}{line}{/each}</span
-            >{/if}
         </li>
       {/each}
     </ul>
@@ -287,17 +296,49 @@
     </ul>
   </section>
 
-  <section class="cta" id="doe-mee" aria-label="Word lid">
+  <section class="video-section" id="video" aria-label="Video">
+    <header class="section-head">
+      <h2 class="section-eyebrow eyebrow-purple">04 — IN BEELD</h2>
+      <span class="section-rule"></span>
+    </header>
+    <h3 class="video-title">
+      HOOR HET VAN <span class="hl-orange-block">DEWI</span> ZELF.
+    </h3>
+    <figure class="video-frame">
+      <video
+        bind:this={videoEl}
+        class="video-player"
+        controls
+        muted
+        playsinline
+        preload="metadata"
+      >
+        <source src={dewiUitlegVideo} type="video/mp4" />
+        Je browser ondersteunt deze video niet.
+      </video>
+      <button
+        type="button"
+        class="video-unmute"
+        aria-pressed={!videoMuted}
+        onclick={toggleVideoMute}
+      >
+        <span aria-hidden="true"></span>
+        {videoMuted ? "GELUID AAN" : "DEMPEN"}
+      </button>
+    </figure>
+  </section>
+
+  <section class="cta" id="doe-mee" aria-label="Contact">
     <span class="cta-blob" aria-hidden="true"></span>
     <hgroup class="cta-copy">
-      <h2 class="cta-title">MELD JE<br />AAN. NU.<br />SERIEUS.</h2>
+      <h2 class="cta-title">VRAAG HET<br />GEWOON.<br />SERIEUS.</h2>
       <p class="cta-text">
-        Gratis lidmaatschap, één formulier, geen portfolio nodig. Wij bellen
-        binnen twee weken — of eerder als je iets stuurt dat ons wakker houdt.
+        Een vraag, een idee, of gewoon interesse? Stuur ons een berichtje — we
+        reageren binnen twee werkdagen, geen kastje-muur-verhaal.
       </p>
     </hgroup>
     <form class="cta-form">
-      <p class="cta-form-label">WORD LID</p>
+      <p class="cta-form-label">CONTACT</p>
       <label class="cta-field-label">
         <span class="visually-hidden">Naam</span>
         <input
@@ -319,15 +360,15 @@
         />
       </label>
       <label class="cta-field-label">
-        <span class="visually-hidden">Discipline</span>
-        <input
-          class="cta-field"
-          type="text"
-          name="discipline"
-          placeholder="discipline"
-        />
+        <span class="visually-hidden">Je vraag of bericht</span>
+        <textarea
+          class="cta-field cta-textarea"
+          name="bericht"
+          placeholder="je vraag of bericht"
+          rows="3"
+        ></textarea>
       </label>
-      <button type="submit" class="cta-submit">VERSTUUR ☆</button>
+      <button type="submit" class="cta-submit">VERSTUUR</button>
     </form>
   </section>
 </main>
@@ -482,7 +523,9 @@
     .talent-grid,
     .crew-grid,
     .cta-copy,
-    .cta-form {
+    .cta-form,
+    .video-title,
+    .video-frame {
       animation: none !important;
     }
   }
@@ -496,74 +539,21 @@
     height: 100dvh;
   }
 
-  /* nav */
-  .topbar {
+  /* brand */
+  .brand {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
     z-index: 5;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    padding: 16px 30px;
-    background: transparent;
-  }
-  .menu-toggle {
-    display: none;
-    width: 42px;
-    height: 42px;
-    align-items: center;
-    justify-content: center;
-    background: #242424;
-    color: var(--color-fg);
-    border: none;
-    border-radius: 50%;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
     text-decoration: none;
+    padding: 16px 30px;
   }
   .brand-logo {
     height: 80px;
     width: auto;
     display: block;
-  }
-  .nav-pills {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.1em;
-  }
-  .pill {
-    display: inline-block;
-    padding: 10px 14px;
-    background: #242424;
-    color: var(--color-fg);
-    border-radius: 20px;
-    text-decoration: none;
-  }
-  .pill-cream {
-    background: var(--color-fg);
-    color: var(--color-bg);
-  }
-  .pill-orange {
-    background: var(--color-accent);
-    color: var(--color-bg);
-    padding: 10px 16px;
   }
 
   /* hero */
@@ -772,6 +762,7 @@
     background: var(--color-bg);
     padding: 64px 40px;
     border-bottom: 4px solid var(--color-fg);
+    overflow-x: clip;
   }
   .services-grid {
     list-style: none;
@@ -786,22 +777,33 @@
     animation-range: entry 0% cover 30%;
   }
   .service-card {
-    padding: 22px;
+    /* padding: 22px; */
     display: flex;
+    padding: 20px;
     flex-direction: column;
     justify-content: space-between;
   }
   .service-big {
     grid-column: span 2;
     grid-row: span 2;
-    padding: 26px;
+    /* padding: 26px; */
   }
   .service-wide {
     grid-column: span 2;
+    min-width: 0;
     flex-direction: row;
     align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
+  }
+  .service-wide .service-title {
+    min-width: 0;
+  }
+  .service-wide.service-long {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 6px;
   }
   .service-outline {
     border: 3px solid var(--color-fg);
@@ -818,6 +820,7 @@
     font-stretch: 118%;
     font-size: 40px;
     line-height: 0.9;
+    overflow-wrap: break-word;
   }
   .service-big .service-title {
     font-size: clamp(48px, 6.6vw, 96px);
@@ -829,14 +832,14 @@
     font-size: 56px;
     line-height: 0.85;
   }
-  .service-card:nth-child(3) .service-title {
-    font-size: 44px;
-  }
-  .service-card:nth-child(5) .service-title,
-  .service-card:nth-child(6) .service-title {
+  .service-long .service-title {
     font-stretch: 100%;
-    font-size: 34px;
-    line-height: 0.95;
+    font-size: 32px;
+    line-height: 1.05;
+  }
+  .service-card:not(.service-wide).service-long .service-title {
+    font-size: 24px;
+    line-height: 1.15;
   }
   .service-text {
     margin: 0;
@@ -845,13 +848,6 @@
       monospace;
     max-width: 340px;
   }
-  .service-tag {
-    font:
-      700 12px/1.4 "Space Mono",
-      monospace;
-    letter-spacing: 0.1em;
-    text-align: right;
-  }
 
   /* agenda */
   .agenda {
@@ -859,6 +855,7 @@
     color: var(--color-bg);
     padding: 60px 40px;
     border-bottom: 4px solid var(--color-bg);
+    overflow-x: clip;
   }
   .agenda-head {
     display: flex;
@@ -938,6 +935,7 @@
     background: var(--color-fg);
     padding: 64px 40px;
     border-bottom: 4px solid var(--color-bg);
+    overflow-x: clip;
   }
   .talent-grid {
     list-style: none;
@@ -1148,6 +1146,68 @@
       monospace;
   }
 
+  /* video */
+  .video-section {
+    background: var(--color-bg);
+    padding: 64px 40px;
+    border-bottom: 4px solid var(--color-fg);
+    overflow-x: clip;
+  }
+  .video-title {
+    margin: 0 0 30px 8px;
+    max-width: 900px;
+    font-weight: 900;
+    font-stretch: 115%;
+    font-size: clamp(34px, 4.6vw, 64px);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    color: var(--color-fg);
+    text-wrap: balance;
+    animation: aq-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 32%;
+  }
+  .video-frame {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #000;
+    box-shadow: 14px 14px 0 var(--color-primary);
+    animation: aq-pop linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+  .video-player {
+    display: block;
+    width: auto;
+    height: min(80vh, 720px);
+    max-width: 100%;
+  }
+  .video-unmute {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: 2px solid var(--color-fg);
+    border-radius: 20px;
+    font:
+      700 12px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .video-unmute:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
   /* cta */
   .cta {
     position: relative;
@@ -1227,6 +1287,11 @@
   }
   .cta-field::placeholder {
     color: #8d8d8d;
+  }
+  .cta-textarea {
+    font-family: "Space Mono", monospace;
+    line-height: 1.5;
+    resize: vertical;
   }
   .cta-submit {
     background: var(--color-primary);
@@ -1347,32 +1412,8 @@
 
   /* phone */
   @media (max-width: 640px) {
-    .topbar {
+    .brand {
       padding: 14px 16px;
-    }
-    .menu-toggle {
-      display: flex;
-    }
-    .nav-pills {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-      padding: 16px;
-      background: var(--color-bg);
-      border-bottom: 2px solid #242424;
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    }
-    .nav-pills.open {
-      display: flex;
-    }
-    .pill {
-      padding: 12px 14px;
-      text-align: center;
     }
 
     .hero {
@@ -1409,6 +1450,7 @@
     }
     .service-card {
       min-height: 130px;
+      gap: 11px;
     }
 
     .agenda-row {
