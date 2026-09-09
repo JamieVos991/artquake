@@ -1,5 +1,6 @@
 <script>
   import logo from "$lib/assets/artquake-logo.avif";
+  import { base } from "$app/paths";
   import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
 
   const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.avif", {
@@ -172,7 +173,7 @@
 </svelte:head>
 
 <header class="hero-shell">
-  <a class="brand" href="/">
+  <a class="brand" href="{base}">
     <img class="brand-logo" src={logo} alt="Artquake — creative space" />
   </a>
 
@@ -223,7 +224,7 @@
         masterclasses, coaching en promotie. Alles wat je nodig hebt om jezelf
         verder te ontwikkelen — behalve slaap.
       </p>
-      <p class="mission-stats">340+ MAKERS · 58 EVENTS · 12 STEDEN</p>
+      <p class="mission-stats">339+ MAKERS · 58 EVENTS · 12 STEDEN</p>
     </aside>
   </section>
 
