@@ -7,8 +7,20 @@
     import: "default",
   });
   const heroImages = Object.values(heroModules);
+  const firstHeroImage = heroImages[0];
 
   let heroIndex = $state(0);
+  let heroRevealed = $state(heroImages.length > 0 ? 1 : 0);
+
+  $effect(() => {
+    if (heroImages.length <= 1) return;
+    const idle = window.requestIdleCallback ?? ((cb) => setTimeout(cb, 200));
+    const cancelIdle = window.cancelIdleCallback ?? clearTimeout;
+    const id = idle(() => {
+      heroRevealed = heroImages.length;
+    });
+    return () => cancelIdle(id);
+  });
 
   $effect(() => {
     if (heroImages.length <= 1) return;
@@ -154,6 +166,9 @@
 
 <svelte:head>
   <title>Artquake — Jong talent maakt lawaai</title>
+  {#if firstHeroImage}
+    <link rel="preload" as="image" href={firstHeroImage} fetchpriority="high" />
+  {/if}
 </svelte:head>
 
 <header class="hero-shell">
@@ -164,7 +179,16 @@
   <section class="hero" id="hero" aria-label="Introductie">
     <figure class="hero-image">
       {#each heroImages as src, i}
-        <img class="hero-photo" class:active={i === heroIndex} {src} alt="" />
+        {#if i < heroRevealed}
+          <img
+            class="hero-photo"
+            class:active={i === heroIndex}
+            {src}
+            alt=""
+            loading={i === 0 ? "eager" : "lazy"}
+            fetchpriority={i === 0 ? "high" : undefined}
+          />
+        {/if}
       {/each}
       {#if heroImages.length === 0}
         <figcaption>Drop hero foto — publiek / artiest, 2400×1600</figcaption>
@@ -407,7 +431,10 @@
     </ul>
   </nav>
   <p class="footer-bottom">
-    <span>© 2026 ARTQUAKE</span><span>MADE LOUD IN NL</span>
+    <span>© 2026 ARTQUAKE</span><span
+      >MADE LOUD IN NL BY <a href="https://lychees.studio">LYCHEES.STUDIO</a
+      ></span
+    >
   </p>
 </footer>
 
