@@ -104,7 +104,7 @@
     {
       date: "12.09",
       iso: "2026-09-12",
-      title: "BASSKELDER — OPEN PODIUM XL",
+      title: "LOREM IPSUM — DOLOR SIT AMET",
       meta: "Rotterdam · 20:00",
       tag: "LAATSTE 9",
       tagBg: "orange",
@@ -113,7 +113,7 @@
     {
       date: "27.09",
       iso: "2026-09-27",
-      title: "EXPO: JONG & ONGEFILTERD",
+      title: "EXPO: CONSECTETUR ADIPISCING",
       meta: "Utrecht · hele dag",
       tag: "VRIJE INLOOP",
       tagBg: "purple",
@@ -122,7 +122,7 @@
     {
       date: "10.10",
       iso: "2026-10-10",
-      title: "MASTERCLASS: STEM & RUIMTE",
+      title: "MASTERCLASS: SED DO EIUSMOD",
       meta: "Den Haag · 15:00",
       tag: "UITVERKOCHT",
       tagBg: "purple",
@@ -131,7 +131,7 @@
     {
       date: "02.11",
       iso: "2026-11-02",
-      title: "ARTQUAKE FEST — 3 PODIA",
+      title: "LOREM FEST — TEMPOR INCIDIDUNT",
       meta: "Amsterdam · 14:00",
       tag: "TICKETS",
       tagBg: "cream",
@@ -140,9 +140,9 @@
   ];
 
   const talents = [
-    { name: "NAÏMA K.", role: "RAP / SPOKEN", bg: "dark" },
-    { name: "DUO ZEEF", role: "TEXTIEL", bg: "cream" },
-    { name: "BROER V.", role: "BEATS", bg: "purple" },
+    { name: "LOREM I.", role: "RAP / SPOKEN", bg: "dark" },
+    { name: "DUO IPSUM", role: "TEXTIEL", bg: "cream" },
+    { name: "DOLOR S.", role: "BEATS", bg: "purple" },
   ];
 
   const crew = [
@@ -173,7 +173,7 @@
 </svelte:head>
 
 <header class="hero-shell">
-  <a class="brand" href="{base}">
+  <a class="brand" href={base}>
     <img class="brand-logo" src={logo} alt="Artquake — creative space" />
   </a>
 
@@ -353,91 +353,8 @@
     </figure>
   </section>
 
-  <section class="cta" id="doe-mee" aria-label="Contact">
-    <span class="cta-blob" aria-hidden="true"></span>
-    <hgroup class="cta-copy">
-      <h2 class="cta-title">VRAAG HET<br />GEWOON.<br />SERIEUS.</h2>
-      <p class="cta-text">
-        Een vraag, een idee, of gewoon interesse? Stuur ons een berichtje — we
-        reageren binnen twee werkdagen, geen kastje-muur-verhaal.
-      </p>
-    </hgroup>
-    <form class="cta-form">
-      <p class="cta-form-label">CONTACT</p>
-      <label class="cta-field-label">
-        <span class="visually-hidden">Naam</span>
-        <input
-          class="cta-field"
-          type="text"
-          name="naam"
-          placeholder="naam"
-          autocomplete="name"
-        />
-      </label>
-      <label class="cta-field-label">
-        <span class="visually-hidden">E-mail</span>
-        <input
-          class="cta-field"
-          type="email"
-          name="email"
-          placeholder="e-mail"
-          autocomplete="email"
-        />
-      </label>
-      <label class="cta-field-label">
-        <span class="visually-hidden">Je vraag of bericht</span>
-        <textarea
-          class="cta-field cta-textarea"
-          name="bericht"
-          placeholder="je vraag of bericht"
-          rows="3"
-        ></textarea>
-      </label>
-      <button type="submit" class="cta-submit">VERSTUUR</button>
-    </form>
-  </section>
 </main>
 
-<footer class="footer">
-  <img class="footer-brand" src={logo} alt="Artquake — creative space" />
-  <p class="footer-tag">
-    Creatief &amp; cultureel jongerenplatform.<br />Jongerenkunst ·
-    talentontwikkeling.
-  </p>
-  <nav class="footer-col" aria-label="Doen">
-    <h3 class="footer-heading heading-orange">DOEN</h3>
-    <ul>
-      <li>Optredens</li>
-      <li>Exposities</li>
-      <li>Events</li>
-      <li>Workshops</li>
-    </ul>
-  </nav>
-  <nav class="footer-col" aria-label="Groeien">
-    <h3 class="footer-heading heading-lilac">GROEIEN</h3>
-    <ul>
-      <li>Masterclasses</li>
-      <li>Coaching</li>
-      <li>Promotie</li>
-      <li>Netwerk</li>
-    </ul>
-  </nav>
-  <nav class="footer-col" aria-label="Contact">
-    <h3 class="footer-heading heading-cream">CONTACT</h3>
-    <ul>
-      <li><a href="mailto:hoi@artquake.nl">hoi@artquake.nl</a></li>
-      <li><a href="https://instagram.com">Instagram</a></li>
-      <li><a href="https://tiktok.com">TikTok</a></li>
-      <li><a href="#doe-mee">Nieuwsbrief</a></li>
-    </ul>
-  </nav>
-  <p class="footer-bottom">
-    <span>© 2026 ARTQUAKE</span><span
-      >MADE LOUD IN NL BY <a href="https://lychees.studio">LYCHEES.STUDIO</a
-      ></span
-    >
-  </p>
-</footer>
 
 <style>
   .visually-hidden {
