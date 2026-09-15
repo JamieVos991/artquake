@@ -1,17 +1,27 @@
 <script>
   import { base } from "$app/paths";
+  import { goto } from "$app/navigation";
+  import { signInWithEmailAndPassword } from "firebase/auth";
+  import { auth } from "$lib/firebase.js";
 
   let email = $state("");
   let password = $state("");
   let showPassword = $state(false);
   let loading = $state(false);
+  let error = $state("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    error = "";
     loading = true;
-    setTimeout(() => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      goto(`${base}/dashboard`);
+    } catch (err) {
+      error = "Inloggen mislukt. Controleer je e-mail en wachtwoord.";
+    } finally {
       loading = false;
-    }, 1500);
+    }
   }
 </script>
 
@@ -72,6 +82,10 @@
               </button>
             </div>
           </div>
+
+          {#if error}
+            <p class="field-error">{error}</p>
+          {/if}
 
           <button class="submit-btn" type="submit" disabled={loading}>
             {#if loading}
@@ -274,6 +288,12 @@
   }
   .toggle-btn:hover {
     color: var(--color-fg);
+  }
+
+  .field-error {
+    margin: -8px 0 16px;
+    font: 700 12px/1.5 "Space Mono", monospace;
+    color: var(--color-accent);
   }
 
   .submit-btn {

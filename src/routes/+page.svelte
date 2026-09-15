@@ -1,7 +1,77 @@
 <script>
+  import { onMount } from "svelte";
   import logo from "$lib/assets/artquake-logo.avif";
   import { base } from "$app/paths";
   import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
+  import { collection, onSnapshot } from "firebase/firestore";
+  import { db } from "$lib/firebase.js";
+
+  let agendaItems = $state([]);
+  let agendaGeladen = $state(false);
+  let uitgelichteArtiesten = $state([]);
+  let aantalArtiesten = $state(0);
+  let artiestenGeladen = $state(false);
+
+  function kiesWillekeurig(lijst, aantal) {
+    const shuffled = [...lijst].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, aantal);
+  }
+
+  function vandaagAlsDatum() {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+  }
+
+  onMount(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "agenda"),
+      (snapshot) => {
+        const vandaag = vandaagAlsDatum();
+        agendaItems = snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((a) => a.date && a.date >= vandaag)
+          .sort((a, b) => `${a.date}${a.startTime ?? ""}`.localeCompare(`${b.date}${b.startTime ?? ""}`));
+        agendaGeladen = true;
+      },
+      () => {
+        agendaGeladen = true;
+      }
+    );
+
+    const unsubscribeArtiesten = onSnapshot(
+      collection(db, "artiesten"),
+      (snapshot) => {
+        const alleArtiesten = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => a.naam);
+        aantalArtiesten = alleArtiesten.length;
+        uitgelichteArtiesten = kiesWillekeurig(alleArtiesten, 3);
+        artiestenGeladen = true;
+      },
+      () => {
+        artiestenGeladen = true;
+      }
+    );
+
+    return () => {
+      unsubscribe();
+      unsubscribeArtiesten();
+    };
+  });
+
+  function formatAgendaDatum(d) {
+    if (!d) return "";
+    const [, m, day] = d.split("-");
+    return `${day}.${m}`;
+  }
+
+  function agendaTekstKleur(hex) {
+    if (!hex) return "var(--color-fg)";
+    const c = hex.replace("#", "");
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? "#0b0b0b" : "#f4f1ea";
+  }
 
   const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.avif", {
     eager: true,
@@ -76,93 +146,47 @@
     {
       id: "01",
       title: "TALENT\nNIGHT",
-      text: "Dé uitgaansavond voor en door jongeren. Bomvol jong, aanstormend talent — voor liefhebbers van live-muziek, dansen en feesten.",
       bg: "purple",
       big: true,
     },
     { id: "02", title: "EXPO\nSITIES", bg: "cream" },
     { id: "03", title: "JAM\nSESSIES", bg: "cream", outline: true },
-    {
-      id: "04",
-      title: "STREEKMARKT\nBROEKERVEILING",
-      bg: "cream",
-      wide: true,
-      long: true,
-    },
-    { id: "05", title: "FOTO\nSHOOTS", bg: "purple" },
+    { id: "05", title: "FOTO\nSHOOTS", bg: "purple", wide: true },
     {
       id: "06",
       title: "WORKSHOPS\nEN MASTERCLASSES",
       bg: "orange",
+      wide: true,
       long: true,
     },
     { id: "07", title: "COACHING", bg: "cream" },
     { id: "08", title: "IN\nOPDRACHT", bg: "purple" },
   ];
 
-  const agenda = [
-    {
-      date: "12.09",
-      iso: "2026-09-12",
-      title: "LOREM IPSUM — DOLOR SIT AMET",
-      meta: "Rotterdam · 20:00",
-      tag: "LAATSTE 9",
-      tagBg: "orange",
-      bg: "dark",
-    },
-    {
-      date: "27.09",
-      iso: "2026-09-27",
-      title: "EXPO: CONSECTETUR ADIPISCING",
-      meta: "Utrecht · hele dag",
-      tag: "VRIJE INLOOP",
-      tagBg: "purple",
-      bg: "cream",
-    },
-    {
-      date: "10.10",
-      iso: "2026-10-10",
-      title: "MASTERCLASS: SED DO EIUSMOD",
-      meta: "Den Haag · 15:00",
-      tag: "UITVERKOCHT",
-      tagBg: "purple",
-      bg: "dark",
-    },
-    {
-      date: "02.11",
-      iso: "2026-11-02",
-      title: "LOREM FEST — TEMPOR INCIDIDUNT",
-      meta: "Amsterdam · 14:00",
-      tag: "TICKETS",
-      tagBg: "cream",
-      bg: "purple",
-    },
-  ];
+  const talentBgVolgorde = ["dark", "cream", "purple"];
 
-  const talents = [
-    { name: "LOREM I.", role: "RAP / SPOKEN", bg: "dark" },
-    { name: "DUO IPSUM", role: "TEXTIEL", bg: "cream" },
-    { name: "DOLOR S.", role: "BEATS", bg: "purple" },
+  const crewBgVolgorde = ["purple", "orange", "cream"];
+  const crewRuw = [
+    { name: "Mado de Vries", role: "Oprichtster", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmado-de-vries.png?alt=media&token=fa97d209-ebc4-4398-ab65-8e63cd44eb44" },
+    { name: "Luna de Nijs", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fluna-de-nijs.jpeg?alt=media&token=2b0cf050-c74f-40fe-93ee-1b1e3106450f" },
+    { name: "Nikki Hardaway", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnikki-hardaway.jpg?alt=media&token=b668c580-9754-4e66-9e9c-0c5da1215bb5" },
+    { name: "Jasmijn Hulskamp", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fjasmijn-hulskamp.jpg?alt=media&token=31695815-1886-470b-a6aa-b3eb3787d9ce" },
+    { name: "Marlies Prasing", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmarlies-prasing.jpg?alt=media&token=4b74d0a9-327f-46c9-87d2-46955101b451" },
+    { name: "Aiden Zwemmer", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Faiden-zwemmer.jpeg?alt=media&token=210d79e7-881c-458d-8939-728ad24c2e8d" },
+    { name: "Keira Krijger", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fkeira-krijger.jpeg?alt=media&token=1038576c-f950-43bb-805b-e947b73ac0ce" },
+    { name: "Jens Dijkstra", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fjens-dijkstra.jpeg?alt=media&token=2e0a0c72-a15f-4ae8-896b-8310f44025e9" },
+    { name: "Fien de Jongh", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffien-de-jongh.jpeg?alt=media&token=822e5140-0fb9-4881-adf5-4241fa1c67c4" },
+    { name: "Fiene Schellevis", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffiene-schellevis.jpeg?alt=media&token=be9d7018-9e52-492b-b071-bb7cd3505d93" },
+    { name: "Nout Schellevis", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnout-schellevis.jpeg?alt=media&token=df10135d-d986-4a98-8a73-c9cdfb8b1cc3" },
+    { name: "Melle Bijvoet", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmelle-bijvoet.jpeg?alt=media&token=f7ee1a10-4542-41db-9536-1c2f1842f28a" },
+    { name: "Britt Visser", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fbritt-visser.jpeg?alt=media&token=81866fec-ea24-4ab9-8a01-8c7ef77869f1" },
+    { name: "Nina Visser", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnina-visser.jpeg?alt=media&token=7fe6e581-314f-4529-a429-5265eb2a7c31" },
+    { name: "Franka Bodde", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffranka-bodde.jpeg?alt=media&token=a3efb3af-0c5a-404d-a5f4-a6f31d0e7655" },
   ];
-
-  const crew = [
-    { name: "MADO DE VRIES", role: "OPRICHTER", bg: "purple" },
-    { name: "MADO DE VRIES", role: "PROGRAMMA", bg: "orange" },
-    {
-      name: "MADO DE VRIES",
-      role: "TECHNIEK",
-      bg: "cream",
-      roleColor: "purple",
-    },
-    {
-      name: "MADO DE VRIES",
-      role: "COACHING",
-      bg: "cream",
-      roleColor: "purple",
-    },
-    { name: "MADO DE VRIES", role: "PROMOTIE", bg: "purple" },
-    { name: "MADO DE VRIES", role: "PRODUCTIE", bg: "orange" },
-  ];
+  const crew = crewRuw.map((c, i) => {
+    const bg = crewBgVolgorde[i % crewBgVolgorde.length];
+    return { ...c, bg, roleColor: bg === "cream" ? "purple" : undefined };
+  });
 </script>
 
 <svelte:head>
@@ -230,7 +254,7 @@
 
   <section class="services" id="services" aria-label="Wat we doen">
     <header class="section-head">
-      <h2 class="section-eyebrow eyebrow-orange">01 — WAT WE DOEN</h2>
+      <h2 class="section-eyebrow eyebrow-orange">WAT WE DOEN</h2>
       <span class="section-rule"></span>
     </header>
     <ul class="services-grid">
@@ -242,7 +266,7 @@
           class:service-outline={s.outline}
           class:service-long={s.long}
         >
-          <span class="service-id">☆ {s.id}</span>
+          <span class="service-id">{s.id}</span>
           <h3 class="service-title">
             {#each s.title.split("\n") as line, i}{#if i > 0}<br
                 />{/if}{line}{/each}
@@ -256,48 +280,75 @@
   <section class="agenda" id="agenda" aria-label="Agenda najaar 2026">
     <header class="agenda-head">
       <h2 class="agenda-title">AGENDA<br />NAJAAR '26</h2>
-      <a class="agenda-cta" href="#agenda"
-        >ALLE EVENTS →<br />GRATIS VOOR LEDEN</a
-      >
+
     </header>
     <ol class="agenda-list">
-      {#each agenda as ev}
-        <li class="agenda-row bg-{ev.bg}">
-          <time class="agenda-date" datetime={ev.iso}>{ev.date}</time>
-          <h3 class="agenda-name">{ev.title}</h3>
-          <p class="agenda-meta">{ev.meta}</p>
-          <span class="agenda-tag bg-{ev.tagBg}">{ev.tag}</span>
-        </li>
-      {/each}
+      {#if !agendaGeladen}
+        {#each Array(3) as _}
+          <li class="agenda-row skel-row" aria-hidden="true">
+            <span class="skel skel-date"></span>
+            <span class="skel skel-name"></span>
+            <span class="skel skel-meta"></span>
+            <span class="skel skel-type"></span>
+          </li>
+        {/each}
+      {:else if agendaItems.length === 0}
+        <li class="agenda-empty">Binnenkort meer agenda-items.</li>
+      {:else}
+        {#each agendaItems as ev (ev.id)}
+          <li
+            class="agenda-row"
+            style="background:{ev.kleur || 'var(--color-bg)'}; color:{agendaTekstKleur(ev.kleur)}"
+          >
+            <time class="agenda-date" datetime={ev.date}>{formatAgendaDatum(ev.date)}</time>
+            <h3 class="agenda-name">{ev.band}</h3>
+            <p class="agenda-meta">{ev.place}{ev.place && ev.startTime ? " · " : ""}{ev.startTime}{ev.endTime ? `–${ev.endTime}` : ""}</p>
+            <span class="agenda-type">{ev.type}</span>
+          </li>
+        {/each}
+      {/if}
     </ol>
   </section>
 
   <section class="talent" id="talent" aria-label="Talent van nu">
     <header class="section-head section-head-dark">
-      <h2 class="section-eyebrow eyebrow-purple">02 — TALENT VAN NU</h2>
+      <h2 class="section-eyebrow eyebrow-purple">TALENT VAN NU</h2>
       <span class="section-rule section-rule-dark"></span>
-      <span class="section-count">340 MAKERS</span>
+      <span class="section-count">{aantalArtiesten} MAKERS</span>
     </header>
     <ul class="talent-grid">
-      {#each talents as t}
-        <li class="talent-card bg-{t.bg}">
-          <figure class="talent-photo">
-            <figcaption>[ ARTIESTFOTO<br />1200×1500 ]</figcaption>
-          </figure>
-          <hgroup class="talent-meta">
-            <h3 class="talent-name">{t.name}</h3>
-            <p class="talent-role">{t.role}</p>
-          </hgroup>
-        </li>
-      {/each}
+      {#if !artiestenGeladen}
+        {#each Array(3) as _}
+          <li class="talent-card skel-card" aria-hidden="true">
+            <div class="skel skel-photo"></div>
+            <div class="skel skel-talent-name"></div>
+          </li>
+        {/each}
+      {:else}
+        {#each uitgelichteArtiesten as t, i (t.id)}
+          <li class="talent-card bg-{talentBgVolgorde[i % talentBgVolgorde.length]}">
+            <figure class="talent-photo">
+              {#if t.imageUrl}
+                <img class="talent-img" src={t.imageUrl} alt="" loading="lazy" />
+              {:else}
+                <figcaption>[ ARTIESTFOTO<br />1200×1500 ]</figcaption>
+              {/if}
+            </figure>
+            <hgroup class="talent-meta">
+              <h3 class="talent-name">{t.naam}</h3>
+            </hgroup>
+          </li>
+        {/each}
+      {/if}
     </ul>
+    <a class="talent-more" href="{base}/artiesten">ZIE MEER ARTIESTEN →</a>
   </section>
 
   <section class="crew" id="crew" aria-label="De crew">
     <header class="section-head">
-      <h2 class="section-eyebrow eyebrow-orange">03 — DE CREW</h2>
+      <h2 class="section-eyebrow eyebrow-orange">DE CREW</h2>
       <span class="section-rule"></span>
-      <span class="section-count">14 KOPPEN · 1 PLAN</span>
+      
     </header>
     <h3 class="crew-title">
       SAMEN WERKEN WE <span class="hl-purple">HARD</span> ZODAT MAKERS ALLEEN
@@ -308,7 +359,11 @@
       {#each crew as c}
         <li class="crew-card bg-{c.bg}">
           <figure class="crew-photo">
-            <figcaption>Portret · 1200×1500</figcaption>
+            {#if c.imageUrl}
+              <img class="crew-img" src={c.imageUrl} alt="" loading="lazy" />
+            {:else}
+              <figcaption>Portret · 1200×1500</figcaption>
+            {/if}
           </figure>
           <hgroup class="crew-meta">
             <h4 class="crew-name">{c.name}</h4>
@@ -323,7 +378,7 @@
 
   <section class="video-section" id="video" aria-label="Video">
     <header class="section-head">
-      <h2 class="section-eyebrow eyebrow-purple">04 — IN BEELD</h2>
+      <h2 class="section-eyebrow eyebrow-purple">IN BEELD</h2>
       <span class="section-rule"></span>
     </header>
     <h3 class="video-title">
@@ -865,14 +920,95 @@
       400 12px/1.4 "Space Mono",
       monospace;
   }
-  .agenda-tag {
+  .agenda-type {
     justify-self: end;
-    padding: 9px 16px;
-    border-radius: 18px;
     font:
-      800 13px/1 "Archivo",
-      sans-serif;
+      700 11px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
     white-space: nowrap;
+  }
+  .agenda-empty {
+    padding: 32px 22px;
+    text-align: center;
+    font:
+      400 14px/1.6 "Space Mono",
+      monospace;
+    opacity: 0.85;
+  }
+
+  /* skeleton loaders */
+  .skel {
+    background: linear-gradient(
+      90deg,
+      rgba(11, 11, 11, 0.14) 25%,
+      rgba(11, 11, 11, 0.05) 37%,
+      rgba(11, 11, 11, 0.14) 63%
+    );
+    background-size: 400% 100%;
+    border-radius: 4px;
+    animation: skel-shimmer 1.4s ease infinite;
+  }
+  .skel-row {
+    background: rgba(11, 11, 11, 0.06);
+  }
+  .skel-date {
+    height: 26px;
+    width: 70px;
+  }
+  .skel-name {
+    height: 20px;
+    width: 60%;
+  }
+  .skel-meta {
+    height: 14px;
+    width: 80%;
+  }
+  .skel-type {
+    height: 14px;
+    width: 60px;
+    justify-self: end;
+  }
+  .skel-card {
+    background: #141414;
+    cursor: default;
+  }
+  .skel-photo {
+    height: 280px;
+  }
+  .skel-talent-name {
+    height: 26px;
+    width: 55%;
+  }
+  @keyframes skel-shimmer {
+    0% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0 50%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skel {
+      animation: none;
+    }
+  }
+
+  /* talent */
+  .talent-more {
+    display: inline-block;
+    margin-top: 28px;
+    font: 700 12px/1 "Space Mono", monospace;
+    letter-spacing: 0.14em;
+    color: var(--color-fg);
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-accent);
+    padding-bottom: 3px;
+  }
+  .talent-more:hover {
+    color: var(--color-accent);
   }
 
   /* talent */
@@ -910,6 +1046,13 @@
       rgba(20, 20, 20, 0.16) 0 12px,
       rgba(20, 20, 20, 0.06) 12px 24px
     );
+    overflow: hidden;
+  }
+  .talent-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .talent-photo figcaption {
     font:
@@ -943,21 +1086,6 @@
     font-weight: 900;
     font-stretch: 110%;
     font-size: 30px;
-  }
-  .talent-role {
-    margin: 0;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-  }
-  .bg-cream .talent-role {
-    color: var(--color-bg);
-  }
-  .bg-dark .talent-role {
-    color: var(--color-accent);
-  }
-  .bg-purple .talent-role {
-    color: var(--color-fg);
   }
 
   /* crew */
@@ -1001,12 +1129,19 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.15);
+    overflow: hidden;
   }
   .crew-photo figcaption {
     text-align: center;
     font:
       400 11px/1.4 "Space Mono",
       monospace;
+  }
+  .crew-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .crew-meta {
     display: flex;
@@ -1327,8 +1462,15 @@
     .service-big {
       grid-column: span 2;
     }
-    .service-wide {
-      grid-column: span 2;
+    .service-wide:not(.service-big) {
+      grid-column: span 1;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+    .service-wide:not(.service-big) .service-title {
+      font-size: clamp(22px, 8vw, 40px);
+      font-stretch: 110%;
     }
     .agenda-row {
       grid-template-columns: minmax(0, 70px) minmax(0, 1fr);
@@ -1405,7 +1547,7 @@
       gap: 6px;
       padding: 16px 18px;
     }
-    .agenda-tag {
+    .agenda-type {
       justify-self: auto;
     }
 

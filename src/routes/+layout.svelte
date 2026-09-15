@@ -1,8 +1,44 @@
 <script>
   import '$lib/styles/stylesheet.css';
   import logo from '$lib/assets/artquake-logo.avif';
+  import { base } from '$app/paths';
 
   let { children } = $props();
+
+  let ctaNaam = $state('');
+  let ctaEmail = $state('');
+  let ctaBericht = $state('');
+  let ctaVersturen = $state(false);
+  let ctaVerstuurd = $state(false);
+  let ctaFout = $state('');
+
+  async function verstuurContact(e) {
+    e.preventDefault();
+    ctaFout = '';
+    ctaVersturen = true;
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/jamievos100@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          naam: ctaNaam,
+          email: ctaEmail,
+          bericht: ctaBericht,
+          _subject: `Nieuw bericht via artquake.nl van ${ctaNaam}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success !== 'true') throw new Error(data.message || 'Versturen mislukt');
+      ctaNaam = '';
+      ctaEmail = '';
+      ctaBericht = '';
+      ctaVerstuurd = true;
+    } catch (err) {
+      ctaFout = 'Versturen mislukt. Probeer het later opnieuw of mail ons direct.';
+    } finally {
+      ctaVersturen = false;
+    }
+  }
 </script>
 
 {@render children()}
@@ -16,21 +52,31 @@
       reageren binnen twee werkdagen.
     </p>
   </hgroup>
-  <form class="cta-form">
+  <form class="cta-form" onsubmit={verstuurContact}>
     <p class="cta-form-label">CONTACT</p>
     <label class="cta-field-label">
       <span class="visually-hidden">Naam</span>
-      <input class="cta-field" type="text" name="naam" placeholder="naam" autocomplete="name" />
+      <input class="cta-field" type="text" name="naam" placeholder="naam" autocomplete="name" bind:value={ctaNaam} required />
     </label>
     <label class="cta-field-label">
       <span class="visually-hidden">E-mail</span>
-      <input class="cta-field" type="email" name="email" placeholder="e-mail" autocomplete="email" />
+      <input class="cta-field" type="email" name="email" placeholder="e-mail" autocomplete="email" bind:value={ctaEmail} required />
     </label>
     <label class="cta-field-label">
       <span class="visually-hidden">Je vraag of bericht</span>
-      <textarea class="cta-field cta-textarea" name="bericht" placeholder="je vraag of bericht" rows="3"></textarea>
+      <textarea class="cta-field cta-textarea" name="bericht" placeholder="je vraag of bericht" rows="3" bind:value={ctaBericht} required></textarea>
     </label>
-    <button type="submit" class="cta-submit">VERSTUUR</button>
+
+    {#if ctaFout}
+      <p class="cta-feedback cta-feedback-error">{ctaFout}</p>
+    {/if}
+    {#if ctaVerstuurd}
+      <p class="cta-feedback">Bedankt! Je bericht is verstuurd — we reageren binnen twee werkdagen.</p>
+    {/if}
+
+    <button type="submit" class="cta-submit" disabled={ctaVersturen}>
+      {ctaVersturen ? 'BEZIG…' : 'VERSTUUR'}
+    </button>
   </form>
 </section>
 
@@ -43,6 +89,7 @@
   <nav class="footer-col" aria-label="Doen">
     <h3 class="footer-heading heading-orange">DOEN</h3>
     <ul>
+      <li><a href="{base}/artiesten">Artiesten</a></li>
       <li>Optredens</li>
       <li>Exposities</li>
       <li>Events</li>
@@ -61,14 +108,26 @@
   <nav class="footer-col" aria-label="Contact">
     <h3 class="footer-heading heading-cream">CONTACT</h3>
     <ul>
-      <li><a href="mailto:hoi@artquake.nl">hoi@artquake.nl</a></li>
-      <li><a href="https://instagram.com">Instagram</a></li>
-      <li><a href="https://tiktok.com">TikTok</a></li>
-      <li><a href="#doe-mee">Nieuwsbrief</a></li>
+      <li><a href="mailto:info@art-quake.com">info@art-quake.com</a></li>
+      <li><a href="https://api.whatsapp.com/send?phone=31640129447">+31 6 401 29 447</a></li>
+      <li>Sara de Bronovoland 7,<br />Heerhugowaard</li>
+    </ul>
+  </nav>
+  <nav class="footer-col" aria-label="Socials">
+    <h3 class="footer-heading heading-orange">SOCIALS</h3>
+    <ul>
+      <li><a href="https://www.instagram.com/artquake.westfriesland/" target="_blank" rel="noopener">Instagram</a></li>
+      <li><a href="https://www.youtube.com/channel/UCOcpcYV4ybeHuJND7ZhQURQ" target="_blank" rel="noopener">YouTube</a></li>
+      <li><a href="https://www.tiktok.com/@artquake_westfriesland" target="_blank" rel="noopener">TikTok</a></li>
+      <li><a href="https://www.facebook.com/artquake.westfriesland/" target="_blank" rel="noopener">Facebook</a></li>
     </ul>
   </nav>
   <p class="footer-bottom">
     <span>© 2026 ARTQUAKE</span>
+    <span class="footer-legal">
+      <a href="https://jamievos991.github.io/artquake-vue/#/privacypolicy">Privacybeleid</a>
+      <a href="https://jamievos991.github.io/artquake-vue/#/termsandconditions">Algemene voorwaarden</a>
+    </span>
     <span>MADE LOUD IN NL BY <a href="https://lychees.studio">LYCHEES.STUDIO</a></span>
   </p>
 </footer>
@@ -172,8 +231,20 @@
     border: none;
     cursor: pointer;
   }
-  .cta-submit:hover {
+  .cta-submit:hover:not(:disabled) {
     background: var(--color-primary-dark);
+  }
+  .cta-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .cta-feedback {
+    margin: 0;
+    font: 700 12px/1.5 "Space Mono", monospace;
+    color: var(--color-primary-light);
+  }
+  .cta-feedback-error {
+    color: var(--color-accent);
   }
 
   /* footer */
@@ -182,8 +253,8 @@
     color: var(--color-fg);
     padding: 56px 40px 34px;
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-    gap: clamp(16px, 3vw, 36px);
+    grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+    gap: clamp(35px, 3vw, 36px);
     font: 400 12px/1.9 "Space Mono", monospace;
   }
   .footer-brand {
@@ -230,11 +301,15 @@
     letter-spacing: 0.14em;
     color: #7d7d7d;
   }
+  .footer-legal {
+    display: flex;
+    gap: 20px;
+  }
   .footer-bottom a {
     color: inherit;
-    text-decoration: none;
+    text-decoration: underline;
   }
-  .footer-bottom a:hover { text-decoration: underline; }
+  .footer-bottom a:hover { opacity: 0.7; }
 
   @media (max-width: 860px) {
     .cta {
