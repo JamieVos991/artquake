@@ -5,6 +5,7 @@
   import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
   import { collection, onSnapshot } from "firebase/firestore";
   import { db } from "$lib/firebase.js";
+  import { diensten as services } from "$lib/data/diensten.js";
 
   let agendaItems = $state([]);
   let agendaGeladen = $state(false);
@@ -142,49 +143,34 @@
     "PROMOTIE",
   ];
 
-  const services = [
-    {
-      id: "01",
-      title: "TALENT\nNIGHT",
-      bg: "purple",
-      big: true,
-    },
-    { id: "02", title: "EXPO\nSITIES", bg: "cream" },
-    { id: "03", title: "JAM\nSESSIES", bg: "cream", outline: true },
-    { id: "05", title: "FOTO\nSHOOTS", bg: "purple", wide: true },
-    {
-      id: "06",
-      title: "WORKSHOPS\nEN MASTERCLASSES",
-      bg: "orange",
-      wide: true,
-      long: true,
-    },
-    { id: "07", title: "COACHING", bg: "cream" },
-    { id: "08", title: "IN\nOPDRACHT", bg: "purple" },
-  ];
-
   const talentBgVolgorde = ["dark", "cream", "purple"];
 
   const crewBgVolgorde = ["purple", "orange", "cream"];
+
+  function schudCrewKleuren(aantal, kolommen = 3) {
+    const kleuren = [];
+    for (let i = 0; i < aantal; i++) {
+      const verboden = new Set();
+      if (i > 0) verboden.add(kleuren[i - 1]);
+      if (i >= kolommen) verboden.add(kleuren[i - kolommen]);
+      const opties = crewBgVolgorde.filter((k) => !verboden.has(k));
+      kleuren.push(opties[Math.floor(Math.random() * opties.length)]);
+    }
+    return kleuren;
+  }
+
   const crewRuw = [
     { name: "Mado de Vries", role: "Oprichtster", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmado-de-vries.png?alt=media&token=fa97d209-ebc4-4398-ab65-8e63cd44eb44" },
-    { name: "Luna de Nijs", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fluna-de-nijs.jpeg?alt=media&token=2b0cf050-c74f-40fe-93ee-1b1e3106450f" },
     { name: "Nikki Hardaway", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnikki-hardaway.jpg?alt=media&token=b668c580-9754-4e66-9e9c-0c5da1215bb5" },
     { name: "Jasmijn Hulskamp", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fjasmijn-hulskamp.jpg?alt=media&token=31695815-1886-470b-a6aa-b3eb3787d9ce" },
-    { name: "Marlies Prasing", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmarlies-prasing.jpg?alt=media&token=4b74d0a9-327f-46c9-87d2-46955101b451" },
-    { name: "Aiden Zwemmer", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Faiden-zwemmer.jpeg?alt=media&token=210d79e7-881c-458d-8939-728ad24c2e8d" },
-    { name: "Keira Krijger", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fkeira-krijger.jpeg?alt=media&token=1038576c-f950-43bb-805b-e947b73ac0ce" },
     { name: "Jens Dijkstra", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fjens-dijkstra.jpeg?alt=media&token=2e0a0c72-a15f-4ae8-896b-8310f44025e9" },
-    { name: "Fien de Jongh", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffien-de-jongh.jpeg?alt=media&token=822e5140-0fb9-4881-adf5-4241fa1c67c4" },
-    { name: "Fiene Schellevis", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffiene-schellevis.jpeg?alt=media&token=be9d7018-9e52-492b-b071-bb7cd3505d93" },
-    { name: "Nout Schellevis", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnout-schellevis.jpeg?alt=media&token=df10135d-d986-4a98-8a73-c9cdfb8b1cc3" },
-    { name: "Melle Bijvoet", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmelle-bijvoet.jpeg?alt=media&token=f7ee1a10-4542-41db-9536-1c2f1842f28a" },
     { name: "Britt Visser", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fbritt-visser.jpeg?alt=media&token=81866fec-ea24-4ab9-8a01-8c7ef77869f1" },
     { name: "Nina Visser", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fnina-visser.jpeg?alt=media&token=7fe6e581-314f-4529-a429-5265eb2a7c31" },
     { name: "Franka Bodde", role: "Organisatie", imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Ffranka-bodde.jpeg?alt=media&token=a3efb3af-0c5a-404d-a5f4-a6f31d0e7655" },
   ];
+  const crewKleuren = schudCrewKleuren(crewRuw.length);
   const crew = crewRuw.map((c, i) => {
-    const bg = crewBgVolgorde[i % crewBgVolgorde.length];
+    const bg = crewKleuren[i];
     return { ...c, bg, roleColor: bg === "cream" ? "purple" : undefined };
   });
 </script>
@@ -271,7 +257,11 @@
             {#each s.title.split("\n") as line, i}{#if i > 0}<br
                 />{/if}{line}{/each}
           </h3>
-          {#if s.text}<p class="service-text">{s.text}</p>{/if}
+          <a
+            class="service-link"
+            href="{base}/diensten/{s.slug}"
+            aria-label="{s.heading} — lees meer"
+          ></a>
         </li>
       {/each}
     </ul>
@@ -778,10 +768,19 @@
   }
   .service-card {
     /* padding: 22px; */
+    position: relative;
     display: flex;
     padding: 20px;
     flex-direction: column;
     justify-content: space-between;
+    transition: opacity 0.15s;
+  }
+  .service-card:hover {
+    opacity: 0.9;
+  }
+  .service-link {
+    position: absolute;
+    inset: 0;
   }
   .service-big {
     grid-column: span 2;

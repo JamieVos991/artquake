@@ -83,13 +83,13 @@
 <footer class="footer">
   <img class="footer-brand" src={logo} alt="Artquake — creative space" />
   <p class="footer-tag">
-    Creatief &amp; cultureel jongerenplatform.<br />Jongerenkunst ·
-    talentontwikkeling.
+    Culturele organisatie voor en door jonge makers.<br />Jongerenkunst ·
+    Talentontwikkeling · Community.
   </p>
   <nav class="footer-col" aria-label="Doen">
     <h3 class="footer-heading heading-orange">DOEN</h3>
     <ul>
-      <li><a href="{base}/artiesten">Artiesten</a></li>
+      <li><a href="{base}/reserveren">Reserveren</a></li>
       <li>Optredens</li>
       <li>Exposities</li>
       <li>Events</li>
@@ -100,6 +100,7 @@
     <h3 class="footer-heading heading-lilac">GROEIEN</h3>
     <ul>
       <li>Masterclasses</li>
+      <li>Lessen</li>
       <li>Coaching</li>
       <li>Promotie</li>
       <li>Netwerk</li>

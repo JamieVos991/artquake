@@ -1,0 +1,55 @@
+<!--
+  EmailJS-template voor de bevestigingsmail.
+  Onderwerp (Subject-veld in EmailJS): Reservering bevestigd — {{studio}}
+  Gebruikte variabelen: {{naam}}, {{email}}, {{studio}}, {{datum}}, {{starttijd}}, {{eindtijd}}
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0b0b; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background:#141414; border-radius:8px; overflow:hidden;">
+        <tr>
+          <td style="background:#8a19e8; padding:20px 32px;">
+            <span style="font-family:Arial, Helvetica, sans-serif; font-weight:900; font-size:20px; letter-spacing:0.02em; color:#f4f1ea;">ARTQUAKE</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-weight:700; font-size:11px; letter-spacing:0.14em; color:#f2a81c;">
+              GELUKT ✓
+            </p>
+            <p style="margin:0 0 20px; font-family:Arial, Helvetica, sans-serif; font-weight:900; font-size:24px; line-height:1.2; color:#f4f1ea;">
+              Reservering bevestigd.
+            </p>
+            <p style="margin:0 0 20px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#f4f1ea;">
+              Hoi {{naam}}, je reservering staat vast:
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0b0b; border-radius:6px; margin-bottom:20px;">
+              <tr>
+                <td style="padding:16px 20px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#9a9a9a; width:40%;">Ruimte</td>
+                <td style="padding:16px 20px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#f4f1ea; font-weight:700;">{{studio}}</td>
+              </tr>
+              <tr>
+                <td style="padding:0 20px 16px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#9a9a9a;">Datum</td>
+                <td style="padding:0 20px 16px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#f4f1ea; font-weight:700;">{{datum}}</td>
+              </tr>
+              <tr>
+                <td style="padding:0 20px 16px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#9a9a9a;">Tijd</td>
+                <td style="padding:0 20px 16px; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#f4f1ea; font-weight:700;">{{starttijd}}–{{eindtijd}}</td>
+              </tr>
+            </table>
+            <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.6; color:#9a9a9a;">
+              Iets veranderd? Neem contact op via info@art-quake.com of +31 6 401 29 447.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px; border-top:1px solid #242424;">
+            <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:0.08em; color:#9a9a9a;">
+              ARTQUAKE · Sara de Bronovoland 7, Heerhugowaard · info@art-quake.com
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
