@@ -70,7 +70,7 @@ export const diensten = [
 	{
 		slug: "oefenruimtes-studios-atelier-en-zaal",
 		id: "08",
-		title: "OEFENRUIMTES/\nSTUDIO'S/\nATELIER EN ZAAL",
+		title: "OEFENRUIMTES,\nSTUDIO'S,\nATELIER EN ZAAL",
 		heading: "Hoor het van Dewi zelf!",
 		bg: "dark",
 		outline: true,
