@@ -1,5 +1,7 @@
 <script>
   import { base } from "$app/paths";
+  import { fade, fly } from "svelte/transition";
+  import { cubicIn, cubicOut } from "svelte/easing";
   import { page } from "$app/state";
   import { collection, getDocs } from "firebase/firestore";
   import { db } from "$lib/firebase.js";
@@ -24,6 +26,18 @@
   ];
 
   let open = $state(false);
+
+  // menu schuift van rechts het scherm in; zonder beweging bij reduced motion
+  function schuif(node, { uit = false } = {}) {
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (rustig) return fade(node, { duration: 0 });
+    return fly(node, {
+      x: window.innerWidth,
+      opacity: 1,
+      duration: uit ? 320 : 520,
+      easing: uit ? cubicIn : cubicOut,
+    });
+  }
   let hoverIndex = $state(-1);
   let agenda = $state([]);
   let agendaGeladen = $state(false);
@@ -117,14 +131,28 @@
   </button>
 
   {#if open}
-    <div class="menu-scrim" onclick={sluitMenu} aria-hidden="true"></div>
-    <div class="menu" id="hoofdmenu" role="dialog" aria-modal="true" aria-label="Menu">
+    <div
+      class="menu-scrim"
+      onclick={sluitMenu}
+      aria-hidden="true"
+      transition:fade={{ duration: 250 }}
+    ></div>
+    <div
+      class="menu"
+      id="hoofdmenu"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu"
+      in:schuif
+      out:schuif={{ uit: true }}
+    >
       <nav class="menu-links" aria-label="Hoofdmenu">
         <span class="menu-pad" aria-hidden="true">/MENU</span>
         <ol class="menu-lijst" onmouseleave={() => (hoverIndex = -1)}>
           {#each items as it, i}
             <li
               class="menu-item"
+              style:--i={i}
               class:is-huidig={i === huidigeIndex}
               class:is-actief={i === hoverIndex}
             >
@@ -236,7 +264,6 @@
     z-index: 95;
     background: rgba(11, 11, 11, 0.85);
     backdrop-filter: blur(3px);
-    animation: menu-fade 0.2s ease-out;
   }
   .menu {
     position: fixed;
@@ -251,22 +278,39 @@
     border: 4px solid var(--color-bg);
     border-radius: 18px;
     box-shadow: 10px 10px 0 var(--color-primary);
-    animation: menu-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  /* items, foto en agenda schuiven na elkaar in */
+  @keyframes menu-item-in {
+    from {
+      opacity: 0;
+      transform: translateX(80px);
+    }
   }
   @keyframes menu-fade {
     from {
       opacity: 0;
     }
   }
-  @keyframes menu-in {
-    from {
-      opacity: 0;
-      transform: translateY(16px) scale(0.98);
-    }
+  .menu-item {
+    animation: menu-item-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(0.22s + var(--i) * 0.055s);
+  }
+  .menu-foto {
+    animation: menu-fade 0.4s ease-out 0.55s both;
+  }
+  .menu-rechts > * {
+    animation: menu-item-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
+  }
+  .menu-rechts > .menu-agenda {
+    animation-delay: 0.45s;
+  }
+  .menu-rechts > .menu-alles {
+    animation-delay: 0.55s;
   }
   @media (prefers-reduced-motion: reduce) {
-    .menu,
-    .menu-scrim {
+    .menu-item,
+    .menu-foto,
+    .menu-rechts > * {
       animation: none;
     }
   }

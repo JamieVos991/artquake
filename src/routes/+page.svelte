@@ -409,7 +409,7 @@
         {/each}
       {/if}
     </ul>
-    <a class="talent-more" href="{base}/artiesten">ZIE MEER ARTIESTEN</a>
+    <a class="talent-more" href="{base}/artiesten">BEKIJK ALLE MAKERS</a>
   </section>
 
   <section class="crew" id="crew" aria-label="De crew">
@@ -1070,18 +1070,18 @@
   /* talent */
   .talent-more {
     display: inline-block;
-    margin-top: 28px;
+    margin: 28px 0 0 8px;
     font:
       700 12px/1 "Space Mono",
       monospace;
     letter-spacing: 0.14em;
-    color: var(--color-fg);
+    color: var(--color-bg);
     text-decoration: none;
-    border-bottom: 2px solid var(--color-accent);
+    border-bottom: 2px solid var(--color-primary);
     padding-bottom: 3px;
   }
   .talent-more:hover {
-    color: var(--color-accent);
+    color: var(--color-primary);
   }
 
   /* talent */
