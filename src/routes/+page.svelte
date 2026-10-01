@@ -228,6 +228,19 @@
       role: "Crew",
       imageUrl: crewFoto("thomas"),
     },
+    {
+      name: "Emre",
+      fotoPositie: "33%",
+      role: "Crew",
+      imageUrl: crewFoto("emre"),
+    },
+    {
+      name: "Moon",
+      fotoPositie: "10%",
+      role: "Crew",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/artiesten-images%2Fmoon-smit.jpeg?alt=media&token=aae5035f-6a11-4239-8149-088053037bec",
+    },
   ];
   const crewKleuren = schudCrewKleuren(crewRuw.length, 4);
   const crew = crewRuw.map((c, i) => {
