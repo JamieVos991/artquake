@@ -71,30 +71,35 @@
   </figure>
 
   <div class="pand-tekst">
-    <p class="pand-lead">In het Artquake-pand vind je:</p>
-    <ul class="pand-lijst">
-      {#each ruimtes as r}
-        <li>{r}</li>
-      {/each}
-    </ul>
-    <p>
-      Jonge artiesten/kunstenaars mogen gratis gebruik maken van deze ruimtes.
-      Neem contact met Dewi op voor meer info.
-    </p>
-    <address class="pand-adres">
-      <span class="pand-adres-label">ADRES</span>
-      Sara de Bronovoland 7<br />
-      Heerhugowaard
-    </address>
+    <div>
+      <p class="pand-lead">In het Artquake-pand vind je:</p>
+      <ul class="pand-lijst">
+        {#each ruimtes as r}
+          <li>{r}</li>
+        {/each}
+      </ul>
+    </div>
+    <div>
+      <p>
+        Jonge artiesten/kunstenaars mogen gratis gebruik maken van deze
+        ruimtes. Neem contact met Dewi op voor meer info.
+      </p>
+      <address class="pand-adres">
+        <span class="pand-adres-label">ADRES</span>
+        Sara de Bronovoland 7<br />
+        Heerhugowaard
+      </address>
+    </div>
   </div>
 </div>
 
 <style>
   .pand {
     display: grid;
-    grid-template-columns: auto auto minmax(260px, 1fr);
+    grid-template-columns: auto auto;
+    justify-content: center;
     align-items: start;
-    gap: 28px;
+    gap: 56px 44px;
   }
   .pand-media {
     position: relative;
@@ -104,9 +109,11 @@
     background: #000;
   }
   .pand-video {
+    justify-self: end;
     box-shadow: 14px 14px 0 var(--color-primary);
   }
   .pand-foto {
+    justify-self: start;
     box-shadow: 14px 14px 0 var(--color-accent);
   }
   .pand-player,
@@ -137,6 +144,13 @@
   }
 
   .pand-tekst {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+    max-width: 780px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 44px;
     color: var(--color-fg);
     font:
       400 15px/1.6 "Space Mono",
@@ -149,7 +163,7 @@
     font-weight: 700;
   }
   .pand-lijst {
-    margin: 0 0 24px;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -176,26 +190,29 @@
     letter-spacing: 0.14em;
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 860px) {
     .pand {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 40px 28px;
     }
     .pand-media {
       height: auto;
-      width: 100%;
-    }
-    .pand-tekst {
-      grid-column: 1 / -1;
+      width: calc(100% - 14px);
     }
   }
 
   @media (max-width: 640px) {
     .pand {
       grid-template-columns: 1fr;
-      gap: 32px;
+      justify-items: center;
     }
     .pand-media {
-      width: calc(100% - 14px);
+      justify-self: center;
+      width: min(100% - 14px, 340px);
+    }
+    .pand-tekst {
+      grid-template-columns: 1fr;
+      justify-self: stretch;
     }
   }
 </style>

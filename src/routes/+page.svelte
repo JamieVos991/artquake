@@ -171,7 +171,7 @@
     {
       name: "Britt",
       fotoPositie: "43%",
-      role: "Organisatie",
+      role: "Coach / Docent",
       imageUrl: crewFoto("britt"),
     },
     {
@@ -189,55 +189,55 @@
     {
       name: "Dewi",
       fotoPositie: "16%",
-      role: "Crew",
+      role: "Organisatie / Coach",
       imageUrl: crewFoto("dewi"),
     },
     {
       name: "Chris",
       fotoPositie: "29%",
-      role: "Crew",
+      role: "Presentator",
       imageUrl: crewFoto("chris"),
     },
     {
       name: "Eline",
       fotoPositie: "10%",
-      role: "Crew",
+      role: "Organisatie / Docent",
       imageUrl: crewFoto("eline"),
     },
     {
       name: "Mike",
       fotoPositie: "8%",
-      role: "Crew",
+      role: "Organisatie / Fotograaf",
       imageUrl: crewFoto("mike"),
     },
     {
       name: "Mikey",
       fotoPositie: "31%",
-      role: "Crew",
+      role: "Organisatie",
       imageUrl: crewFoto("mikey"),
     },
     {
       name: "Santi",
       fotoPositie: "10%",
-      role: "Crew",
+      role: "Organisatie",
       imageUrl: crewFoto("santi"),
     },
     {
       name: "Thomas",
       fotoPositie: "2%",
-      role: "Crew",
+      role: "Fotograaf",
       imageUrl: crewFoto("thomas"),
     },
     {
       name: "Emre",
       fotoPositie: "33%",
-      role: "Crew",
+      role: "Coach / Docent",
       imageUrl: crewFoto("emre"),
     },
     {
       name: "Moon",
       fotoPositie: "10%",
-      role: "Crew",
+      role: "Organisatie / Docent",
       imageUrl:
         "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/artiesten-images%2Fmoon-smit.jpeg?alt=media&token=aae5035f-6a11-4239-8149-088053037bec",
     },
@@ -448,7 +448,7 @@
                 style:object-position="center {c.fotoPositie ?? 'center'}"
               />
             {:else}
-              <figcaption>Portret · 1200×1500</figcaption>
+              <figcaption>Foto volgt</figcaption>
             {/if}
           </figure>
           <hgroup class="crew-meta">
