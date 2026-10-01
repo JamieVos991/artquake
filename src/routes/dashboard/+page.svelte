@@ -305,7 +305,7 @@
         <span class="nav-link">STUDIO'S</span>
       </nav>
       <button class="logout" type="button" onclick={handleUitloggen}
-        >UITLOGGEN →</button
+        >UITLOGGEN</button
       >
     </header>
 
@@ -493,7 +493,7 @@
             </li>
           {/each}
         </ul>
-        <a class="artiesten-more" href="{base}/artiesten">ALLE ARTIESTEN →</a>
+        <a class="artiesten-more" href="{base}/artiesten">ALLE ARTIESTEN</a>
       </section>
 
       <section class="block">

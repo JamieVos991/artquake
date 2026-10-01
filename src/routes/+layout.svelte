@@ -2,6 +2,7 @@
   import '$lib/styles/stylesheet.css';
   import logo from '$lib/assets/artquake-logo.avif';
   import { base } from '$app/paths';
+  import HamburgerMenu from '$lib/components/HamburgerMenu.svelte';
 
   let { children } = $props();
 
@@ -40,6 +41,8 @@
     }
   }
 </script>
+
+<HamburgerMenu />
 
 {@render children()}
 

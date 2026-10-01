@@ -1,6 +1,7 @@
 <script>
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
+  import PandSectie from "$lib/components/PandSectie.svelte";
 
   let { data } = $props();
   const dienst = data.dienst;
@@ -24,8 +25,12 @@
 </section>
 
 <section class="dp-body">
-  <p class="dp-text">{dienst.text}</p>
-  <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
+  {#if dienst.pand}
+    <PandSectie />
+  {:else}
+    <p class="dp-text">{dienst.text}</p>
+    <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
+  {/if}
 </section>
 
 <style>

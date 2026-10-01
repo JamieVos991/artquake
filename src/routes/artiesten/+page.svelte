@@ -4,6 +4,7 @@
   import logo from "$lib/assets/artquake-logo.avif";
   import { collection, onSnapshot } from "firebase/firestore";
   import { db } from "$lib/firebase.js";
+  import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
   const badgeVolgorde = {
@@ -110,7 +111,13 @@
         <li class="ap-card bg-{bg}">
           <figure class="ap-photo">
             {#if a.imageUrl}
-              <img class="ap-img" src={a.imageUrl} alt="" loading="lazy" />
+              <img
+                class="ap-img"
+                src={a.imageUrl}
+                alt=""
+                loading="lazy"
+                style:object-position={artiestFotoPositie(a)}
+              />
             {:else}
               <figcaption>[ ARTIESTFOTO<br />1200×1500 ]</figcaption>
             {/if}
@@ -127,7 +134,7 @@
               class="ap-profiel"
               href={a.instagram}
               target="_blank"
-              rel="noopener">PROFIEL →</a
+              rel="noopener">PROFIEL</a
             >
           {/if}
         </li>
@@ -265,6 +272,9 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+  .ap-card.bg-cream {
+    border: 1px solid var(--color-bg);
   }
   .bg-dark {
     background: var(--color-bg);

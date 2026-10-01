@@ -67,6 +67,17 @@ export const diensten = [
 		intro: "Onze makers aan het werk voor bedrijven en events.",
 		text: "Bedrijven, gemeenten en organisatoren van events kunnen bij Artquake terecht voor optredens, beeldend werk of creatieve invulling op maat. Zo krijgen onze makers betaalde opdrachten én een breder podium, en krijgt de opdrachtgever een uniek, verzorgd resultaat.",
 	},
+	{
+		slug: "oefenruimtes-studios-atelier-en-zaal",
+		id: "08",
+		title: "OEFENRUIMTES/\nSTUDIO'S/\nATELIER EN ZAAL",
+		heading: "Hoor het van Dewi zelf!",
+		bg: "dark",
+		outline: true,
+		full: true,
+		pand: true,
+		intro: "Dewi leidt je rond door het Artquake-pand 🩷",
+	},
 ];
 
 export function vindDienst(slug) {

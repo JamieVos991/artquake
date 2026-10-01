@@ -476,7 +476,6 @@
               {#each s.label.split("\n") as line, i}{#if i > 0}<br
                   />{/if}{line}{/each}
             </h2>
-            <span class="studio-arrow">→</span>
           </li>
         {/each}
       </ul>
@@ -641,7 +640,7 @@
           {/if}
           <div class="step-nav">
             <button type="button" class="btn-back" onclick={terugNaarDatum}
-              >← ANDERE TIJD</button
+              >ANDERE TIJD</button
             >
             <button
               type="submit"
@@ -834,20 +833,6 @@
     align-items: flex-end;
   }
 
-  .studio-arrow {
-    position: absolute;
-    bottom: 24px;
-    right: 24px;
-    font-size: 20px;
-    opacity: 0;
-    transition:
-      opacity 0.12s,
-      transform 0.12s;
-  }
-  .studio:hover .studio-arrow {
-    opacity: 1;
-    transform: translateX(4px);
-  }
 
   /* ── Steps 2 & 3 ── */
   .step-screen {
