@@ -380,7 +380,7 @@
           </li>
         {/each}
       {:else if agendaItems.length === 0}
-        <li class="agenda-empty">Binnenkort meer agenda-items.</li>
+        <li class="agenda-empty">Binnenkort meer agenda items.</li>
       {:else}
         {#each agendaItems as ev (ev.id)}
           <li
@@ -517,15 +517,15 @@
     </ul>
   </section>
 
-  <section class="video-section" id="pand" aria-label="Het Artquake-pand">
+  <section class="video-section" id="pand" aria-label="Het Artquake pand">
     <header class="section-head">
-      <h2 class="section-eyebrow eyebrow-purple">HET ARTQUAKE-PAND</h2>
+      <h2 class="section-eyebrow eyebrow-purple">HET ARTQUAKE PAND</h2>
       <span class="section-rule"></span>
     </header>
     <h3 class="video-title">
       HOOR HET VAN <span class="hl-orange-block">DEWI</span> ZELF!
     </h3>
-    <p class="video-sub">Dewi leidt je rond door het Artquake-pand 🩷</p>
+    <p class="video-sub">Dewi leidt je rond door het Artquake pand 🩷</p>
     <PandSectie />
   </section>
 </main>

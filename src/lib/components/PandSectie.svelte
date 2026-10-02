@@ -9,7 +9,7 @@
     { naam: "Oefenruimte voor muziek", x: 610, y: 90, kant: "rij" },
     { naam: "Zaal met podium, licht en geluid", x: 560, y: 650, kant: "rij" },
     { naam: "Atelier", x: 330, y: 650, kant: "rij" },
-    { naam: "Opname-studio", x: 100, y: 820, kant: "zij" },
+    { naam: "Opnamestudio", x: 100, y: 820, kant: "zij" },
     { naam: "Dansstudio", x: 330, y: 1210, kant: "rij" },
     { naam: "Fotostudio", x: 640, y: 1210, kant: "rij" },
   ];
@@ -66,7 +66,7 @@
 <div class="route-tekst route-intro-mobiel">
   <h4 class="route-kop">LOOP MET DEWI MEE</h4>
   <p>
-    In het Artquake-pand vind je zeven ruimtes. Dewi laat ze je één voor één
+    In het Artquake pand vind je zeven ruimtes. Dewi laat ze je één voor één
     zien: volg de route.
   </p>
 </div>
@@ -146,7 +146,7 @@
     <div class="route-tekst route-intro-breed">
       <h4 class="route-kop">LOOP MET DEWI MEE</h4>
       <p>
-        In het Artquake-pand vind je zeven ruimtes. Dewi laat ze je één voor
+        In het Artquake pand vind je zeven ruimtes. Dewi laat ze je één voor
         één zien: volg de route.
       </p>
     </div>
@@ -180,7 +180,7 @@
       </p>
     </div>
     <figure class="route-media route-foto">
-      <img src={pandFoto} alt="De voorkant van het Artquake-pand" loading="lazy" />
+      <img src={pandFoto} alt="De voorkant van het Artquake pand" loading="lazy" />
     </figure>
   </div>
 </div>

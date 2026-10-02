@@ -195,7 +195,7 @@
               <li class="menu-event menu-skel" aria-hidden="true"><span></span><span></span></li>
             {/each}
           {:else if agenda.length === 0}
-            <li class="menu-leeg">Binnenkort meer agenda-items.</li>
+            <li class="menu-leeg">Binnenkort meer agenda items.</li>
           {:else}
             {#each agenda as ev (ev.id)}
               <li class="menu-event">

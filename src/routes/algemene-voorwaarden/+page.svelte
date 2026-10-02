@@ -41,7 +41,7 @@
   <h2>Gedragsregels</h2>
   <p>
     Van alle bezoekers en gebruikers van onze ruimtes wordt respectvol gedrag
-    verwacht. Wij hanteren een zero-tolerancebeleid ten aanzien van
+    verwacht. Wij hanteren een zero tolerance beleid ten aanzien van
     discriminatie, intimidatie en vandalisme. Bij overtreding behoudt Artquake
     het recht de toegang te ontzeggen.
   </p>
