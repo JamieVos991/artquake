@@ -82,16 +82,21 @@
       <text class="vlag-tekst" y="5">START</text>
     </g>
     {#each stopsMobiel as s, i}
-      {#if s.kant === "rij"}
-        <text class="stop-label" x={s.x + 20} y={s.y + 4}>{stops[i].naam}</text>
-      {:else}
-        <text
-          class="stop-label"
-          transform="translate({s.x - 4} {s.y + 20}) rotate(90)"
-          >{stops[i].naam}</text
-        >
-      {/if}
-      <text class="stop-nr" x={s.x} y={s.y + 7}>{nr(i)}</text>
+      <!-- elke tekst twee keer: eerst een crème rand, daarbovenop de letters -->
+      {#each ["rand", "letters"] as laag}
+        {#if s.kant === "rij"}
+          <text class="stop-label laag-{laag}" x={s.x + 20} y={s.y + 4}
+            >{stops[i].naam.toUpperCase()}</text
+          >
+        {:else}
+          <text
+            class="stop-label laag-{laag}"
+            transform="translate({s.x - 4} {s.y + 20}) rotate(90)"
+            >{stops[i].naam.toUpperCase()}</text
+          >
+        {/if}
+        <text class="stop-nr laag-{laag}" x={s.x} y={s.y + 7}>{nr(i)}</text>
+      {/each}
     {/each}
   </svg>
 
@@ -108,15 +113,20 @@
     </g>
 
     {#each stops as s, i}
-      {#if s.kant === "rij"}
-        <text class="stop-label" x={s.x + 46} y={s.y + 5}>{s.naam}</text>
-      {:else}
-        <text
-          class="stop-label"
-          transform="translate({s.x - 5} {s.y + 46}) rotate(90)">{s.naam}</text
-        >
-      {/if}
-      <text class="stop-nr" x={s.x} y={s.y + 11}>{nr(i)}</text>
+      {#each ["rand", "letters"] as laag}
+        {#if s.kant === "rij"}
+          <text class="stop-label laag-{laag}" x={s.x + 46} y={s.y + 5}
+            >{s.naam.toUpperCase()}</text
+          >
+        {:else}
+          <text
+            class="stop-label laag-{laag}"
+            transform="translate({s.x - 5} {s.y + 46}) rotate(90)"
+            >{s.naam.toUpperCase()}</text
+          >
+        {/if}
+        <text class="stop-nr laag-{laag}" x={s.x} y={s.y + 11}>{nr(i)}</text>
+      {/each}
     {/each}
   </svg>
 
@@ -243,34 +253,30 @@
     font-family: var(--font-display);
     font-weight: 900;
     font-size: 22px;
-    letter-spacing: 0.02em;
   }
   .vlag-tekst-licht {
     fill: var(--color-fg);
   }
+  /* Geen paint-order, text-transform of letter-spacing op SVG-tekst:
+     WebKit (Safari en alle iPhone-browsers) tekent die verkeerd. */
   .stop-nr {
     fill: var(--color-primary);
-    stroke: var(--color-fg);
-    stroke-width: 10px;
-    stroke-linejoin: round;
-    paint-order: stroke;
     text-anchor: middle;
     font-family: var(--font-display);
     font-weight: 900;
     font-size: 30px;
-    letter-spacing: -0.02em;
   }
   .stop-label {
     fill: var(--color-bg);
-    stroke: var(--color-fg);
-    stroke-width: 10px;
-    stroke-linejoin: round;
-    paint-order: stroke;
     font-family: var(--font-display);
     font-weight: 900;
     font-size: 17px;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
+  }
+  .laag-rand {
+    fill: var(--color-fg);
+    stroke: var(--color-fg);
+    stroke-width: 10px;
+    stroke-linejoin: round;
   }
 
   /* inhoud in de bochten */
@@ -403,10 +409,11 @@
     }
     .bord-mobiel .stop-nr {
       font-size: 19px;
-      stroke-width: 6px;
     }
     .bord-mobiel .stop-label {
       font-size: 10.5px;
+    }
+    .bord-mobiel .laag-rand {
       stroke-width: 6px;
     }
 
