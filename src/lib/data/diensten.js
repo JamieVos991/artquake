@@ -76,7 +76,7 @@ export const diensten = [
 		outline: true,
 		full: true,
 		pand: true,
-		intro: "Dewi leidt je rond door het Artquake-pand 🩷",
+		intro: "Dewi leidt je rond door het Artquake pand 🩷",
 	},
 ];
 

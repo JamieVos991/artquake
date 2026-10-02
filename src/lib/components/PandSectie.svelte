@@ -2,15 +2,34 @@
   import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
   import pandFoto from "$lib/assets/pictures/pand/artquake-pand-voorkant.webp";
 
-  const ruimtes = [
-    "een creatieve huiskamer",
-    "een oefenruimte voor muziek",
-    "een zaal met podium, licht en geluid",
-    "een atelier",
-    "een opname-studio",
-    "een dansstudio",
-    "een fotostudio",
+  // Stops op het pad (coördinaten in het SVG-raster van 1160×1280).
+  // kant: op welk stuk van het pad de stop ligt, bepaalt de richting van het label.
+  const stops = [
+    { naam: "Creatieve huiskamer", x: 280, y: 90, kant: "rij" },
+    { naam: "Oefenruimte voor muziek", x: 610, y: 90, kant: "rij" },
+    { naam: "Zaal met podium, licht en geluid", x: 560, y: 650, kant: "rij" },
+    { naam: "Atelier", x: 330, y: 650, kant: "rij" },
+    { naam: "Opname-studio", x: 100, y: 820, kant: "zij" },
+    { naam: "Dansstudio", x: 330, y: 1210, kant: "rij" },
+    { naam: "Fotostudio", x: 640, y: 1210, kant: "rij" },
   ];
+  const nr = (i) => String(i + 1).padStart(2, "0");
+
+  const pad =
+    "M 150 90 H 970 Q 1060 90 1060 180 V 560 Q 1060 650 970 650 H 190 Q 100 650 100 740 V 1120 Q 100 1210 190 1210 H 1010";
+
+  // smalle versie van het bord (SVG-raster van 360×1380)
+  const stopsMobiel = [
+    { x: 110, y: 44, kant: "rij" },
+    { x: 326, y: 118, kant: "zij" },
+    { x: 34, y: 522, kant: "zij" },
+    { x: 100, y: 860, kant: "rij" },
+    { x: 326, y: 932, kant: "zij" },
+    { x: 118, y: 1160, kant: "rij" },
+    { x: 96, y: 1320, kant: "rij" },
+  ];
+  const padMobiel =
+    "M 60 44 H 276 Q 326 44 326 94 V 400 Q 326 450 276 450 H 84 Q 34 450 34 500 V 810 Q 34 860 84 860 H 276 Q 326 860 326 910 V 1110 Q 326 1160 276 1160 H 84 Q 34 1160 34 1210 V 1270 Q 34 1320 84 1320 H 290";
 
   let videoEl = $state();
   let videoMuted = $state(true);
@@ -43,176 +62,399 @@
   });
 </script>
 
-<div class="pand">
-  <figure class="pand-media pand-video">
-    <video
-      bind:this={videoEl}
-      class="pand-player"
-      controls
-      muted
-      playsinline
-      preload="metadata"
-    >
-      <source src={dewiUitlegVideo} type="video/mp4" />
-      Je browser ondersteunt deze video niet.
-    </video>
-    <button
-      type="button"
-      class="pand-unmute"
-      aria-pressed={!videoMuted}
-      onclick={toggleVideoMute}
-    >
-      {videoMuted ? "GELUID AAN" : "DEMPEN"}
-    </button>
-  </figure>
+<!-- op smalle schermen staat de intro boven het bord -->
+<div class="route-tekst route-intro-mobiel">
+  <h4 class="route-kop">LOOP MET DEWI MEE</h4>
+  <p>
+    In het Artquake-pand vind je zeven ruimtes. Dewi laat ze je één voor één
+    zien: volg de route.
+  </p>
+</div>
 
-  <figure class="pand-media pand-foto">
-    <img src={pandFoto} alt="De voorkant van het Artquake-pand" loading="lazy" />
-  </figure>
+<div class="route">
+  <!-- het bord op smalle schermen -->
+  <svg class="route-bord bord-mobiel" viewBox="0 0 360 1380" aria-hidden="true">
+    <path class="pad-rand" d={padMobiel} />
+    <path class="pad-baan" d={padMobiel} />
+    <path class="pad-vakjes" d={padMobiel} />
+    <g transform="translate(58 44) rotate(-8)">
+      <rect class="vlag vlag-start" x="-34" y="-27" width="68" height="54" />
+      <text class="vlag-tekst" y="5">START</text>
+    </g>
+    {#each stopsMobiel as s, i}
+      {#if s.kant === "rij"}
+        <text class="stop-label" x={s.x + 20} y={s.y + 4}>{stops[i].naam}</text>
+      {:else}
+        <text
+          class="stop-label"
+          transform="translate({s.x - 4} {s.y + 20}) rotate(90)"
+          >{stops[i].naam}</text
+        >
+      {/if}
+      <text class="stop-nr" x={s.x} y={s.y + 7}>{nr(i)}</text>
+    {/each}
+  </svg>
 
-  <div class="pand-tekst">
-    <div>
-      <p class="pand-lead">In het Artquake-pand vind je:</p>
-      <ul class="pand-lijst">
-        {#each ruimtes as r}
-          <li>{r}</li>
-        {/each}
-      </ul>
+  <!-- het bord: alleen op brede schermen -->
+  <svg class="route-bord bord-breed" viewBox="0 0 1160 1280" aria-hidden="true">
+    <path class="pad-rand" d={pad} />
+    <path class="pad-baan" d={pad} />
+    <path class="pad-vakjes" d={pad} />
+
+    <!-- start en finish -->
+    <g transform="translate(150 90) rotate(-8)">
+      <rect class="vlag vlag-start" x="-62" y="-40" width="124" height="80" />
+      <text class="vlag-tekst" y="7">START</text>
+    </g>
+
+    {#each stops as s, i}
+      {#if s.kant === "rij"}
+        <text class="stop-label" x={s.x + 46} y={s.y + 5}>{s.naam}</text>
+      {:else}
+        <text
+          class="stop-label"
+          transform="translate({s.x - 5} {s.y + 46}) rotate(90)">{s.naam}</text
+        >
+      {/if}
+      <text class="stop-nr" x={s.x} y={s.y + 11}>{nr(i)}</text>
+    {/each}
+  </svg>
+
+  <!-- bocht 1: het filmpje -->
+  <div class="route-vak route-vak-1">
+    <figure class="route-media route-video">
+      <video
+        bind:this={videoEl}
+        class="route-player"
+        controls
+        muted
+        playsinline
+        preload="metadata"
+      >
+        <source src={dewiUitlegVideo} type="video/mp4" />
+        Je browser ondersteunt deze video niet.
+      </video>
+      <button
+        type="button"
+        class="route-unmute"
+        aria-pressed={!videoMuted}
+        onclick={toggleVideoMute}
+      >
+        {videoMuted ? "GELUID AAN" : "DEMPEN"}
+      </button>
+    </figure>
+    <div class="route-tekst route-intro-breed">
+      <h4 class="route-kop">LOOP MET DEWI MEE</h4>
+      <p>
+        In het Artquake-pand vind je zeven ruimtes. Dewi laat ze je één voor
+        één zien: volg de route.
+      </p>
     </div>
-    <div>
+  </div>
+
+  <!-- de finish-vlag ligt boven de foto en de tekst -->
+  <svg class="route-bord route-bord-boven bord-mobiel" viewBox="0 0 360 1380" aria-hidden="true">
+    <g transform="translate(286 1320) rotate(6)">
+      <rect class="vlag vlag-finish" x="-58" y="-27" width="116" height="54" />
+      <text class="vlag-tekst vlag-tekst-licht" y="5">KOM LANGS!</text>
+    </g>
+  </svg>
+  <svg class="route-bord route-bord-boven bord-breed" viewBox="0 0 1160 1280" aria-hidden="true">
+    <g transform="translate(1000 1210) rotate(6)">
+      <rect class="vlag vlag-finish" x="-96" y="-40" width="192" height="80" />
+      <text class="vlag-tekst vlag-tekst-licht" y="7">KOM LANGS!</text>
+    </g>
+  </svg>
+
+  <!-- bocht 2: gratis, adres en de foto -->
+  <div class="route-vak route-vak-2">
+    <div class="route-tekst">
+      <h4 class="route-kop route-kop-oranje">GRATIS VOOR JONGE MAKERS</h4>
       <p>
         Jonge artiesten/kunstenaars mogen gratis gebruik maken van deze
         ruimtes. Neem contact met Dewi op voor meer info.
       </p>
-      <address class="pand-adres">
-        <span class="pand-adres-label">ADRES</span>
-        Sara de Bronovoland 7<br />
-        Heerhugowaard
-      </address>
+      <p>
+        Je vindt ons aan de
+        <strong class="route-adres">Sara de Bronovoland 7 in Heerhugowaard</strong>.
+      </p>
     </div>
+    <figure class="route-media route-foto">
+      <img src={pandFoto} alt="De voorkant van het Artquake-pand" loading="lazy" />
+    </figure>
   </div>
 </div>
 
 <style>
-  .pand {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: center;
-    align-items: start;
-    gap: 56px 44px;
-  }
-  .pand-media {
+  .route {
     position: relative;
-    margin: 0;
-    height: min(75vh, 640px);
+    max-width: 1160px;
+    margin: 0 auto;
+    aspect-ratio: 1160 / 1280;
+    color: var(--color-fg);
+  }
+
+  /* bord */
+  .route-bord {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .route-bord-boven {
+    z-index: 2;
+    pointer-events: none;
+  }
+  .route-bord path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pad-rand {
+    stroke: var(--color-primary);
+    stroke-width: 74;
+    transform: translate(7px, 9px);
+  }
+  .pad-baan {
+    stroke: var(--color-fg);
+    stroke-width: 62;
+  }
+  .pad-vakjes {
+    stroke: var(--color-bg);
+    stroke-width: 62;
+    stroke-dasharray: 2 88;
+    stroke-linecap: butt !important;
+    opacity: 0.55;
+  }
+  .vlag {
+    stroke: var(--color-bg);
+    stroke-width: 4;
+  }
+  .vlag-start {
+    fill: var(--color-accent);
+  }
+  .vlag-finish {
+    fill: var(--color-primary);
+  }
+  .vlag-tekst {
+    fill: var(--color-bg);
+    text-anchor: middle;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+  .vlag-tekst-licht {
+    fill: var(--color-fg);
+  }
+  .stop-nr {
+    fill: var(--color-primary);
+    stroke: var(--color-fg);
+    stroke-width: 10px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    text-anchor: middle;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+  }
+  .stop-label {
+    fill: var(--color-bg);
+    stroke: var(--color-fg);
+    stroke-width: 10px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  /* inhoud in de bochten */
+  .route-vak {
+    position: absolute;
+    z-index: 1;
+    left: 14%;
+    right: 14%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(24px, 4vw, 56px);
+  }
+  .route-vak-1 {
+    top: 11.5%;
+    height: 34.5%;
+  }
+  .route-vak-2 {
+    top: 55.5%;
+    height: 34.5%;
+  }
+  .route-media {
+    position: relative;
+    flex: none;
+    height: 100%;
     aspect-ratio: 480 / 848;
+    margin: 0;
     background: #000;
   }
-  .pand-video {
-    justify-self: end;
-    box-shadow: 14px 14px 0 var(--color-primary);
+  .route-video {
+    box-shadow: 12px 12px 0 var(--color-primary);
   }
-  .pand-foto {
-    justify-self: start;
-    box-shadow: 14px 14px 0 var(--color-accent);
+  .route-foto {
+    box-shadow: 12px 12px 0 var(--color-accent);
   }
-  .pand-player,
-  .pand-foto img {
+  .route-player,
+  .route-foto img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .pand-unmute {
+  .route-unmute {
     position: absolute;
-    right: 12px;
-    bottom: 56px;
-    padding: 10px 16px;
+    right: 10px;
+    bottom: 54px;
+    padding: 9px 14px;
     background: var(--color-bg);
     color: var(--color-fg);
     border: 2px solid var(--color-fg);
     border-radius: 20px;
     font:
-      700 12px/1 "Space Mono",
+      700 11px/1 "Space Mono",
       monospace;
     letter-spacing: 0.08em;
     cursor: pointer;
   }
-  .pand-unmute:hover {
+  .route-unmute:hover {
     background: var(--color-primary);
     border-color: var(--color-primary);
   }
-
-  .pand-tekst {
-    grid-column: 1 / -1;
-    justify-self: center;
-    width: 100%;
-    max-width: 780px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px 44px;
-    color: var(--color-fg);
+  .route-tekst {
+    max-width: 380px;
     font:
       400 15px/1.6 "Space Mono",
       monospace;
   }
-  .pand-tekst p {
-    margin: 0 0 18px;
+  .route-tekst p {
+    margin: 0 0 20px;
   }
-  .pand-lead {
-    font-weight: 700;
+  .route-kop {
+    margin: 0 0 14px;
+    color: var(--color-primary-light);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 115%;
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1;
   }
-  .pand-lijst {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .pand-lijst li {
-    padding: 6px 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .pand-lijst li::before {
-    content: "— ";
+  .route-kop-oranje {
     color: var(--color-accent);
   }
-  .pand-adres {
-    display: inline-block;
-    padding: 16px 20px;
-    border: 3px solid var(--color-fg);
+  .route-adres {
+    display: inline;
     font-style: normal;
     font-weight: 700;
   }
-  .pand-adres-label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--color-accent);
-    font-size: 12px;
-    letter-spacing: 0.14em;
+
+  .bord-mobiel,
+  .route-intro-mobiel {
+    display: none;
   }
 
-  @media (max-width: 860px) {
-    .pand {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 40px 28px;
+  /* smal scherm: een eigen, smal bord dat naar beneden slingert */
+  @media (max-width: 900px) {
+    .route-intro-mobiel {
+      display: block;
+      max-width: 420px;
+      margin: 0 auto 28px;
+      color: var(--color-fg);
     }
-    .pand-media {
-      height: auto;
-      width: calc(100% - 14px);
+    .route-intro-breed,
+    .bord-breed {
+      display: none;
     }
-  }
+    .bord-mobiel {
+      display: block;
+    }
+    .route {
+      max-width: 420px;
+      aspect-ratio: 360 / 1380;
+    }
 
-  @media (max-width: 640px) {
-    .pand {
-      grid-template-columns: 1fr;
-      justify-items: center;
+    .bord-mobiel .pad-rand {
+      stroke-width: 52;
+      transform: translate(4px, 6px);
     }
-    .pand-media {
-      justify-self: center;
-      width: min(100% - 14px, 340px);
+    .bord-mobiel .pad-baan,
+    .bord-mobiel .pad-vakjes {
+      stroke-width: 44;
     }
-    .pand-tekst {
-      grid-template-columns: 1fr;
-      justify-self: stretch;
+    .bord-mobiel .pad-vakjes {
+      stroke-dasharray: 1.5 58;
+    }
+    .bord-mobiel .vlag {
+      stroke-width: 3;
+    }
+    .bord-mobiel .vlag-tekst {
+      font-size: 14px;
+    }
+    .bord-mobiel .stop-nr {
+      font-size: 19px;
+      stroke-width: 6px;
+    }
+    .bord-mobiel .stop-label {
+      font-size: 10.5px;
+      stroke-width: 6px;
+    }
+
+    /* de vakken lossen op: elk onderdeel krijgt zijn eigen bocht */
+    .route-vak {
+      display: contents;
+    }
+    .route-media {
+      position: absolute;
+      z-index: 1;
+      height: 20.1%;
+    }
+    .route-video {
+      left: 20.4%;
+      top: 8.05%;
+      box-shadow: 8px 8px 0 var(--color-primary);
+    }
+    .route-foto {
+      left: 35.8%;
+      top: 37.6%;
+      box-shadow: 8px 8px 0 var(--color-accent);
+    }
+    .route-vak-2 .route-tekst {
+      position: absolute;
+      z-index: 1;
+      left: 4%;
+      top: 73.4%;
+      transform: translateY(-50%);
+      width: 76%;
+      max-width: none;
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+    .route-vak-2 .route-tekst p {
+      margin-bottom: 10px;
+    }
+    .route-vak-2 .route-tekst p:last-child {
+      margin-bottom: 0;
+    }
+    .route-vak-2 .route-kop {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+    .route-unmute {
+      right: 6px;
+      bottom: 46px;
+      padding: 7px 10px;
+      font-size: 10px;
     }
   }
 </style>

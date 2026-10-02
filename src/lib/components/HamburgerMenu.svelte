@@ -5,6 +5,7 @@
   import { page } from "$app/state";
   import { collection, getDocs } from "firebase/firestore";
   import { db } from "$lib/firebase.js";
+  import { navigatie } from "$lib/data/navigatie.js";
   import dansFoto from "$lib/assets/pictures/hero/meiden-die-dansen.avif";
   import zingFoto from "$lib/assets/pictures/hero/meid-die-zingt.avif";
   import optredenFoto from "$lib/assets/pictures/hero/optreden.avif";
@@ -14,16 +15,21 @@
   import interieurFoto from "$lib/assets/pictures/hero/interieur-tekening.avif";
   import pandFoto from "$lib/assets/pictures/pand/artquake-pand-voorkant.webp";
 
-  const items = [
-    { label: "HOME", href: "/", info: "JONG TALENT LAAT ZICH ZIEN EN HOREN", foto: dansFoto },
-    { label: "RESERVEREN", href: "/reserveren", info: "OEFENRUIMTE · STUDIO · ZAAL", foto: interieurFoto },
-    { label: "ARTIESTEN", href: "/artiesten", info: "JONG TALENT · MAKERS VAN NU", foto: optredenFoto },
-    { label: "AGENDA", href: "/#agenda", info: "OPTREDENS · EXPOSITIES · EVENTS", foto: zingenFoto },
-    { label: "WAT WE DOEN", href: "/#services", info: "PODIUM · WORKSHOPS · COACHING", foto: tekenFoto },
-    { label: "HET PAND", href: "/diensten/oefenruimtes-studios-atelier-en-zaal", info: "HOOR HET VAN DEWI ZELF", foto: pandFoto },
-    { label: "CONTACT", href: "/#doe-mee", info: "VRAAG HET GEWOON. SERIEUS.", foto: schrijfFoto },
-    { label: "LOGIN", href: "/login", info: "VOOR CREW EN BEHEERDERS", foto: zingFoto },
-  ];
+  const fotos = {
+    dans: dansFoto,
+    interieur: interieurFoto,
+    optreden: optredenFoto,
+    zingen: zingenFoto,
+    teken: tekenFoto,
+    pand: pandFoto,
+    schrijf: schrijfFoto,
+    zing: zingFoto,
+  };
+  const items = navigatie.map((it) => ({
+    ...it,
+    label: it.label.toUpperCase(),
+    foto: fotos[it.foto],
+  }));
 
   let open = $state(false);
 

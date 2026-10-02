@@ -146,9 +146,9 @@
   const crewRuw = [
     {
       name: "Mado de Vries",
-      fotoPositie: "35%",
+      fotoPositie: "70% 50%",
       role: "Oprichtster",
-      imageUrl: "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/crew-images%2Fmado-de-vries.png?alt=media&token=fa97d209-ebc4-4398-ab65-8e63cd44eb44",
+      imageUrl: crewFoto("mado"),
     },
     {
       name: "Nikki",
@@ -242,6 +242,29 @@
         "https://firebasestorage.googleapis.com/v0/b/artquake-6fceb.firebasestorage.app/o/artiesten-images%2Fmoon-smit.jpeg?alt=media&token=aae5035f-6a11-4239-8149-088053037bec",
     },
   ];
+  let crewLijst = $state();
+  let crewBegin = $state(true);
+  let crewEind = $state(false);
+
+  function crewScrollStatus() {
+    if (!crewLijst) return;
+    crewBegin = crewLijst.scrollLeft <= 4;
+    crewEind =
+      crewLijst.scrollLeft + crewLijst.clientWidth >= crewLijst.scrollWidth - 4;
+  }
+
+  function crewBlader(richting) {
+    if (!crewLijst) return;
+    const kaart = crewLijst.querySelector(".crew-card");
+    const stap = kaart ? kaart.getBoundingClientRect().width + 28 : 280;
+    const aantal = Math.max(1, Math.floor(crewLijst.clientWidth / stap) - 1);
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    crewLijst.scrollBy({
+      left: richting * stap * aantal,
+      behavior: rustig ? "auto" : "smooth",
+    });
+  }
+
   const crewKleuren = schudCrewKleuren(crewRuw.length, 4);
   const crew = crewRuw.map((c, i) => {
     const bg = crewKleuren[i];
@@ -334,7 +357,7 @@
           </h3>
           <a
             class="service-link"
-            href="{base}/diensten/{s.slug}"
+            href={s.pand ? "#pand" : `${base}/diensten/${s.slug}`}
             aria-label="{s.heading} — lees meer"
           ></a>
         </li>
@@ -430,32 +453,64 @@
       <h2 class="section-eyebrow eyebrow-orange">DE CREW</h2>
       <span class="section-rule"></span>
     </header>
-    <h3 class="crew-title">
-      SAMEN WERKEN WE <span class="hl-purple">HARD</span>, ZODAT MAKERS ALLEEN
-      MAAR HOEVEN TE
-      <span class="hl-orange-block">MAKEN</span>.
-    </h3>
-    <ul class="crew-grid">
+    <div class="crew-kop">
+      <h3 class="crew-title">
+        SAMEN WERKEN WE <span class="hl-purple">HARD</span>, ZODAT MAKERS
+        ALLEEN MAAR HOEVEN TE
+        <span class="hl-orange-block">MAKEN</span>.
+      </h3>
+      <div class="crew-nav">
+        <button
+          type="button"
+          class="crew-nav-knop"
+          aria-label="Vorige crewleden"
+          disabled={crewBegin}
+          onclick={() => crewBlader(-1)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button
+          type="button"
+          class="crew-nav-knop"
+          aria-label="Volgende crewleden"
+          disabled={crewEind}
+          onclick={() => crewBlader(1)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+    </div>
+    <ul
+      class="crew-grid"
+      bind:this={crewLijst}
+      onscroll={crewScrollStatus}
+    >
+      <li class="crew-card crew-intro">
+        <p class="crew-intro-getal">{crew.length}</p>
+        <p class="crew-intro-kop">CREWLEDEN</p>
+        <p class="crew-intro-tekst">
+          Organisatie, coaches, docenten, fotografen en een presentator. Samen
+          houden zij Artquake draaiende.
+        </p>
+      </li>
       {#each crew as c}
-        <li class="crew-card bg-{c.bg}">
-          <figure class="crew-photo">
-            {#if c.imageUrl}
-              <img
-                class="crew-img"
-                src={c.imageUrl}
-                alt=""
-                loading="lazy"
-                style:object-position="center {c.fotoPositie ?? 'center'}"
-              />
-            {:else}
-              <figcaption>Foto volgt</figcaption>
-            {/if}
-          </figure>
+        <li class="crew-card crew-schaduw-{c.bg}">
+          {#if c.imageUrl}
+            <img
+              class="crew-img"
+              src={c.imageUrl}
+              alt=""
+              loading="lazy"
+              style:object-position={c.fotoPositie?.includes(" ")
+                ? c.fotoPositie
+                : `center ${c.fotoPositie ?? "center"}`}
+            />
+          {:else}
+            <p class="crew-geen-foto">Foto volgt</p>
+          {/if}
           <hgroup class="crew-meta">
             <h4 class="crew-name">{c.name}</h4>
-            <p class="crew-role" class:role-purple={c.roleColor === "purple"}>
-              {c.role}
-            </p>
+            <p class="crew-role">{c.role}</p>
           </hgroup>
         </li>
       {/each}
@@ -1183,8 +1238,15 @@
     padding: 64px 40px;
     border-bottom: 4px solid var(--color-fg);
   }
+  .crew-kop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 0 30px 8px;
+  }
   .crew-title {
-    margin: 0 0 26px 8px;
+    margin: 0;
     max-width: 1080px;
     font-weight: 900;
     font-stretch: 115%;
@@ -1194,65 +1256,148 @@
     color: var(--color-fg);
     text-wrap: balance;
   }
+  .crew-nav {
+    flex: none;
+    display: flex;
+    gap: 10px;
+  }
+  .crew-nav-knop {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    background: var(--color-accent);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .crew-nav-knop svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .crew-nav-knop:hover:not(:disabled) {
+    background: var(--color-fg);
+  }
+  .crew-nav-knop:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
   .crew-grid {
     list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
+    margin: 0 -40px;
+    padding: 0 40px 16px;
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 40px;
+    scrollbar-width: none;
     animation: aq-pop linear both;
     animation-timeline: view();
     animation-range: cover 0px cover 260px;
   }
+  .crew-grid::-webkit-scrollbar {
+    display: none;
+  }
   .crew-card {
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .crew-photo {
-    aspect-ratio: 4 / 5;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.15);
+    position: relative;
+    flex: none;
+    width: clamp(220px, 21vw, 290px);
+    aspect-ratio: 5 / 7;
     overflow: hidden;
+    scroll-snap-align: start;
+    background: #1b1b1b;
+    box-shadow: 10px 10px 0 var(--color-fg);
   }
-  .crew-photo figcaption {
-    text-align: center;
-    font:
-      400 11px/1.4 "Space Mono",
-      monospace;
+  .crew-schaduw-purple {
+    box-shadow: 10px 10px 0 var(--color-primary);
+  }
+  .crew-schaduw-orange {
+    box-shadow: 10px 10px 0 var(--color-accent);
   }
   .crew-img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
+  .crew-geen-foto {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    color: var(--color-muted);
+    font:
+      400 11px/1.4 "Space Mono",
+      monospace;
+  }
   .crew-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
     margin: 0;
+    padding: 70px 14px 20px;
+    background: linear-gradient(transparent, rgba(11, 11, 11, 0.92) 62%);
+    color: var(--color-fg);
+    text-align: center;
   }
   .crew-name {
     margin: 0;
     font-weight: 900;
     font-stretch: 110%;
-    font-size: clamp(20px, 1.8vw, 27px);
+    font-size: clamp(19px, 1.6vw, 24px);
     line-height: 1.05;
   }
   .crew-role {
     margin: 0;
+    color: var(--color-accent);
     font:
-      700 11px/1 "Space Mono",
+      700 11px/1.2 "Space Mono",
       monospace;
+    letter-spacing: 0.06em;
   }
-  .crew-role.role-purple {
-    color: var(--color-primary);
+  .crew-intro {
+    display: flex;
+    flex-direction: column;
+    padding: 22px;
+    background: var(--color-primary);
+    color: var(--color-fg);
+  }
+  .crew-intro p {
+    margin: 0;
+  }
+  .crew-intro-getal {
+    font-weight: 900;
+    font-stretch: 118%;
+    font-size: clamp(72px, 7vw, 104px);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+  .crew-intro-kop {
+    margin-top: 8px !important;
+    font-weight: 900;
+    font-stretch: 110%;
+    font-size: 20px;
+  }
+  .crew-intro-tekst {
+    margin-top: auto !important;
+    font:
+      400 12px/1.6 "Space Mono",
+      monospace;
   }
   .crew-bottom {
     margin-top: 16px;
@@ -1508,12 +1653,6 @@
     color: #7d7d7d;
   }
 
-  @media (max-width: 1100px) {
-    .crew-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
   /* tablet */
   @media (max-width: 860px) {
     .services-grid {
@@ -1538,9 +1677,6 @@
     }
     .talent-grid {
       grid-template-columns: 1fr;
-    }
-    .crew-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .crew-bottom {
       grid-template-columns: 1fr;
@@ -1592,6 +1728,19 @@
       grid-template-columns: 1fr;
       grid-auto-rows: auto;
     }
+    .crew-kop {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 0;
+    }
+    .crew-grid {
+      margin: 0 -20px;
+      padding: 0 20px 16px;
+      scroll-padding: 0 20px;
+    }
+    .crew-card {
+      width: 68vw;
+    }
     .service-big,
     .service-wide,
     .service-full {
@@ -1621,9 +1770,6 @@
       justify-self: auto;
     }
 
-    .crew-grid {
-      grid-template-columns: 1fr;
-    }
 
     .footer {
       grid-template-columns: 1fr;

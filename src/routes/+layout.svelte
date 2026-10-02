@@ -3,6 +3,8 @@
   import logo from '$lib/assets/artquake-logo.avif';
   import { base } from '$app/paths';
   import HamburgerMenu from '$lib/components/HamburgerMenu.svelte';
+  import { diensten } from '$lib/data/diensten.js';
+  import { navigatie } from '$lib/data/navigatie.js';
 
   let { children } = $props();
 
@@ -92,21 +94,23 @@
   <nav class="footer-col" aria-label="Doen">
     <h3 class="footer-heading heading-orange">DOEN</h3>
     <ul>
-      <li><a href="{base}/reserveren">Reserveren</a></li>
-      <li>Optredens</li>
-      <li>Exposities</li>
-      <li>Events</li>
-      <li>Workshops</li>
+      {#each navigatie.filter((n) => n.href !== "/") as n}
+        <li><a href="{base}{n.href}">{n.label}</a></li>
+      {/each}
     </ul>
   </nav>
-  <nav class="footer-col" aria-label="Groeien">
-    <h3 class="footer-heading heading-lilac">GROEIEN</h3>
+  <nav class="footer-col" aria-label="Wat we doen">
+    <h3 class="footer-heading heading-lilac">WAT WE DOEN</h3>
     <ul>
-      <li>Masterclasses</li>
-      <li>Lessen</li>
-      <li>Coaching</li>
-      <li>Promotie</li>
-      <li>Netwerk</li>
+      {#each diensten as d}
+        <li>
+          {#if d.pand}
+            <a href="{base}/#pand">Oefenruimtes, studio's, atelier en zaal</a>
+          {:else}
+            <a href="{base}/diensten/{d.slug}">{d.heading}</a>
+          {/if}
+        </li>
+      {/each}
     </ul>
   </nav>
   <nav class="footer-col" aria-label="Contact">
@@ -129,8 +133,8 @@
   <p class="footer-bottom">
     <span>© 2026 ARTQUAKE</span>
     <span class="footer-legal">
-      <a href="https://jamievos991.github.io/artquake-vue/#/privacypolicy">Privacybeleid</a>
-      <a href="https://jamievos991.github.io/artquake-vue/#/termsandconditions">Algemene voorwaarden</a>
+      <a href="{base}/privacybeleid">Privacybeleid</a>
+      <a href="{base}/algemene-voorwaarden">Algemene voorwaarden</a>
     </span>
     <span>MADE LOUD IN NL BY <a href="https://lychees.studio">LYCHEES.STUDIO</a></span>
   </p>

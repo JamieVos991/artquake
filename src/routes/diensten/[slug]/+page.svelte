@@ -1,7 +1,6 @@
 <script>
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
-  import PandSectie from "$lib/components/PandSectie.svelte";
 
   let { data } = $props();
   const dienst = data.dienst;
@@ -25,12 +24,8 @@
 </section>
 
 <section class="dp-body">
-  {#if dienst.pand}
-    <PandSectie />
-  {:else}
-    <p class="dp-text">{dienst.text}</p>
-    <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
-  {/if}
+  <p class="dp-text">{dienst.text}</p>
+  <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
 </section>
 
 <style>
@@ -59,6 +54,8 @@
     color: inherit;
     text-decoration: none;
     white-space: nowrap;
+    /* ruimte voor de menuknop rechtsboven */
+    margin-right: 56px;
   }
   .dp-back:hover {
     opacity: 0.75;
@@ -96,7 +93,8 @@
     font-family: var(--font-display);
     font-weight: 900;
     font-stretch: 118%;
-    font-size: clamp(44px, 7vw, 92px);
+    font-size: clamp(26px, 8.4vw, 92px);
+    overflow-wrap: break-word;
     line-height: 0.9;
     letter-spacing: -0.03em;
     text-transform: uppercase;
