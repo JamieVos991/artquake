@@ -1,8 +1,5 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
-  import { base } from "$app/paths";
-  import { goto } from "$app/navigation";
-  import { onAuthStateChanged } from "firebase/auth";
+  import { onDestroy } from "svelte";
   import {
     collection,
     addDoc,
@@ -14,7 +11,7 @@
     where,
     serverTimestamp,
   } from "firebase/firestore";
-  import { db, auth } from "$lib/firebase.js";
+  import { db } from "$lib/firebase.js";
   import emailjs from "@emailjs/browser";
   import {
     EMAILJS_SERVICE_ID,
@@ -24,18 +21,6 @@
     codeVerificatieActief,
     bevestigingsmailActief,
   } from "$lib/email-config.js";
-
-  // Reserveren kan alleen als je bent ingelogd; anders door naar de loginpagina.
-  let authGecontroleerd = $state(false);
-  let ingelogdeGebruiker = $state(null);
-
-  onMount(() =>
-    onAuthStateChanged(auth, (user) => {
-      ingelogdeGebruiker = user;
-      authGecontroleerd = true;
-      if (!user) goto(`${base}/login?next=/reserveren`);
-    })
-  );
 
   const CODE_GELDIG_MINUTEN = 15;
   const MAX_CODE_POGINGEN = 5;
@@ -423,13 +408,6 @@
 
 <svelte:head><title>Reserveren — Artquake</title></svelte:head>
 
-{#if !authGecontroleerd}
-  <div class="auth-gate"><p>Bezig met controleren…</p></div>
-{:else if !ingelogdeGebruiker}
-  <div class="auth-gate">
-    <p>Je moet ingelogd zijn om te reserveren. Je wordt doorgestuurd…</p>
-  </div>
-{:else}
 <div class="shell">
   <!-- Progress bar -->
   <div class="progress-track">
@@ -693,21 +671,8 @@
     </div>
   {/if}
 </div>
-{/if}
 
 <style>
-  .auth-gate {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: var(--color-bg);
-    color: var(--color-muted);
-    font: 700 12px/1.5 var(--font-mono);
-    letter-spacing: 0.1em;
-    text-align: center;
-  }
   .shell {
     min-height: 100vh;
     background: var(--color-bg);

@@ -4,6 +4,23 @@
 
   let { data } = $props();
   const dienst = data.dienst;
+
+  const videos = import.meta.glob("../../../lib/assets/videos/*-aftermovie.mp4", {
+    eager: true,
+    import: "default",
+  });
+  const video = dienst.video
+    ? videos[`../../../lib/assets/videos/${dienst.slug}-aftermovie.mp4`]
+    : null;
+
+  const galerijFotos = import.meta.glob(
+    "../../../lib/assets/pictures/talent-night/*.webp",
+    { eager: true, import: "default" }
+  );
+  const galerij = (dienst.galerij ?? []).map((g) => ({
+    ...g,
+    src: galerijFotos[`../../../lib/assets/pictures/talent-night/${g.foto}.webp`],
+  }));
 </script>
 
 <svelte:head>
@@ -23,10 +40,36 @@
   <p class="dp-tagline">{dienst.intro}</p>
 </section>
 
-<section class="dp-body">
-  <p class="dp-text">{dienst.text}</p>
-  <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
+<section class="dp-body" class:dp-body-video={video}>
+  <div class="dp-body-tekst">
+    <p class="dp-text">{dienst.text}</p>
+    <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
+  </div>
+  {#if video}
+    <figure class="dp-video">
+      <!-- svelte-ignore a11y_media_has_caption -->
+      <video src={video} controls playsinline preload="metadata"></video>
+      <figcaption>AFTERMOVIE</figcaption>
+    </figure>
+  {/if}
 </section>
+
+{#if galerij.length}
+  <section class="dp-galerij" aria-label="Foto's van {dienst.heading}">
+    <h2 class="dp-galerij-kop">IN BEELD</h2>
+    <ul class="dp-collage">
+      {#each galerij as g, i}
+        <li
+          class="dp-collage-item dp-schaduw-{i % 3}"
+          style:aspect-ratio={g.verhouding}
+        >
+          <img src={g.src} alt={g.titel} loading="lazy" />
+          <span class="dp-galerij-titel">{g.titel}</span>
+        </li>
+      {/each}
+    </ul>
+  </section>
+{/if}
 
 <style>
   .dp-header {
@@ -137,7 +180,123 @@
     opacity: 0.8;
   }
 
+  .dp-body-video {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 56px;
+    align-items: center;
+  }
+  .dp-body-video .dp-text {
+    margin-bottom: 32px;
+  }
+  .dp-video {
+    position: relative;
+    margin: 0 12px 0 0;
+  }
+  .dp-video video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    box-shadow: 12px 12px 0 var(--color-primary);
+  }
+  /* het label hangt onder de video, zodat het midden van de video telt */
+  .dp-video figcaption {
+    position: absolute;
+    top: calc(100% + 26px);
+    left: 0;
+    color: var(--color-accent);
+    font:
+      700 12px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.16em;
+  }
+
+  @media (max-width: 900px) {
+    .dp-body-video {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+    .dp-video {
+      margin-bottom: 38px;
+    }
+  }
+
+  .dp-galerij {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    padding: 0 40px 96px;
+  }
+  .dp-galerij-kop {
+    margin: 0 0 28px;
+    color: var(--color-accent);
+    font:
+      700 12px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.16em;
+  }
+  /* Pinterest-indeling: kolommen met foto's van wisselende hoogte */
+  .dp-collage {
+    list-style: none;
+    margin: 0;
+    padding: 0 10px 0 0;
+    columns: 3;
+    column-gap: 30px;
+  }
+  .dp-collage-item {
+    --schaduw: 10px;
+    position: relative;
+    margin: 0 0 30px;
+    break-inside: avoid;
+    background: #1b1b1b;
+    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-primary);
+  }
+  .dp-schaduw-1 {
+    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-accent);
+  }
+  .dp-schaduw-2 {
+    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-fg);
+  }
+  .dp-collage-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .dp-galerij-titel {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    padding: 8px 12px;
+    background: var(--color-bg);
+    font:
+      700 11px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
   @media (max-width: 640px) {
+    .dp-galerij {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .dp-collage {
+      padding-right: 6px;
+      columns: 2;
+      column-gap: 18px;
+    }
+    .dp-collage-item {
+      --schaduw: 6px;
+      margin-bottom: 18px;
+    }
+    .dp-galerij-titel {
+      padding: 6px 9px;
+      font-size: 9px;
+    }
     .dp-header,
     .dp-intro,
     .dp-body {

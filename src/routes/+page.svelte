@@ -7,6 +7,15 @@
   import { db } from "$lib/firebase.js";
   import { diensten as services } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
+  import talentNightVideo from "$lib/assets/videos/talent-night-aftermovie.mp4";
+
+  // aftermovie in het Talent Night-blok: speelt alleen terwijl je erop staat
+  function speelVideo(e) {
+    e.currentTarget.querySelector("video")?.play().catch(() => {});
+  }
+  function pauzeerVideo(e) {
+    e.currentTarget.querySelector("video")?.pause();
+  }
 
   let agendaItems = $state([]);
   let agendaGeladen = $state(false);
@@ -349,7 +358,24 @@
           class:service-outline={s.outline}
           class:service-long={s.long}
           class:service-full={s.full}
+          class:service-met-video={s.video}
+          onmouseenter={s.video ? speelVideo : undefined}
+          onmouseleave={s.video ? pauzeerVideo : undefined}
+          onfocusin={s.video ? speelVideo : undefined}
+          onfocusout={s.video ? pauzeerVideo : undefined}
         >
+          {#if s.video}
+            <video
+              class="service-video"
+              src={talentNightVideo}
+              muted
+              loop
+              playsinline
+              preload="none"
+              aria-hidden="true"
+              tabindex="-1"
+            ></video>
+          {/if}
           <span class="service-id">{s.id}</span>
           <h3 class="service-title">
             {#each s.title.split("\n") as line, i}{#if i > 0}<br
@@ -904,6 +930,46 @@
   }
   .service-card:hover {
     opacity: 0.9;
+  }
+  .service-met-video {
+    overflow: hidden;
+  }
+  .service-met-video:hover,
+  .service-met-video:focus-within {
+    opacity: 1;
+  }
+  .service-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  /* donker verloop zodat de titel leesbaar blijft op de video */
+  .service-met-video::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 35%, rgba(11, 11, 11, 0.8));
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .service-met-video:hover .service-video,
+  .service-met-video:focus-within .service-video,
+  .service-met-video:hover::after,
+  .service-met-video:focus-within::after {
+    opacity: 1;
+  }
+  .service-met-video .service-id,
+  .service-met-video .service-title {
+    position: relative;
+    z-index: 1;
+  }
+  .service-met-video .service-link {
+    z-index: 2;
   }
   .service-link {
     position: absolute;
