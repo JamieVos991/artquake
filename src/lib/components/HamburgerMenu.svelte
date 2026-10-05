@@ -8,7 +8,7 @@
   import { navigatie } from "$lib/data/navigatie.js";
   import dansFoto from "$lib/assets/pictures/hero/meiden-die-dansen.avif";
   import zingFoto from "$lib/assets/pictures/hero/meid-die-zingt.avif";
-  import optredenFoto from "$lib/assets/pictures/hero/optreden.avif";
+  import optredenFoto from "$lib/assets/pictures/hero/optreden.jpeg";
   import zingenFoto from "$lib/assets/pictures/hero/meiden-die-zingen.avif";
   import tekenFoto from "$lib/assets/pictures/hero/meid-die-tekent.avif";
   import schrijfFoto from "$lib/assets/pictures/hero/meid-die-schrijft.avif";

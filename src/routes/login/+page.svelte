@@ -1,7 +1,8 @@
 <script>
   import { base } from "$app/paths";
   import { goto } from "$app/navigation";
-  import { signInWithEmailAndPassword } from "firebase/auth";
+  import { onMount } from "svelte";
+  import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
   import { auth } from "$lib/firebase.js";
 
   let email = $state("");
@@ -10,13 +11,28 @@
   let loading = $state(false);
   let error = $state("");
 
+  // na inloggen terug naar de pagina waar je vandaan kwam (alleen eigen paden),
+  // anders naar het dashboard
+  function gaVerder() {
+    const next = new URLSearchParams(window.location.search).get("next");
+    const veilig = next && next.startsWith("/") && !next.startsWith("//");
+    goto(`${base}${veilig ? next : "/dashboard"}`, { replaceState: true });
+  }
+
+  // wie al is ingelogd hoeft de inlogpagina niet te zien
+  onMount(() =>
+    onAuthStateChanged(auth, (user) => {
+      if (user) gaVerder();
+    })
+  );
+
   async function handleSubmit(e) {
     e.preventDefault();
     error = "";
     loading = true;
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      goto(`${base}/dashboard`);
+      gaVerder();
     } catch (err) {
       error = "Inloggen mislukt. Controleer je e-mail en wachtwoord.";
     } finally {

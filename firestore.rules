@@ -3,14 +3,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Reserveringen: het publieke boekingsformulier (/reserveren) mag zonder
-    // login een nieuwe reservering aanmaken én moet bestaande reserveringen
-    // kunnen lezen (om te bepalen welke tijden al bezet zijn, zodat maar
-    // 1 persoon per tijdslot kan boeken). Wijzigen/verwijderen mag alleen
-    // door ingelogde beheerders (dashboard).
+    // Reserveringen: alleen ingelogde gebruikers mogen reserveren. Het
+    // boekingsformulier (/reserveren) zit achter de login, dus lezen (om te
+    // zien welke tijden al bezet zijn), aanmaken, wijzigen en verwijderen
+    // mag alleen met een account.
     match /reserveringen/{id} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(
                         ['studio', 'naam', 'email', 'datum', 'starttijd', 'eindtijd']
                       )
                     && request.resource.data.studio is string
@@ -19,27 +19,18 @@ service cloud.firestore {
                     && request.resource.data.datum is string
                     && request.resource.data.starttijd is string
                     && request.resource.data.eindtijd is string;
-      allow update: if request.auth != null;
-      // Zelf annuleren (vanaf het bevestigingsscherm, direct na het boeken)
-      // mag ook zonder login, maar alleen in de eerste 5 minuten na
-      // aanmaken — zo kan iemand een typefout meteen herstellen, zonder dat
-      // reserveringen van anderen op afstand te verwijderen zijn.
-      allow delete: if request.auth != null
-                    || (resource.data.aangemaaktOp is timestamp
-                        && request.time < resource.data.aangemaaktOp + duration.value(5, 'm'));
+      allow update, delete: if request.auth != null;
     }
 
     // Reserveringen in afwachting van e-mailverificatie: bevat een 6-cijferige
-    // code die naar het opgegeven e-mailadres is gestuurd. "get" (opvragen via
-    // het exacte, willekeurige document-ID dat de eigen browser net kreeg) mag
-    // altijd; "list" (het hele overzicht doorzoeken) mag nooit — zo kan alleen
-    // wie de mail met de code heeft ontvangen bij die code, ook al is er geen
-    // login. Documenten verlopen vanzelf (client checkt aangemaaktOp) en zijn
-    // door de maker zelf 20 minuten lang op te ruimen.
+    // code die naar het opgegeven e-mailadres is gestuurd. Ook alleen voor
+    // ingelogde gebruikers. "list" (het hele overzicht doorzoeken) mag nooit,
+    // zodat codes van anderen niet op te vragen zijn.
     match /reserveringen_pending/{id} {
-      allow get: if true;
+      allow get: if request.auth != null;
       allow list: if false;
-      allow create: if request.resource.data.keys().hasAll(
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(
                         ['studio', 'naam', 'email', 'datum', 'starttijd', 'eindtijd', 'code', 'aangemaaktOp']
                       )
                     && request.resource.data.studio is string
@@ -50,10 +41,7 @@ service cloud.firestore {
                     && request.resource.data.eindtijd is string
                     && request.resource.data.code is string
                     && request.resource.data.code.size() == 6;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null
-                    || (resource.data.aangemaaktOp is timestamp
-                        && request.time < resource.data.aangemaaktOp + duration.value(20, 'm'));
+      allow update, delete: if request.auth != null;
     }
 
     // Agenda & artiesten: publiek zichtbaar op de website, alleen

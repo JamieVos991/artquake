@@ -81,7 +81,7 @@
     return luminance > 0.6 ? "#0b0b0b" : "#f4f1ea";
   }
 
-  const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.avif", {
+  const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.{avif,webp,jpg,jpeg}", {
     eager: true,
     import: "default",
   });
