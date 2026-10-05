@@ -48,7 +48,10 @@
           naam: reservering.naam,
           email: reservering.email,
           studio: studioNaam,
-          datum: reservering.datum,
+          datum: new Date(`${reservering.datum}T00:00`).toLocaleDateString(
+            "nl-NL",
+            { weekday: "long", day: "numeric", month: "long", year: "numeric" }
+          ),
           starttijd: reservering.starttijd,
           eindtijd: reservering.eindtijd,
         },
@@ -222,23 +225,22 @@
   }
 
   async function maakReserveringAan() {
-    const ref = await addDoc(collection(db, "reserveringen"), {
+    // Eerst vastleggen wat er geboekt wordt. Zodra de reservering is opgeslagen
+    // telt het tijdvak als bezet en wist het formulier de gekozen tijden; zonder
+    // deze kopie stonden die dan leeg in de bevestiging en de mail.
+    const gegevens = {
       studio: selectedStudio,
       naam,
       email,
       datum,
       starttijd,
       eindtijd,
+    };
+    const ref = await addDoc(collection(db, "reserveringen"), {
+      ...gegevens,
       aangemaaktOp: serverTimestamp(),
     });
-    gemaakteReservering = {
-      id: ref.id,
-      studio: selectedStudio,
-      naam,
-      datum,
-      starttijd,
-      eindtijd,
-    };
+    gemaakteReservering = { id: ref.id, ...gegevens };
     geannuleerd = false;
     done = true;
     stuurBevestigingsmail(
@@ -612,7 +614,9 @@
         <p class="eyebrow">
           STAP 4 / {totaalStappen} · {studioObj?.label.replace("\n", " ")}
         </p>
-        <h1 class="step-title">CHECK<br /><em>JE E-MAIL.</em></h1>
+        <h1 class="step-title">
+          CHECK<br /><em>JE <span style="white-space: nowrap">E-MAIL.</span></em>
+        </h1>
         <p class="sub code-sub">
           We stuurden een 6-cijferige code naar <strong>{email}</strong>. Vul 'm
           hieronder in om je reservering te bevestigen.
