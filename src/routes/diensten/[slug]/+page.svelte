@@ -31,7 +31,6 @@
   <a class="dp-brand" href={base || "/"}>
     <img class="dp-logo" src={logo} alt="Artquake — creative space" />
   </a>
-  <a class="dp-back" href="{base}/#services">WAT WE DOEN</a>
 </header>
 
 <section class="dp-intro bg-{dienst.bg}">
@@ -90,20 +89,6 @@
     height: 80px;
     width: auto;
     display: block;
-  }
-  .dp-back {
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.12em;
-    color: inherit;
-    text-decoration: none;
-    white-space: nowrap;
-    /* ruimte voor de menuknop rechtsboven */
-    margin-right: 56px;
-  }
-  .dp-back:hover {
-    opacity: 0.75;
   }
 
   .dp-intro {
