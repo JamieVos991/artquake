@@ -7,6 +7,7 @@ export const diensten = [
 		video: true,
 		// verhouding = breedte / hoogte van de uitsnede in de galerij
 		galerij: [
+			{ foto: "001-podiumbeeld", titel: "Podiumbeeld", verhouding: "4 / 3" },
 			{ foto: "002-gitariste-lieke", titel: "Gitariste Lieke", verhouding: "3 / 4" },
 			{ foto: "007-publiek", titel: "Publiek", verhouding: "1 / 1" },
 			{ foto: "009-singer-songwriter", titel: "Singer/Songwriter", verhouding: "4 / 5" },
@@ -19,8 +20,9 @@ export const diensten = [
 		],
 		bg: "purple",
 		big: true,
-		intro: "Het podium waar jong talent voor het eerst het publiek voelt.",
-		text: "We organiseren vijf keer per jaar Talent Night in poppodium B3 voor jonge, opkomende artiesten. Op zo'n avond staan meerdere artiesten kort achter elkaar op hetzelfde podium, voor een zaal vol publiek, vrienden en scouts. Het is dé plek om ervaring op te doen, uitgedaagd te worden en gezien te worden, zonder de druk van een heel avondvullend programma. Tegelijkertijd is Talent Night dé uitgaansavond voor en door jongeren uit Dijk & Waard en omgeving. Voor liefhebbers van live-muziek, dansen en feesten!",
+		intro: "Het podium voor opkomend talent",
+		// een lege regel (\n\n) begint een nieuwe alinea
+		text: "5 Keer per jaar Talent Night in poppodium B3 in Sint Pancras. Op zo'n avond staan meerdere artiesten kort achter elkaar op hetzelfde podium, voor een zaal vol publiek, vrienden, familie en scouts. Het is dé plek om ervaring op te doen, uitgedaagd en gezien te worden!\n\nTegelijkertijd is Talent Night dé uitgaansavond voor en door jongeren uit Dijk & Waard en omgeving. Voor liefhebbers van live-muziek, dansen en feesten!",
 	},
 	{
 		slug: "exposities",

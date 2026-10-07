@@ -41,10 +41,6 @@
 </section>
 
 <section class="dp-body" class:dp-body-video={video}>
-  <div class="dp-body-tekst">
-    <p class="dp-text">{dienst.text}</p>
-    <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
-  </div>
   {#if video}
     <figure class="dp-video">
       <!-- svelte-ignore a11y_media_has_caption -->
@@ -52,6 +48,12 @@
       <figcaption>AFTERMOVIE</figcaption>
     </figure>
   {/if}
+  <div class="dp-body-tekst">
+    {#each dienst.text.split("\n\n") as alinea}
+      <p class="dp-text">{alinea}</p>
+    {/each}
+    <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
+  </div>
 </section>
 
 {#if galerij.length}
@@ -180,18 +182,16 @@
     opacity: 0.8;
   }
 
-  .dp-body-video {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: 56px;
-    align-items: center;
+  /* met video: eerst de video over de volle breedte, daaronder de tekst */
+  .dp-body-video .dp-video {
+    max-width: 980px;
+    margin: 0 12px 84px 0;
   }
-  .dp-body-video .dp-text {
-    margin-bottom: 32px;
+  .dp-text + .dp-text {
+    margin-top: -20px;
   }
   .dp-video {
     position: relative;
-    margin: 0 12px 0 0;
   }
   .dp-video video {
     display: block;
@@ -200,7 +200,6 @@
     background: #000;
     box-shadow: 12px 12px 0 var(--color-primary);
   }
-  /* het label hangt onder de video, zodat het midden van de video telt */
   .dp-video figcaption {
     position: absolute;
     top: calc(100% + 26px);
@@ -210,16 +209,6 @@
       700 12px/1 "Space Mono",
       monospace;
     letter-spacing: 0.16em;
-  }
-
-  @media (max-width: 900px) {
-    .dp-body-video {
-      grid-template-columns: 1fr;
-      gap: 48px;
-    }
-    .dp-video {
-      margin-bottom: 38px;
-    }
   }
 
   .dp-galerij {

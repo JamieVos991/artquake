@@ -49,9 +49,6 @@
   let agendaGeladen = $state(false);
   let knopEl = $state();
 
-  const verborgen = $derived(
-    ["/dashboard"].some((p) => page.url.pathname.startsWith(`${base}${p}`))
-  );
   const huidigeIndex = $derived(
     items.findIndex((it) => {
       if (it.href.includes("#")) return false;
@@ -123,7 +120,6 @@
   });
 </script>
 
-{#if !verborgen}
   <button
     bind:this={knopEl}
     type="button"
@@ -229,7 +225,6 @@
       </button>
     </div>
   {/if}
-{/if}
 
 <style>
   /* knop */
