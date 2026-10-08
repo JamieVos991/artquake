@@ -10,7 +10,7 @@ export const diensten = [
 			{ foto: "001-podiumbeeld", titel: "Podiumbeeld", verhouding: "4 / 3" },
 			{ foto: "002-gitariste-lieke", titel: "Gitariste Lieke", verhouding: "3 / 4" },
 			{ foto: "007-publiek", titel: "Publiek", verhouding: "1 / 1" },
-			{ foto: "009-singer-songwriter", titel: "Singer/Songwriter", verhouding: "4 / 5" },
+			{ foto: "009-singer-songwriter", titel: "Singer/Songwriter Emily", verhouding: "4 / 5" },
 			{ foto: "006-band-unbound", titel: "Band Unbound", verhouding: "4 / 3" },
 			{ foto: "003-theater", titel: "Theater", verhouding: "3 / 4" },
 			{ foto: "005-sfeer", titel: "Sfeer", verhouding: "1 / 1" },

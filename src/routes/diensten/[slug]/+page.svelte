@@ -39,12 +39,16 @@
   <p class="dp-tagline">{dienst.intro}</p>
 </section>
 
-<section class="dp-body" class:dp-body-video={video}>
+<section
+  class="dp-body"
+  class:dp-body-video={video}
+  class:dp-body-galerij={galerij.length}
+>
   {#if video}
     <figure class="dp-video">
+      <figcaption>AFTERMOVIE</figcaption>
       <!-- svelte-ignore a11y_media_has_caption -->
       <video src={video} controls playsinline preload="metadata"></video>
-      <figcaption>AFTERMOVIE</figcaption>
     </figure>
   {/if}
   <div class="dp-body-tekst">
@@ -142,6 +146,10 @@
     color: var(--color-fg);
     padding: 56px 40px 96px;
   }
+  /* volgt er een fotogalerij, dan minder ruimte onder de knop */
+  .dp-body-galerij {
+    padding-bottom: 44px;
+  }
   .dp-text {
     max-width: 680px;
     margin: 0 0 40px;
@@ -170,7 +178,7 @@
   /* met video: eerst de video over de volle breedte, daaronder de tekst */
   .dp-body-video .dp-video {
     max-width: 980px;
-    margin: 0 12px 84px 0;
+    margin: 0 12px 60px 0;
   }
   .dp-text + .dp-text {
     margin-top: -20px;
@@ -186,9 +194,7 @@
     box-shadow: 12px 12px 0 var(--color-primary);
   }
   .dp-video figcaption {
-    position: absolute;
-    top: calc(100% + 26px);
-    left: 0;
+    margin-bottom: 28px;
     color: var(--color-accent);
     font:
       700 12px/1 "Space Mono",
