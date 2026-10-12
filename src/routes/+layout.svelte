@@ -76,7 +76,7 @@
       <p class="cta-feedback cta-feedback-error">{ctaFout}</p>
     {/if}
     {#if ctaVerstuurd}
-      <p class="cta-feedback">Bedankt! Je bericht is verstuurd — we reageren binnen twee werkdagen.</p>
+      <p class="cta-feedback">Bedankt! Je bericht is verstuurd. We reageren binnen twee werkdagen.</p>
     {/if}
 
     <button type="submit" class="cta-submit" disabled={ctaVersturen}>
@@ -86,7 +86,7 @@
 </section>
 
 <footer class="footer">
-  <img class="footer-brand" src={logo} alt="Artquake — creative space" />
+  <img class="footer-brand" src={logo} alt="Artquake, creative space" />
   <p class="footer-tag">
     Culturele organisatie voor en door jonge makers.<br />Jongerenkunst ·
     Talentontwikkeling · Community.

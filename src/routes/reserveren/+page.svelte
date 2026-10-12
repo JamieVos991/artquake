@@ -408,7 +408,7 @@
   const studioObj = $derived(studios.find((s) => s.id === selectedStudio));
 </script>
 
-<svelte:head><title>Reserveren — Artquake</title></svelte:head>
+<svelte:head><title>Reserveren | Artquake</title></svelte:head>
 
 <div class="shell">
   <!-- Progress bar -->
@@ -640,7 +640,7 @@
             <p class="field-error">{codeFout}</p>
           {/if}
           {#if codeNetVerstuurd}
-            <p class="field-hint">Nieuwe code verstuurd — check je inbox.</p>
+            <p class="field-hint">Nieuwe code verstuurd. Check je inbox.</p>
           {/if}
           <div class="step-nav">
             <button type="button" class="btn-back" onclick={terugNaarDatum}

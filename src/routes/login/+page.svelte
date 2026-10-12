@@ -42,7 +42,7 @@
 </script>
 
 <svelte:head>
-  <title>Inloggen — Artquake Admin</title>
+  <title>Inloggen | Artquake Admin</title>
 </svelte:head>
 
 <div class="scene">

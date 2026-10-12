@@ -21,12 +21,12 @@
 </script>
 
 <svelte:head>
-  <title>{status} — Artquake</title>
+  <title>{status} | Artquake</title>
 </svelte:head>
 
 <main class="fout">
   <a class="fout-brand" href={base || "/"}>
-    <img src={logo} alt="Artquake — naar home" />
+    <img src={logo} alt="Artquake, naar home" />
   </a>
 
   <div class="fout-stickers" aria-hidden="true">

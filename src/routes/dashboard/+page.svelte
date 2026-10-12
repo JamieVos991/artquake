@@ -288,7 +288,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard — Artquake Admin</title>
+  <title>Dashboard | Artquake Admin</title>
 </svelte:head>
 
 {#if !authGecontroleerd}

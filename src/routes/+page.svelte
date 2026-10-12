@@ -145,12 +145,12 @@
     return kleuren;
   }
 
-  const crewFotos = import.meta.glob("../lib/assets/pictures/crew/*.webp", {
+  const crewFotos = import.meta.glob("../lib/assets/pictures/crew/*.avif", {
     eager: true,
     import: "default",
   });
   const crewFoto = (naam) =>
-    crewFotos[`../lib/assets/pictures/crew/${naam}.webp`];
+    crewFotos[`../lib/assets/pictures/crew/${naam}.avif`];
 
   const crewRuw = [
     {
@@ -282,7 +282,7 @@
 </script>
 
 <svelte:head>
-  <title>Artquake — Jong talent laat zich zien en horen</title>
+  <title>Artquake | Jong talent laat zich zien en horen</title>
   {#if firstHeroImage}
     <link rel="preload" as="image" href={firstHeroImage} fetchpriority="high" />
   {/if}
@@ -290,7 +290,7 @@
 
 <header class="hero-shell">
   <a class="brand" href={base}>
-    <img class="brand-logo" src={logo} alt="Artquake — creative space" />
+    <img class="brand-logo" src={logo} alt="Artquake, creative space" />
   </a>
 
   <section class="hero" id="hero" aria-label="Introductie">
@@ -308,7 +308,7 @@
         {/if}
       {/each}
       {#if heroImages.length === 0}
-        <figcaption>Drop hero foto — publiek / artiest, 2400×1600</figcaption>
+        <figcaption>Drop hero foto: publiek / artiest, 2400×1600</figcaption>
       {/if}
     </figure>
     <h1 class="hero-copy">
@@ -338,7 +338,7 @@
       <p>
         Artquake biedt oefenruimtes, organiseert optredens, exposities, events,
         workshops, masterclasses, lessen, coaching en promotie. Alles wat je
-        nodig hebt om jezelf verder te ontwikkelen — behalve slaap.
+        nodig hebt om jezelf verder te ontwikkelen, behalve slaap.
       </p>
       <p class="mission-stats">339+ MAKERS</p>
     </aside>
@@ -384,7 +384,7 @@
           <a
             class="service-link"
             href={s.pand ? "#pand" : `${base}/diensten/${s.slug}`}
-            aria-label="{s.heading} — lees meer"
+            aria-label="{s.heading}, lees meer"
           ></a>
         </li>
       {/each}

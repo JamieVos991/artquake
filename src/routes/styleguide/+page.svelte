@@ -49,12 +49,12 @@
 </script>
 
 <svelte:head>
-  <title>Styleguide — Artquake</title>
+  <title>Styleguide | Artquake</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
 <header class="sg-header">
-  <a href={base || "/"}><img src={logo} alt="Artquake — naar home" /></a>
+  <a href={base || "/"}><img src={logo} alt="Artquake, naar home" /></a>
 </header>
 
 <main class="sg">

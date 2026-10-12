@@ -6,12 +6,12 @@
 </script>
 
 <svelte:head>
-  <title>{titel} — Artquake</title>
+  <title>{titel} | Artquake</title>
 </svelte:head>
 
 <header class="jp-header">
   <a class="jp-brand" href={base || "/"}>
-    <img class="jp-logo" src={logo} alt="Artquake — creative space" />
+    <img class="jp-logo" src={logo} alt="Artquake, creative space" />
   </a>
 </header>
 

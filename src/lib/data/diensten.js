@@ -41,7 +41,7 @@ export const diensten = [
 		bg: "cream",
 		outline: true,
 		intro: "Laagdrempelig samen muziek maken, zonder script.",
-		text: "Geen setlist, geen druk — gewoon instappen en meespelen. Onze jamsessies brengen muzikanten van verschillende niveaus en genres samen om te experimenteren, elkaar te ontmoeten en nieuwe dingen te proberen op het podium.",
+		text: "Geen setlist, geen druk. Gewoon instappen en meespelen. Onze jamsessies brengen muzikanten van verschillende niveaus en genres samen om te experimenteren, elkaar te ontmoeten en nieuwe dingen te proberen op het podium.",
 	},
 	{
 		slug: "foto-shoots",
@@ -71,7 +71,7 @@ export const diensten = [
 		heading: "Coaching",
 		bg: "cream",
 		intro: "Persoonlijke begeleiding op maat.",
-		text: "Iedere maker heeft andere doelen en andere twijfels. In persoonlijke coachingstrajecten helpen we artiesten om hun eigen pad te vinden — of dat nu gaat over artistieke ontwikkeling, zelfvertrouwen op het podium of het uitstippelen van de volgende stap.",
+		text: "Iedere maker heeft andere doelen en andere twijfels. In persoonlijke coachingstrajecten helpen we artiesten om hun eigen pad te vinden, of dat nu gaat over artistieke ontwikkeling, zelfvertrouwen op het podium of het uitstippelen van de volgende stap.",
 	},
 	{
 		slug: "in-opdracht",

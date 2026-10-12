@@ -57,12 +57,12 @@
 </script>
 
 <svelte:head>
-  <title>Artiesten — Artquake</title>
+  <title>Artiesten | Artquake</title>
 </svelte:head>
 
 <header class="ap-header">
   <a class="ap-brand" href={base || "/"}>
-    <img class="ap-logo" src={logo} alt="Artquake — creative space" />
+    <img class="ap-logo" src={logo} alt="Artquake, creative space" />
   </a>
 </header>
 
