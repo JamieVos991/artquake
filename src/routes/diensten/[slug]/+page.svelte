@@ -17,6 +17,33 @@
     "../../../lib/assets/pictures/talent-night/*.webp",
     { eager: true, import: "default" }
   );
+  // carrousel, zelfde werking als bij de crew op de homepage
+  let galerijLijst = $state();
+  let galerijBegin = $state(true);
+  let galerijEind = $state(false);
+
+  function galerijScrollStatus() {
+    if (!galerijLijst) return;
+    galerijBegin = galerijLijst.scrollLeft <= 4;
+    galerijEind =
+      galerijLijst.scrollLeft + galerijLijst.clientWidth >=
+      galerijLijst.scrollWidth - 4;
+  }
+
+  function galerijBlader(richting) {
+    if (!galerijLijst) return;
+    const kaart = galerijLijst.querySelector(".dp-kaart");
+    const stap = kaart ? kaart.getBoundingClientRect().width + 28 : 280;
+    const aantal = Math.max(1, Math.floor(galerijLijst.clientWidth / stap) - 1);
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    galerijLijst.scrollBy({
+      left: richting * stap * aantal,
+      behavior: rustig ? "auto" : "smooth",
+    });
+  }
+
+  const schaduwKleuren = ["purple", "orange", "cream"];
+
   const galerij = (dienst.galerij ?? []).map((g) => ({
     ...g,
     src: galerijFotos[`../../../lib/assets/pictures/talent-night/${g.foto}.webp`],
@@ -61,15 +88,34 @@
 
 {#if galerij.length}
   <section class="dp-galerij" aria-label="Foto's van {dienst.heading}">
-    <h2 class="dp-galerij-kop">IN BEELD</h2>
-    <ul class="dp-collage">
-      {#each galerij as g, i}
-        <li
-          class="dp-collage-item dp-schaduw-{i % 3}"
-          style:aspect-ratio={g.verhouding}
+    <div class="dp-galerij-top">
+      <h2 class="dp-galerij-kop">IN BEELD</h2>
+      <div class="dp-nav">
+        <button
+          type="button"
+          class="dp-nav-knop"
+          aria-label="Vorige foto's"
+          disabled={galerijBegin}
+          onclick={() => galerijBlader(-1)}
         >
-          <img src={g.src} alt={g.titel} loading="lazy" />
-          <span class="dp-galerij-titel">{g.titel}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button
+          type="button"
+          class="dp-nav-knop"
+          aria-label="Volgende foto's"
+          disabled={galerijEind}
+          onclick={() => galerijBlader(1)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+    </div>
+    <ul class="dp-carrousel" bind:this={galerijLijst} onscroll={galerijScrollStatus}>
+      {#each galerij as g, i}
+        <li class="dp-kaart dp-schaduw-{schaduwKleuren[i % 3]}">
+          <img src={g.src} alt="" loading="lazy" />
+          <span class="dp-kaart-titel">{g.titel}</span>
         </li>
       {/each}
     </ul>
@@ -202,61 +248,110 @@
     letter-spacing: 0.16em;
   }
 
+  /* fotocarrousel, in dezelfde stijl als de crew op de homepage */
   .dp-galerij {
     background: var(--color-bg);
     color: var(--color-fg);
     padding: 0 40px 96px;
   }
+  .dp-galerij-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
   .dp-galerij-kop {
-    margin: 0 0 28px;
+    margin: 0;
     color: var(--color-accent);
     font:
       700 12px/1 "Space Mono",
       monospace;
     letter-spacing: 0.16em;
   }
-  /* Pinterest-indeling: kolommen met foto's van wisselende hoogte */
-  .dp-collage {
+  .dp-nav {
+    flex: none;
+    display: flex;
+    gap: 10px;
+  }
+  .dp-nav-knop {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    background: var(--color-accent);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dp-nav-knop svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dp-nav-knop:hover:not(:disabled) {
+    background: var(--color-fg);
+  }
+  .dp-nav-knop:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .dp-carrousel {
     list-style: none;
-    margin: 0;
-    padding: 0 10px 0 0;
-    columns: 3;
-    column-gap: 30px;
+    margin: 0 -40px;
+    padding: 0 40px 16px;
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 40px;
+    scrollbar-width: none;
   }
-  .dp-collage-item {
-    --schaduw: 10px;
+  .dp-carrousel::-webkit-scrollbar {
+    display: none;
+  }
+  .dp-kaart {
     position: relative;
-    margin: 0 0 30px;
-    break-inside: avoid;
+    flex: none;
+    width: clamp(220px, 21vw, 290px);
+    aspect-ratio: 5 / 7;
+    overflow: hidden;
+    scroll-snap-align: start;
     background: #1b1b1b;
-    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-primary);
+    box-shadow: 10px 10px 0 var(--color-fg);
   }
-  .dp-schaduw-1 {
-    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-accent);
+  .dp-schaduw-purple {
+    box-shadow: 10px 10px 0 var(--color-primary);
   }
-  .dp-schaduw-2 {
-    box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-fg);
+  .dp-schaduw-orange {
+    box-shadow: 10px 10px 0 var(--color-accent);
   }
-  .dp-collage-item img {
+  .dp-kaart img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .dp-galerij-titel {
+  .dp-kaart-titel {
     position: absolute;
     left: 0;
+    right: 0;
     bottom: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-wrap: anywhere;
-    padding: 8px 12px;
-    background: var(--color-bg);
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    padding: 70px 14px 20px;
+    background: linear-gradient(transparent, rgba(11, 11, 11, 0.92) 62%);
+    color: var(--color-fg);
+    text-align: center;
+    font-weight: 900;
+    font-stretch: 110%;
+    font-size: clamp(17px, 1.5vw, 22px);
+    line-height: 1.05;
   }
 
   @media (max-width: 640px) {
@@ -264,18 +359,13 @@
       padding-left: 20px;
       padding-right: 20px;
     }
-    .dp-collage {
-      padding-right: 6px;
-      columns: 2;
-      column-gap: 18px;
+    .dp-carrousel {
+      margin: 0 -20px;
+      padding: 0 20px 16px;
+      scroll-padding: 0 20px;
     }
-    .dp-collage-item {
-      --schaduw: 6px;
-      margin-bottom: 18px;
-    }
-    .dp-galerij-titel {
-      padding: 6px 9px;
-      font-size: 9px;
+    .dp-kaart {
+      width: 68vw;
     }
     .dp-header,
     .dp-intro,
