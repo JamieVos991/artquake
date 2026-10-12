@@ -5,12 +5,12 @@
   let { data } = $props();
   const dienst = data.dienst;
 
-  const videos = import.meta.glob("../../../lib/assets/videos/*-aftermovie.mp4", {
+  const videos = import.meta.glob("../../../lib/assets/videos/*.mp4", {
     eager: true,
     import: "default",
   });
   const video = dienst.video
-    ? videos[`../../../lib/assets/videos/${dienst.slug}-aftermovie.mp4`]
+    ? videos[`../../../lib/assets/videos/${dienst.video}.mp4`]
     : null;
 
   const galerijFotos = import.meta.glob(
@@ -42,11 +42,12 @@
 <section
   class="dp-body"
   class:dp-body-video={video}
+  class:dp-body-naast={video && dienst.videoNaast}
   class:dp-body-galerij={galerij.length}
 >
   {#if video}
     <figure class="dp-video">
-      <figcaption>AFTERMOVIE</figcaption>
+      <figcaption>{dienst.videoLabel ?? "VIDEO"}</figcaption>
       <!-- svelte-ignore a11y_media_has_caption -->
       <video src={video} controls playsinline preload="metadata"></video>
     </figure>
@@ -182,6 +183,27 @@
   }
   .dp-text + .dp-text {
     margin-top: -20px;
+  }
+  /* video kleiner, rechts naast de tekst */
+  .dp-body-naast {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 64px;
+    align-items: center;
+  }
+  .dp-body-naast .dp-video {
+    order: 2;
+    max-width: none;
+    margin: 0 12px 12px 0;
+  }
+  .dp-body-naast .dp-body-tekst > :last-child {
+    margin-bottom: 0;
+  }
+  @media (max-width: 900px) {
+    .dp-body-naast {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
   }
   .dp-video {
     position: relative;

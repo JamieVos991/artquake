@@ -7,9 +7,14 @@
   import { db } from "$lib/firebase.js";
   import { diensten as services } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
-  import talentNightVideo from "$lib/assets/videos/talent-night-aftermovie.mp4";
 
-  // aftermovie in het Talent Night-blok: speelt alleen terwijl je erop staat
+  const dienstVideos = import.meta.glob("../lib/assets/videos/*.mp4", {
+    eager: true,
+    import: "default",
+  });
+  const dienstVideo = (naam) => dienstVideos[`../lib/assets/videos/${naam}.mp4`];
+
+  // video in een blok: speelt alleen terwijl je erop staat
   function speelVideo(e) {
     e.currentTarget.querySelector("video")?.play().catch(() => {});
   }
@@ -367,7 +372,7 @@
           {#if s.video}
             <video
               class="service-video"
-              src={talentNightVideo}
+              src={dienstVideo(s.video)}
               muted
               loop
               playsinline
@@ -967,6 +972,14 @@
   .service-met-video .service-title {
     position: relative;
     z-index: 1;
+    transition: color 0.3s;
+  }
+  /* op de video is lichte tekst nodig, ook in de lichte blokken */
+  .service-met-video:hover .service-id,
+  .service-met-video:hover .service-title,
+  .service-met-video:focus-within .service-id,
+  .service-met-video:focus-within .service-title {
+    color: var(--color-fg);
   }
   .service-met-video .service-link {
     z-index: 2;
