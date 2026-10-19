@@ -6,6 +6,7 @@
     collection,
     addDoc,
     deleteDoc,
+    updateDoc,
     doc,
     onSnapshot,
     serverTimestamp,
@@ -42,6 +43,8 @@
   let date = $state("");
   let startTime = $state("");
   let endTime = $state("");
+  let prijs = $state("");
+  let imageUrl = $state("");
   let beschrijving = $state("");
   let submitting = $state(false);
   let error = $state("");
@@ -173,31 +176,81 @@
     stopDataSubscripties();
   });
 
+  // id van het agenda-item dat in het formulier wordt bewerkt (null = nieuw)
+  let bewerkId = $state(null);
+  let succesTekst = $state("");
+
+  function leegFormulier() {
+    bewerkId = null;
+    band = "";
+    place = "";
+    type = "";
+    kleur = standaardKleur;
+    date = "";
+    startTime = "";
+    endTime = "";
+    prijs = "";
+    imageUrl = "";
+    beschrijving = "";
+  }
+
+  function bewerkAgendaItem(a) {
+    bewerkId = a.id;
+    band = a.band ?? "";
+    place = a.place ?? "";
+    type = a.type ?? "";
+    kleur = a.kleur || standaardKleur;
+    date = a.date ?? "";
+    startTime = a.startTime ?? "";
+    endTime = a.endTime ?? "";
+    prijs = a.prijs ?? "";
+    imageUrl = a.imageUrl ?? "";
+    beschrijving = a.beschrijving ?? "";
+    error = "";
+    success = false;
+    document
+      .getElementById("agenda-formulier")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function annuleerBewerken() {
+    leegFormulier();
+    error = "";
+    success = false;
+  }
+
   async function addAgendaItem(e) {
     e.preventDefault();
     error = "";
     success = false;
     submitting = true;
+    const velden = {
+      band,
+      place,
+      type,
+      kleur,
+      date,
+      startTime,
+      endTime,
+      prijs,
+      imageUrl,
+      beschrijving,
+    };
     try {
-      await addDoc(collection(db, "agenda"), {
-        band,
-        place,
-        type,
-        kleur,
-        date,
-        startTime,
-        endTime,
-        beschrijving,
-        createdAt: serverTimestamp(),
-      });
-      band = "";
-      place = "";
-      type = "";
-      kleur = standaardKleur;
-      date = "";
-      startTime = "";
-      endTime = "";
-      beschrijving = "";
+      if (bewerkId) {
+        await updateDoc(doc(db, "agenda", bewerkId), {
+          ...velden,
+          gewijzigdOp: serverTimestamp(),
+        });
+        succesTekst = "Agenda-item opgeslagen ✓";
+      } else {
+        await addDoc(collection(db, "agenda"), {
+          ...velden,
+          createdAt: serverTimestamp(),
+        });
+        succesTekst = "Agenda-item toegevoegd ✓";
+      }
+      leegFormulier();
       success = true;
     } catch (err) {
       error = "Opslaan mislukt. Probeer het opnieuw.";
@@ -449,11 +502,11 @@
             <p class="db-leeg">Geen evenementen op komst.</p>
           {:else}
             <div class="db-lijst-kop db-lijst-kop-agenda" aria-hidden="true">
-              <span>Wat en waar</span><span>Datum</span><span>Tijd</span>
+              <span>Wat en waar</span><span>Datum</span><span>Tijd</span><span></span>
             </div>
             <ul class="db-lijst">
               {#each agendaItems as a (a.id)}
-                <li class="db-regel db-regel-agenda">
+                <li class="db-regel db-regel-agenda" class:is-bewerkt={bewerkId === a.id}>
                   <span class="db-regel-wie">
                     {#if a.imageUrl}
                       <img class="db-avatar db-avatar-klein" src={a.imageUrl} alt="" />
@@ -469,15 +522,23 @@
                   <span class="db-regel-tijd"
                     >{a.startTime ?? "–"}{a.endTime ? `–${a.endTime}` : ""}</span
                   >
+                  <button
+                    type="button"
+                    class="db-verwijder db-bewerk"
+                    onclick={() => bewerkAgendaItem(a)}
+                    aria-label="{a.band ?? 'Agenda-item'} bewerken"
+                  >
+                    Bewerk
+                  </button>
                 </li>
               {/each}
             </ul>
           {/if}
         </section>
 
-        <section class="db-blok db-formulier-blok">
+        <section class="db-blok db-formulier-blok" id="agenda-formulier">
           <header class="db-blok-kop">
-            <h2>Agenda-item toevoegen</h2>
+            <h2>{bewerkId ? "Agenda-item bewerken" : "Agenda-item toevoegen"}</h2>
           </header>
           <form class="db-formulier" onsubmit={addAgendaItem}>
             <label class="db-veld">
@@ -518,6 +579,17 @@
               </label>
             </div>
             <label class="db-veld">
+              <span>Prijs *</span>
+              <input type="text" list="prijs-suggesties" placeholder="bijv. Gratis of € 5,-" bind:value={prijs} required />
+              <datalist id="prijs-suggesties">
+                <option value="Gratis"></option>
+              </datalist>
+            </label>
+            <label class="db-veld">
+              <span>Foto (link)</span>
+              <input type="url" placeholder="https://… (optioneel)" bind:value={imageUrl} />
+            </label>
+            <label class="db-veld">
               <span>Beschrijving</span>
               <textarea placeholder="korte omschrijving (optioneel)" rows="3" bind:value={beschrijving}></textarea>
             </label>
@@ -526,12 +598,22 @@
               <p class="db-fout">{error}</p>
             {/if}
             {#if success}
-              <p class="db-gelukt">Agenda-item toegevoegd ✓</p>
+              <p class="db-gelukt">{succesTekst}</p>
             {/if}
 
             <button class="db-knop db-knop-breed" type="submit" disabled={submitting}>
-              {submitting ? "Bezig…" : "Toevoegen"}
+              {submitting ? "Bezig…" : bewerkId ? "Opslaan" : "Toevoegen"}
             </button>
+            {#if bewerkId}
+              <button
+                class="db-verwijder db-annuleer"
+                type="button"
+                disabled={submitting}
+                onclick={annuleerBewerken}
+              >
+                Annuleren
+              </button>
+            {/if}
           </form>
         </section>
       </div>
@@ -871,7 +953,24 @@
   }
   .db-lijst-kop-agenda,
   .db-regel-agenda {
-    grid-template-columns: minmax(0, 1fr) 96px 110px;
+    grid-template-columns: minmax(0, 1fr) 96px 110px 70px;
+  }
+  .db-regel-agenda.is-bewerkt {
+    background: var(--db-oranje-licht);
+  }
+  .db-bewerk:hover:not(:disabled) {
+    background: var(--color-bg);
+    border-color: var(--color-bg);
+    color: var(--color-fg);
+  }
+  .db-annuleer {
+    align-self: center;
+    padding: 10px 18px;
+  }
+  .db-annuleer:hover:not(:disabled) {
+    background: var(--color-bg);
+    border-color: var(--color-bg);
+    color: var(--color-fg);
   }
   .db-lijst-kop {
     padding-bottom: 8px;

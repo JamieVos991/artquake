@@ -244,7 +244,7 @@
     },
     {
       name: "Emre",
-      fotoPositie: "33%",
+      fotoPositie: "95%",
       role: "Coach / Docent",
       imageUrl: crewFoto("emre"),
     },
@@ -404,6 +404,7 @@
       {#if !agendaGeladen}
         {#each Array(3) as _}
           <li class="agenda-row skel-row" aria-hidden="true">
+            <span class="skel agenda-foto"></span>
             <span class="skel skel-date"></span>
             <span class="skel skel-name"></span>
             <span class="skel skel-meta"></span>
@@ -419,14 +420,23 @@
             style="background:{ev.kleur ||
               'var(--color-bg)'}; color:{agendaTekstKleur(ev.kleur)}"
           >
+            {#if ev.imageUrl}
+              <img class="agenda-foto" src={ev.imageUrl} alt="" loading="lazy" />
+            {:else}
+              <span class="agenda-foto agenda-foto-leeg" aria-hidden="true"></span>
+            {/if}
             <time class="agenda-date" datetime={ev.date}
               >{formatAgendaDatum(ev.date)}</time
             >
             <h3 class="agenda-name">{ev.band}</h3>
             <p class="agenda-meta">
-              {ev.place}{ev.place && ev.startTime
-                ? " · "
-                : ""}{ev.startTime}{ev.endTime ? `–${ev.endTime}` : ""}
+              {#if ev.startTime}
+                <span
+                  >{ev.startTime}{ev.endTime ? ` – ${ev.endTime}` : ""}</span
+                >
+              {/if}
+              {#if ev.place}<span>{ev.place}</span>{/if}
+              {#if ev.prijs}<strong>{ev.prijs}</strong>{/if}
             </p>
             <span class="agenda-type">{ev.type}</span>
           </li>
@@ -698,10 +708,10 @@
     display: flex;
     align-items: center;
     text-decoration: none;
-    padding: 16px 30px;
+    padding: 40px 30px;
   }
   .brand-logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     display: block;
   }
@@ -814,6 +824,13 @@
   }
   .stripe-dark {
     background: var(--color-bg);
+  }
+  /* wie in het systeem "minder contrast" aanzet, krijgt een rustige,
+     effen oranje balk in plaats van de vele kleuren */
+  @media (prefers-contrast: less) {
+    .stripe {
+      background: var(--color-accent);
+    }
   }
 
   /* mission */
@@ -1112,13 +1129,21 @@
   }
   .agenda-row {
     display: grid;
-    grid-template-columns: minmax(0, 110px) minmax(0, 1fr) minmax(0, 180px) minmax(
-        0,
-        150px
-      );
+    grid-template-columns:
+      88px minmax(0, 110px) minmax(0, 1fr) minmax(0, 240px)
+      minmax(0, 150px);
     gap: 20px;
     align-items: center;
-    padding: 18px 22px;
+    padding: 14px 22px 14px 14px;
+  }
+  .agenda-foto {
+    display: block;
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+  }
+  .agenda-foto-leeg {
+    background: rgba(11, 11, 11, 0.12);
   }
   .agenda-date {
     font:
@@ -1134,9 +1159,15 @@
   }
   .agenda-meta {
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     font:
-      400 12px/1.4 "Space Mono",
+      400 15px/1.4 "Space Mono",
       monospace;
+  }
+  .agenda-meta strong {
+    font-weight: 700;
   }
   .agenda-type {
     justify-self: end;
@@ -1309,6 +1340,7 @@
     font-weight: 900;
     font-stretch: 110%;
     font-size: 30px;
+    word-spacing: 0.3em;
   }
 
   /* crew */
@@ -1751,8 +1783,16 @@
       font-stretch: 110%;
     }
     .agenda-row {
-      grid-template-columns: minmax(0, 70px) minmax(0, 1fr);
-      row-gap: 8px;
+      grid-template-columns: 88px minmax(0, 1fr);
+      align-items: start;
+      row-gap: 6px;
+    }
+    /* foto links, de rest eronder gestapeld ernaast */
+    .agenda-foto {
+      grid-row: span 4;
+    }
+    .agenda-type {
+      justify-self: start;
     }
     .talent-grid {
       grid-template-columns: 1fr;
@@ -1775,7 +1815,10 @@
   /* phone */
   @media (max-width: 640px) {
     .brand {
-      padding: 14px 16px;
+      padding: 28px 16px;
+    }
+    .brand-logo {
+      height: 92px;
     }
 
     .hero {
@@ -1839,14 +1882,16 @@
     }
 
     .agenda-row {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
-      padding: 16px 18px;
+      grid-template-columns: 72px minmax(0, 1fr);
+      column-gap: 14px;
+      padding: 12px 16px 12px 12px;
     }
-    .agenda-type {
-      justify-self: auto;
+    .agenda-foto {
+      width: 72px;
+      height: 72px;
+    }
+    .agenda-date {
+      font-size: 24px;
     }
 
 

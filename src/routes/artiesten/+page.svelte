@@ -21,12 +21,17 @@
   let geladen = $state(false);
   let zichtbaarAantal = $state(stapGrootte);
   let actieveFilter = $state("ALLE");
+  let zoekterm = $state("");
 
-  let gefilterdeArtiesten = $derived(
-    actieveFilter === "ALLE"
-      ? artiesten
-      : artiesten.filter((a) => (a.type ?? "").toUpperCase() === actieveFilter)
-  );
+  let gefilterdeArtiesten = $derived.by(() => {
+    const zoek = zoekterm.trim().toLowerCase();
+    return artiesten.filter(
+      (a) =>
+        (actieveFilter === "ALLE" ||
+          (a.type ?? "").toUpperCase() === actieveFilter) &&
+        (!zoek || a.naam.toLowerCase().includes(zoek))
+    );
+  });
   let getoondeArtiesten = $derived(gefilterdeArtiesten.slice(0, zichtbaarAantal));
 
   function kiesFilter(f) {
@@ -88,6 +93,15 @@
         {f}
       </button>
     {/each}
+    <label class="ap-zoek">
+      <span class="ap-visueel-verborgen">Zoek een artiest</span>
+      <input
+        type="search"
+        placeholder="zoek een artiest"
+        bind:value={zoekterm}
+        oninput={() => (zichtbaarAantal = stapGrootte)}
+      />
+    </label>
   </div>
 
   {#if !geladen}
@@ -103,7 +117,11 @@
   {:else if artiesten.length === 0}
     <p class="ap-empty">Binnenkort meer artiesten.</p>
   {:else if gefilterdeArtiesten.length === 0}
-    <p class="ap-empty">Geen artiesten in deze categorie.</p>
+    <p class="ap-empty">
+      {zoekterm.trim()
+        ? `Geen artiesten gevonden voor "${zoekterm.trim()}".`
+        : "Geen artiesten in deze categorie."}
+    </p>
   {:else}
     <ul class="ap-grid">
       {#each getoondeArtiesten as a, i (a.id)}
@@ -247,6 +265,38 @@
     background: var(--color-bg);
     color: var(--color-fg);
   }
+  .ap-zoek {
+    flex: 1 1 220px;
+    max-width: 340px;
+    margin-left: auto;
+  }
+  .ap-zoek input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 18px;
+    border: 1.5px solid var(--color-bg);
+    border-radius: 26px;
+    background: transparent;
+    color: var(--color-bg);
+    font:
+      400 13px/1 "Space Mono",
+      monospace;
+  }
+  .ap-zoek input::placeholder {
+    color: rgba(11, 11, 11, 0.55);
+  }
+  .ap-zoek input:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  .ap-visueel-verborgen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 
   .ap-empty {
     padding: 40px 8px;
@@ -371,6 +421,8 @@
     font-stretch: 110%;
     font-size: 26px;
     line-height: 1.1;
+    /* extra ruimte zodat voor- en achternaam niet als één woord lezen */
+    word-spacing: 0.3em;
     text-transform: uppercase;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -467,6 +519,10 @@
     }
     .ap-grid {
       grid-template-columns: 1fr;
+    }
+    .ap-zoek {
+      max-width: none;
+      margin-left: 0;
     }
   }
 </style>

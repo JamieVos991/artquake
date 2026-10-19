@@ -210,7 +210,13 @@
                   <time datetime={ev.date}>{formatDatum(ev.date)}</time>
                   <strong>{ev.band}</strong>
                   <span class="menu-event-meta"
-                    >{ev.place}{ev.place && ev.startTime ? " · " : ""}{ev.startTime ?? ""}</span
+                    >{[
+                      ev.place,
+                      ev.startTime && `${ev.startTime}${ev.endTime ? ` – ${ev.endTime}` : ""}`,
+                      ev.prijs,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}</span
                   >
                 </span>
               </li>

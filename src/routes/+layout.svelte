@@ -53,8 +53,8 @@
   <hgroup class="cta-copy">
     <h2 class="cta-title">VRAAG HET<br />GEWOON.<br />SERIEUS.</h2>
     <p class="cta-text">
-      Een vraag, een idee, of gewoon interesse? Stuur ons een berichtje, we
-      reageren binnen twee werkdagen.
+      Een vraag, een idee of gewoon interesse? Stuur ons een berichtje, we
+      reageren zo snel mogelijk.
     </p>
   </hgroup>
   <form class="cta-form" onsubmit={verstuurContact}>
@@ -76,7 +76,7 @@
       <p class="cta-feedback cta-feedback-error">{ctaFout}</p>
     {/if}
     {#if ctaVerstuurd}
-      <p class="cta-feedback">Bedankt! Je bericht is verstuurd. We reageren binnen twee werkdagen.</p>
+      <p class="cta-feedback">Bedankt! Je bericht is verstuurd. We reageren zo snel mogelijk.</p>
     {/if}
 
     <button type="submit" class="cta-submit" disabled={ctaVersturen}>
@@ -118,7 +118,7 @@
     <ul>
       <li><a href="mailto:info@art-quake.com">info@art-quake.com</a></li>
       <li><a href="https://api.whatsapp.com/send?phone=31640129447">+31 6 401 29 447</a></li>
-      <li>Sara de Bronovoland 7,<br />Heerhugowaard</li>
+      <li>Sara de Bronovoland 7<br />Heerhugowaard</li>
     </ul>
   </nav>
   <nav class="footer-col" aria-label="Socials">

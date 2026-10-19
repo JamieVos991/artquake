@@ -1,5 +1,8 @@
 <script>
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { base } from "$app/paths";
+  import { goto } from "$app/navigation";
+  import { onAuthStateChanged } from "firebase/auth";
   import {
     collection,
     addDoc,
@@ -11,7 +14,7 @@
     where,
     serverTimestamp,
   } from "firebase/firestore";
-  import { db } from "$lib/firebase.js";
+  import { db, auth } from "$lib/firebase.js";
   import emailjs from "@emailjs/browser";
   import {
     EMAILJS_SERVICE_ID,
@@ -21,6 +24,16 @@
     codeVerificatieActief,
     bevestigingsmailActief,
   } from "$lib/email-config.js";
+
+  // Reserveren is tijdelijk alleen voor ingelogde crew: wie niet is
+  // ingelogd gaat naar de inlogpagina en komt daarna hier terug.
+  let ingelogd = $state(false);
+  onMount(() =>
+    onAuthStateChanged(auth, (user) => {
+      ingelogd = !!user;
+      if (!user) goto(`${base}/login?next=/reserveren`, { replaceState: true });
+    })
+  );
 
   const CODE_GELDIG_MINUTEN = 15;
   const MAX_CODE_POGINGEN = 5;
@@ -410,6 +423,11 @@
 
 <svelte:head><title>Reserveren | Artquake</title></svelte:head>
 
+{#if !ingelogd}
+  <div class="shell auth-gate">
+    <p>Bezig met controleren…</p>
+  </div>
+{:else}
 <div class="shell">
   <!-- Progress bar -->
   <div class="progress-track">
@@ -675,8 +693,18 @@
     </div>
   {/if}
 </div>
+{/if}
 
 <style>
+  .auth-gate {
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+    font:
+      700 12px/1.5 "Space Mono",
+      monospace;
+    letter-spacing: 0.1em;
+  }
   .shell {
     min-height: 100vh;
     background: var(--color-bg);
@@ -782,6 +810,8 @@
     gap: 3px;
     background: #111;
     border-left: 3px solid #111;
+    /* lijn onderaan, zodat de donkere dansstudio niet overloopt in de pagina */
+    border-bottom: 3px solid rgba(244, 241, 234, 0.35);
   }
 
   .studio {
@@ -973,19 +1003,20 @@
   }
 
   .btn-back {
-    background: none;
+    background: var(--color-accent);
     border: none;
-    color: var(--color-muted);
+    border-radius: 4px;
+    color: var(--color-bg);
     font:
       700 12px/1 "Space Mono",
       monospace;
     letter-spacing: 0.1em;
     cursor: pointer;
-    padding: 8px 0;
-    transition: color 0.12s;
+    padding: 18px 22px;
+    transition: background 0.12s;
   }
   .btn-back:hover {
-    color: var(--color-fg);
+    background: var(--color-fg);
   }
 
   /* ── Bevestiging ── */

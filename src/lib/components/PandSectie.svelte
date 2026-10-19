@@ -182,10 +182,10 @@
       <h4 class="route-kop route-kop-oranje">GRATIS VOOR JONGE MAKERS</h4>
       <p>
         Jonge artiesten/kunstenaars mogen gratis gebruik maken van deze
-        ruimtes. Neem contact met Dewi op voor meer info.
+        ruimtes. Neem contact met ons op voor meer info.
       </p>
       <p>
-        Je vindt ons aan de
+        Je vindt ons op
         <strong class="route-adres">Sara de Bronovoland 7 in Heerhugowaard</strong>.
       </p>
     </div>

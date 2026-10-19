@@ -9,9 +9,13 @@
     eager: true,
     import: "default",
   });
-  const video = dienst.video
+  const videoBestand = dienst.video
     ? videos[`../../../lib/assets/videos/${dienst.video}.mp4`]
     : null;
+  const video =
+    videoBestand && dienst.videoStart
+      ? `${videoBestand}#t=${dienst.videoStart}`
+      : videoBestand;
 
   const galerijFotos = import.meta.glob(
     "../../../lib/assets/pictures/talent-night/*.avif",
@@ -56,6 +60,12 @@
     {#each dienst.text.split("\n\n") as alinea}
       <p class="dp-text">{alinea}</p>
     {/each}
+    {#if !dienst.geenAgenda}
+      <p class="dp-text dp-agenda">
+        Houd de <a href="{base}/#agenda">agenda</a> in de gaten voor de
+        eerstvolgende data.
+      </p>
+    {/if}
     <a class="dp-cta" href="{base}/#doe-mee">DOE MEE</a>
   </div>
 </section>
@@ -158,6 +168,13 @@
       400 15px/1.7 "Space Mono",
       monospace;
     opacity: 0.9;
+  }
+  .dp-agenda a {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+  .dp-agenda a:hover {
+    text-decoration: none;
   }
   .dp-cta {
     display: inline-block;
