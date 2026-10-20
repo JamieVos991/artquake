@@ -10,11 +10,19 @@
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
 
+  // De blokken tonen een korte preview-clip (8 sec, klein, zonder geluid) i.p.v.
+  // de hele video; die staat op de dienstpagina zelf. Geen clip? Dan de video.
   const dienstVideos = import.meta.glob("../lib/assets/videos/*.mp4", {
     eager: true,
     import: "default",
   });
-  const dienstVideo = (naam) => dienstVideos[`../lib/assets/videos/${naam}.mp4`];
+  const previewClips = import.meta.glob("../lib/assets/videos/preview/*.mp4", {
+    eager: true,
+    import: "default",
+  });
+  const dienstVideo = (naam) =>
+    previewClips[`../lib/assets/videos/preview/${naam}.mp4`] ??
+    dienstVideos[`../lib/assets/videos/${naam}.mp4`];
 
   // video in een blok: speelt alleen terwijl je erop staat
   function speelVideo(e) {
@@ -1074,8 +1082,10 @@
     line-height: 0.9;
     text-align: right;
   }
+  /* rand als schaduw aan de binnenkant i.p.v. border: een border blijft
+     altijd zichtbaar om de video heen, deze schaduw valt eronder */
   .service-outline {
-    border: 3px solid var(--color-fg);
+    box-shadow: inset 0 0 0 3px var(--color-fg);
   }
   .service-id {
     font:
