@@ -94,7 +94,9 @@
   const heroImages = Object.values(heroModules);
   // uitsnede per hero-foto (object-position); zonder regel hier: midden
   const heroPosities = {
-    "zangeres-met-gitaar": "center top",
+    // bovenaan (hele hoofd op brede schermen) en iets naar links, zodat ze
+    // op een smal telefoonscherm in beeld staat
+    "zangeres-met-gitaar": "28% top",
   };
   const heroPositie = (src) =>
     Object.entries(heroPosities).find(([naam]) => src.includes(naam))?.[1];
@@ -1889,17 +1891,66 @@
       gap: 11px;
     }
 
+    /* telefoon: een kaart met de foto over de volle breedte bovenaan,
+       daaronder datum en type, de naam en de details op één regel */
     .agenda-row {
-      grid-template-columns: 72px minmax(0, 1fr);
-      column-gap: 14px;
-      padding: 12px 16px 12px 12px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "foto foto"
+        "datum type"
+        "naam naam"
+        "meta meta";
+      align-items: center;
+      gap: 6px 12px;
+      padding: 0 0 16px;
+      overflow: hidden;
+    }
+    .agenda-row > :not(.agenda-foto) {
+      margin-left: 16px;
+      margin-right: 16px;
     }
     .agenda-foto {
-      width: 72px;
-      height: 72px;
+      grid-area: foto;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      margin-bottom: 8px;
+    }
+    .agenda-foto-leeg {
+      display: none;
+    }
+    /* zonder foto begint de kaart met wat ruimte boven de datum */
+    .agenda-foto-leeg + .agenda-date {
+      margin-top: 16px;
     }
     .agenda-date {
+      grid-area: datum;
+      font-size: 26px;
+    }
+    .agenda-type {
+      grid-area: type;
+      justify-self: end;
+    }
+    .agenda-foto-leeg ~ .agenda-type {
+      margin-top: 16px;
+    }
+    .agenda-name {
+      grid-area: naam;
       font-size: 24px;
+      line-height: 1.05;
+    }
+    .agenda-meta {
+      grid-area: meta;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 2px 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    /* details achter elkaar, gescheiden door een puntje */
+    .agenda-meta > * + *::before {
+      content: "·";
+      margin: 0 8px;
     }
 
 

@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import { isSupported, getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
@@ -17,6 +18,7 @@ const firebaseConfig = {
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export let analytics;
 if (browser) {

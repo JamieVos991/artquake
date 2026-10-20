@@ -12,7 +12,8 @@
     serverTimestamp,
   } from "firebase/firestore";
   import { onAuthStateChanged, signOut } from "firebase/auth";
-  import { db, auth } from "$lib/firebase.js";
+  import { db, auth, storage } from "$lib/firebase.js";
+  import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   let authGecontroleerd = $state(false);
@@ -87,11 +88,6 @@
     zondag.setDate(maandag.getDate() + 6);
     zondag.setHours(23, 59, 59, 999);
     return datum >= maandag && datum <= zondag;
-  }
-
-  function isRecent(timestamp) {
-    if (!timestamp?.toDate) return false;
-    return Date.now() - timestamp.toDate().getTime() < 24 * 60 * 60 * 1000;
   }
 
   let verwijderBezig = $state(null);
@@ -239,6 +235,62 @@
     success = false;
   }
 
+  // ── foto uploaden naar Firebase Storage ──
+  let uploadVoortgang = $state(null); // null = geen upload bezig, anders 0–100
+  let uploadFout = $state("");
+
+  // maakt de foto kleiner (max 1600px breed of hoog, WebP) zodat de
+  // website snel blijft; lukt dat niet, dan gaat het origineel omhoog
+  async function verkleinFoto(bestand) {
+    try {
+      const beeld = await createImageBitmap(bestand);
+      const schaal = Math.min(1, 1600 / Math.max(beeld.width, beeld.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(beeld.width * schaal);
+      canvas.height = Math.round(beeld.height * schaal);
+      canvas.getContext("2d").drawImage(beeld, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise((r) => canvas.toBlob(r, "image/webp", 0.82));
+      return blob ?? bestand;
+    } catch {
+      return bestand;
+    }
+  }
+
+  async function uploadFoto(e) {
+    const bestand = e.currentTarget.files?.[0];
+    e.currentTarget.value = "";
+    if (!bestand) return;
+    uploadFout = "";
+    if (!bestand.type.startsWith("image/")) {
+      uploadFout = "Kies een afbeelding (jpg, png, webp…).";
+      return;
+    }
+    uploadVoortgang = 0;
+    try {
+      const blob = await verkleinFoto(bestand);
+      const extensie = blob.type === "image/webp" ? "webp" : bestand.name.split(".").pop();
+      const naam = bestand.name
+        .replace(/\.[^.]+$/, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .slice(0, 40);
+      const plek = ref(storage, `agenda-images/${Date.now()}-${naam}.${extensie}`);
+      const taak = uploadBytesResumable(plek, blob, { contentType: blob.type });
+      taak.on("state_changed", (s) => {
+        uploadVoortgang = Math.round((s.bytesTransferred / s.totalBytes) * 100);
+      });
+      await taak;
+      imageUrl = await getDownloadURL(plek);
+    } catch (err) {
+      uploadFout =
+        err?.code === "storage/unauthorized"
+          ? "Uploaden niet toegestaan: de opslagregels in Firebase staan dit nog niet toe."
+          : "Uploaden mislukt. Probeer het opnieuw.";
+    } finally {
+      uploadVoortgang = null;
+    }
+  }
+
   async function addAgendaItem(e) {
     e.preventDefault();
     error = "";
@@ -292,36 +344,8 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  function nuAlsTijd() {
-    const d = new Date();
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-
-  function studioIsNuBezet(studioId) {
-    const vandaag = vandaagAlsDatum();
-    const nu = nuAlsTijd();
-    return reserveringen.some(
-      (r) =>
-        r.studio === studioId &&
-        r.datum === vandaag &&
-        r.starttijd <= nu &&
-        r.eindtijd > nu
-    );
-  }
-
-  let studiosMetStatus = $derived(
-    studios.map((s) => ({ ...s, bezet: studioIsNuBezet(s.id) }))
-  );
-
-  let vrijeStudiosAantal = $derived(
-    studiosMetStatus.filter((s) => !s.bezet).length
-  );
-
   let dezeWeek = $derived(reserveringen.filter((r) => isDezeWeek(r.datum)));
   let dezeWeekGeweest = $derived(dezeWeek.filter(reserveringIsAfgelopen).length);
-  let nieuw24 = $derived(
-    reserveringen.filter((r) => isRecent(r.aangemaaktOp)).length
-  );
   // eerst wat nog komt (vroegste bovenaan), daarna wat al geweest is
   let reserveringenOpVolgorde = $derived([
     ...reserveringen.filter((r) => !reserveringIsAfgelopen(r)).reverse(),
@@ -342,23 +366,6 @@
       .map((w) => w[0]?.toUpperCase() ?? "")
       .join("");
   }
-
-  let stats = $derived([
-    {
-      label: "RESERVERINGEN DEZE WEEK",
-      value: String(reserveringen.filter((r) => isDezeWeek(r.datum)).length),
-    },
-    {
-      label: "VRIJE STUDIO'S",
-      value: `${vrijeStudiosAantal} / ${studios.length}`,
-    },
-    {
-      label: "NIEUWE AANVRAGEN (24U)",
-      value: String(
-        reserveringen.filter((r) => isRecent(r.aangemaaktOp)).length
-      ),
-    },
-  ]);
 </script>
 
 <svelte:head>
@@ -375,29 +382,12 @@
   </div>
 {:else}
   <div class="db">
-    <!-- zijbalk met iconen -->
-    <nav class="db-zij" aria-label="Dashboard">
-      <a class="db-zij-knop is-actief" href="#overzicht" aria-label="Overzicht" title="Overzicht">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
-      </a>
-      <a class="db-zij-knop" href="#reserveringen" aria-label="Reserveringen" title="Reserveringen">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-      </a>
-      <a class="db-zij-knop" href="#agenda" aria-label="Agenda" title="Agenda">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13" /><circle cx="3.5" cy="6" r="1" /><circle cx="3.5" cy="12" r="1" /><circle cx="3.5" cy="18" r="1" /></svg>
-      </a>
-      <a class="db-zij-knop" href={base || "/"} aria-label="Naar de website" title="Naar de website">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10v10h13V10" /></svg>
-      </a>
-      <button class="db-zij-knop db-zij-uit" type="button" onclick={handleUitloggen} aria-label="Uitloggen" title="Uitloggen">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5" /><path d="M14 8l4 4-4 4M18 12H9" /></svg>
-      </button>
-    </nav>
-
     <main class="db-paneel" id="overzicht">
       <header class="db-top">
         <p class="db-welkom">Welkom bij <strong>Artquake</strong></p>
         <div class="db-gebruiker">
+          <a class="db-verwijder db-top-knop" href={base || "/"}>Naar de website</a>
+          <button class="db-verwijder db-top-knop" type="button" onclick={handleUitloggen}>Uitloggen</button>
           <span class="db-avatar">{initialen(ingelogdeGebruiker.email)}</span>
           <span class="db-gebruiker-tekst">
             <strong>Beheerder</strong>
@@ -408,14 +398,9 @@
 
       <div class="db-kop">
         <h1>Overzicht</h1>
-        <div class="db-pillen">
-          <a class="db-pil is-actief" href="#overzicht">Alles</a>
-          <a class="db-pil" href="#reserveringen">Reserveringen</a>
-          <a class="db-pil" href="#agenda">Agenda</a>
-        </div>
       </div>
 
-      <!-- drie gekleurde kaarten -->
+      <!-- kaart met reserveringen van deze week -->
       <section class="db-kaarten" aria-label="Statistieken">
         <article class="db-kaart db-kaart-oranje">
           <span class="db-label db-label-donker">Deze week</span>
@@ -426,34 +411,15 @@
           </div>
           <a class="db-knop" href="#reserveringen">Bekijk</a>
         </article>
-
-        <article class="db-kaart db-kaart-paars">
-          <span class="db-label db-label-oranje">Studio's</span>
-          <h2>{vrijeStudiosAantal} van {studios.length} nu vrij</h2>
-          <div class="db-voortgang">
-            <p><span>Bezet</span><span>{studios.length - vrijeStudiosAantal}/{studios.length}</span></p>
-            <div class="db-balk"><i style:width="{((studios.length - vrijeStudiosAantal) / studios.length) * 100}%"></i></div>
-          </div>
-          <a class="db-knop" href="{base}/reserveren">Reserveer</a>
-        </article>
-
-        <article class="db-kaart db-kaart-licht">
-          <span class="db-label db-label-paars">Laatste 24 uur</span>
-          <h2>{nieuw24} {nieuw24 === 1 ? "nieuwe aanvraag" : "nieuwe aanvragen"}</h2>
-          <div class="db-voortgang">
-            <p><span>Nog te komen</span><span>{komendeReserveringen} totaal</span></p>
-            <div class="db-balk"><i style:width="{komendeReserveringen ? Math.min(100, (nieuw24 / komendeReserveringen) * 100) : 0}%"></i></div>
-          </div>
-          <a class="db-knop" href="#reserveringen">Bekijk</a>
-        </article>
       </section>
 
-      <!-- lijst + donkere kaart -->
-      <div class="db-rij">
+      <!-- reserveringen -->
+      <div class="db-rij db-rij-enkel">
         <section class="db-blok" id="reserveringen">
           <header class="db-blok-kop">
             <h2>Reserveringen</h2>
             <span class="db-blok-info">{komendeReserveringen} nog te komen</span>
+            <a class="db-verwijder db-top-knop" href="{base}/reserveren">Nieuwe reservering</a>
           </header>
           {#if !reserveringenGeladen}
             <p class="db-leeg">Laden…</p>
@@ -492,22 +458,6 @@
             </ul>
           {/if}
         </section>
-
-        <aside class="db-donker" aria-label="Studio status">
-          <p class="db-donker-intro">Hoe staan de ruimtes er nu voor?</p>
-          <span class="db-label db-label-oranje">Studio status</span>
-          <ul class="db-studios">
-            {#each studiosMetStatus as s}
-              <li>
-                <span>{s.label}</span>
-                <span class="db-status" class:is-bezet={s.bezet}
-                  >{s.bezet ? "Bezet" : "Vrij"}</span
-                >
-              </li>
-            {/each}
-          </ul>
-          <a class="db-knop db-knop-breed" href="{base}/reserveren">Nieuwe reservering</a>
-        </aside>
       </div>
 
       <!-- agenda -->
@@ -577,12 +527,12 @@
           </header>
           <form class="db-formulier" onsubmit={addAgendaItem}>
             <label class="db-veld">
-              <span>Band / act *</span>
+              <span>Naam *</span>
               <input type="text" placeholder="bijv. The Wombats" bind:value={band} required />
             </label>
             <label class="db-veld">
-              <span>Locatie *</span>
-              <input type="text" placeholder="bijv. Artquake, Heerhugowaard" bind:value={place} required />
+              <span>Locatie</span>
+              <input type="text" placeholder="bijv. Artquake, Heerhugowaard" bind:value={place} />
             </label>
             <div class="db-veld-rij">
               <label class="db-veld">
@@ -590,18 +540,18 @@
                 <input type="date" bind:value={date} required />
               </label>
               <label class="db-veld">
-                <span>Start *</span>
-                <input type="time" bind:value={startTime} required />
+                <span>Start</span>
+                <input type="time" bind:value={startTime} />
               </label>
               <label class="db-veld">
-                <span>Eind *</span>
-                <input type="time" bind:value={endTime} required />
+                <span>Eind</span>
+                <input type="time" bind:value={endTime} />
               </label>
             </div>
             <div class="db-veld-rij db-veld-rij-type">
               <label class="db-veld">
-                <span>Type *</span>
-                <input type="text" list="type-suggesties" placeholder="bijv. Open entree" bind:value={type} required />
+                <span>Type</span>
+                <input type="text" list="type-suggesties" placeholder="bijv. Open entree" bind:value={type} />
                 <datalist id="type-suggesties">
                   {#each typeSuggesties as t}
                     <option value={t}></option>
@@ -609,26 +559,50 @@
                 </datalist>
               </label>
               <label class="db-veld db-veld-kleur">
-                <span title="Laat je hem oranje, dan kiest de website een kleur bij het type">Kleur *</span>
+                <span title="Laat je hem oranje, dan kiest de website een kleur bij het type">Kleur</span>
                 <input
                   type="color"
                   bind:value={kleur}
-                  required
                   title="Oranje = automatisch, op basis van het type"
                 />
               </label>
             </div>
             <label class="db-veld">
-              <span>Prijs *</span>
-              <input type="text" list="prijs-suggesties" placeholder="bijv. Gratis of € 5,-" bind:value={prijs} required />
+              <span>Prijs</span>
+              <input type="text" list="prijs-suggesties" placeholder="bijv. Gratis of € 5,-" bind:value={prijs} />
               <datalist id="prijs-suggesties">
                 <option value="Gratis"></option>
               </datalist>
             </label>
-            <label class="db-veld">
-              <span>Foto (link)</span>
-              <input type="url" placeholder="https://… (optioneel)" bind:value={imageUrl} />
-            </label>
+            <div class="db-veld">
+              <span>Foto</span>
+              <div class="db-foto-upload">
+                {#if imageUrl}
+                  <img class="db-foto-voorbeeld" src={imageUrl} alt="" />
+                {/if}
+                <label class="db-verwijder db-foto-kies" class:is-bezig={uploadVoortgang !== null}>
+                  {#if uploadVoortgang !== null}
+                    Uploaden… {uploadVoortgang}%
+                  {:else}
+                    {imageUrl ? "Andere foto kiezen" : "Foto kiezen"}
+                  {/if}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadVoortgang !== null}
+                    onchange={uploadFoto}
+                  />
+                </label>
+                {#if imageUrl && uploadVoortgang === null}
+                  <button type="button" class="db-verwijder" onclick={() => (imageUrl = "")}>
+                    Foto weghalen
+                  </button>
+                {/if}
+              </div>
+              {#if uploadFout}
+                <p class="db-fout">{uploadFout}</p>
+              {/if}
+            </div>
             {#if imageUrl}
               <div class="db-veld">
                 <span>Welk deel van de foto?</span>
@@ -655,7 +629,7 @@
               <p class="db-gelukt">{succesTekst}</p>
             {/if}
 
-            <button class="db-knop db-knop-breed" type="submit" disabled={submitting}>
+            <button class="db-knop db-knop-breed" type="submit" disabled={submitting || uploadVoortgang !== null}>
               {submitting ? "Bezig…" : bewerkId ? "Opslaan" : "Toevoegen"}
             </button>
             {#if bewerkId}
@@ -700,50 +674,6 @@
     background: #1c1c1c;
     font-family: var(--font-display);
     color: var(--color-bg);
-  }
-
-  /* zijbalk */
-  .db-zij {
-    position: sticky;
-    top: 14px;
-    align-self: flex-start;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 18px 6px;
-  }
-  .db-zij-knop {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 12px;
-    background: transparent;
-    color: var(--color-fg);
-    cursor: pointer;
-    transition:
-      background 0.15s,
-      color 0.15s;
-  }
-  .db-zij-knop svg {
-    width: 21px;
-    height: 21px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .db-zij-knop:hover {
-    background: rgba(244, 241, 234, 0.12);
-  }
-  .db-zij-knop.is-actief {
-    background: var(--color-accent);
-    color: var(--color-bg);
-  }
-  .db-zij-uit {
-    margin-top: 28px;
   }
 
   /* paneel */
@@ -833,33 +763,10 @@
     font-size: clamp(24px, 2.600vw, 32px);
     letter-spacing: -0.010em;
   }
-  .db-pillen {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .db-pil {
-    padding: 8px 14px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 10px;
-    color: var(--color-bg);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    transition:
-      background 0.15s,
-      color 0.15s;
-  }
-  .db-pil:hover,
-  .db-pil.is-actief {
-    background: var(--color-bg);
-    color: var(--color-fg);
-  }
-
   /* gekleurde kaarten */
   .db-kaarten {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 420px);
     gap: 14px;
     margin-bottom: 14px;
   }
@@ -874,12 +781,6 @@
   }
   .db-kaart-oranje {
     background: var(--db-oranje-licht);
-  }
-  .db-kaart-paars {
-    background: var(--db-paars-licht);
-  }
-  .db-kaart-licht {
-    background: #fbf9f4;
   }
   .db-kaart h2 {
     margin: 0;
@@ -897,13 +798,6 @@
   .db-label-donker {
     background: var(--color-bg);
     color: var(--color-fg);
-  }
-  .db-label-oranje {
-    background: var(--color-accent);
-    color: var(--color-bg);
-  }
-  .db-label-paars {
-    background: var(--db-paars-licht);
   }
   .db-voortgang {
     align-self: stretch;
@@ -965,6 +859,20 @@
   .db-rij-agenda {
     grid-template-columns: minmax(0, 1.200fr) minmax(0, 1fr);
   }
+  .db-rij-enkel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* kleine knoppen bovenin en in de kop van een blok */
+  .db-top-knop {
+    justify-self: auto;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .db-top-knop:hover:not(:disabled) {
+    background: var(--color-bg);
+    border-color: var(--color-bg);
+    color: var(--color-fg);
+  }
   .db-blok {
     min-width: 0;
     padding: 20px 22px;
@@ -1016,6 +924,39 @@
     background: var(--color-bg);
     border-color: var(--color-bg);
     color: var(--color-fg);
+  }
+  .db-foto-upload {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .db-foto-voorbeeld {
+    width: 96px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .db-foto-kies {
+    position: relative;
+    overflow: hidden;
+  }
+  .db-foto-kies:hover,
+  .db-foto-kies:focus-within {
+    background: var(--color-bg);
+    border-color: var(--color-bg);
+    color: var(--color-fg);
+  }
+  .db-foto-kies.is-bezig {
+    cursor: progress;
+    opacity: 0.7;
+  }
+  /* het echte bestandsveld ligt onzichtbaar over de knop */
+  .db-foto-kies input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
   }
   .db-uitsnede {
     display: grid;
@@ -1119,52 +1060,6 @@
     color: #fff;
   }
 
-  /* donkere kaart */
-  .db-donker {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 22px;
-    border-radius: 18px;
-    background: #262626;
-    color: var(--color-fg);
-  }
-  .db-donker-intro {
-    margin: 0;
-    font-size: 13px;
-    opacity: 0.8;
-  }
-  .db-studios {
-    align-self: stretch;
-    list-style: none;
-    margin: 0 0 auto;
-    padding: 0;
-  }
-  .db-studios li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 11px 0;
-    border-bottom: 1px solid rgba(244, 241, 234, 0.14);
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .db-status {
-    padding: 5px 10px;
-    border-radius: 999px;
-    background: #2f7d4f;
-    font-size: 12px;
-  }
-  .db-status.is-bezet {
-    background: var(--color-accent);
-    color: var(--color-bg);
-  }
-  .db-donker .db-knop {
-    border-color: transparent;
-  }
-
   /* formulier */
   .db-formulier {
     display: flex;
@@ -1236,16 +1131,6 @@
       flex-direction: column;
       gap: 10px;
       padding: 10px;
-    }
-    .db-zij {
-      position: static;
-      flex-direction: row;
-      align-self: stretch;
-      justify-content: space-between;
-      padding: 4px 62px 4px 4px;
-    }
-    .db-zij-uit {
-      margin-top: 0;
     }
     .db-paneel {
       border-radius: 18px;
