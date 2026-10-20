@@ -991,18 +991,26 @@
   }
   .service-met-video {
     overflow: hidden;
+    transition:
+      opacity 0.15s,
+      background-color 0.3s;
   }
-  /* .is-in-beeld zet speelInBeeld() op een telefoon, als vervanger van hover */
+  /* .is-in-beeld zet speelInBeeld() op een telefoon, als vervanger van hover.
+     De achtergrond wordt zwart, zodat de blokkleur niet doorschemert terwijl
+     de video laadt of langs de randen. */
   .service-met-video:hover,
   .service-met-video:focus-within,
   .service-met-video:global(.is-in-beeld) {
     opacity: 1;
+    background-color: var(--color-bg);
   }
+  /* 1px groter dan het blok aan elke kant: door afronding bleef er anders
+     soms een haarlijntje van de blokkleur zichtbaar */
   .service-video {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    inset: -1px;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
     object-fit: cover;
     opacity: 0;
     transition: opacity 0.3s;
