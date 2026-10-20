@@ -13,6 +13,7 @@
   } from "firebase/firestore";
   import { onAuthStateChanged, signOut } from "firebase/auth";
   import { db, auth } from "$lib/firebase.js";
+  import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
 
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
@@ -45,6 +46,7 @@
   let endTime = $state("");
   let prijs = $state("");
   let imageUrl = $state("");
+  let fotoUitsnede = $state("");
   let beschrijving = $state("");
   let submitting = $state(false);
   let error = $state("");
@@ -191,6 +193,7 @@
     endTime = "";
     prijs = "";
     imageUrl = "";
+    fotoUitsnede = "";
     beschrijving = "";
   }
 
@@ -205,6 +208,7 @@
     endTime = a.endTime ?? "";
     prijs = a.prijs ?? "";
     imageUrl = a.imageUrl ?? "";
+    fotoUitsnede = a.fotoUitsnede ?? "";
     beschrijving = a.beschrijving ?? "";
     error = "";
     success = false;
@@ -234,6 +238,7 @@
       endTime,
       prijs,
       imageUrl,
+      fotoUitsnede,
       beschrijving,
     };
     try {
@@ -509,7 +514,12 @@
                 <li class="db-regel db-regel-agenda" class:is-bewerkt={bewerkId === a.id}>
                   <span class="db-regel-wie">
                     {#if a.imageUrl}
-                      <img class="db-avatar db-avatar-klein" src={a.imageUrl} alt="" />
+                      <img
+                        class="db-avatar db-avatar-klein"
+                        src={a.imageUrl}
+                        alt=""
+                        style:object-position={agendaFotoPositie(a)}
+                      />
                     {:else}
                       <span class="db-avatar db-avatar-klein" style:background={a.kleur || undefined}></span>
                     {/if}
@@ -589,6 +599,20 @@
               <span>Foto (link)</span>
               <input type="url" placeholder="https://… (optioneel)" bind:value={imageUrl} />
             </label>
+            {#if imageUrl}
+              <div class="db-veld">
+                <span>Welk deel van de foto?</span>
+                <div class="db-uitsnede">
+                  {#each agendaFotoUitsneden as u}
+                    <label class="db-uitsnede-optie">
+                      <input type="radio" name="fotoUitsnede" value={u.waarde} bind:group={fotoUitsnede} />
+                      <img src={imageUrl} alt="" style:object-position={u.positie} />
+                      <span>{u.label}</span>
+                    </label>
+                  {/each}
+                </div>
+              </div>
+            {/if}
             <label class="db-veld">
               <span>Beschrijving</span>
               <textarea placeholder="korte omschrijving (optioneel)" rows="3" bind:value={beschrijving}></textarea>
@@ -962,6 +986,36 @@
     background: var(--color-bg);
     border-color: var(--color-bg);
     color: var(--color-fg);
+  }
+  .db-uitsnede {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .db-uitsnede-optie {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .db-uitsnede-optie input {
+    position: absolute;
+    opacity: 0;
+  }
+  .db-uitsnede-optie img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 6px;
+  }
+  .db-uitsnede-optie input:checked + img {
+    border-color: var(--color-primary);
+  }
+  .db-uitsnede-optie input:focus-visible + img {
+    outline: 2px solid var(--color-bg);
+    outline-offset: 2px;
   }
   .db-annuleer {
     align-self: center;

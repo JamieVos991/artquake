@@ -6,6 +6,7 @@
   import { collection, getDocs } from "firebase/firestore";
   import { db } from "$lib/firebase.js";
   import { navigatie } from "$lib/data/navigatie.js";
+  import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import dansFoto from "$lib/assets/pictures/hero/meiden-die-dansen.avif";
   import zingFoto from "$lib/assets/pictures/hero/meid-die-zingt.avif";
   import optredenFoto from "$lib/assets/pictures/hero/optreden.avif";
@@ -201,7 +202,12 @@
                   style:color={tekstKleur(ev.kleur)}
                 >
                   {#if ev.imageUrl}
-                    <img src={ev.imageUrl} alt="" loading="lazy" />
+                    <img
+                      src={ev.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      style:object-position={agendaFotoPositie(ev)}
+                    />
                   {:else}
                     <span>{ev.date.slice(8, 10)}.{ev.date.slice(5, 7)}</span>
                   {/if}

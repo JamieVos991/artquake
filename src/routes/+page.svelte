@@ -7,6 +7,7 @@
   import { db } from "$lib/firebase.js";
   import { diensten as services } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
+  import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
 
   const dienstVideos = import.meta.glob("../lib/assets/videos/*.mp4", {
     eager: true,
@@ -421,7 +422,13 @@
               'var(--color-bg)'}; color:{agendaTekstKleur(ev.kleur)}"
           >
             {#if ev.imageUrl}
-              <img class="agenda-foto" src={ev.imageUrl} alt="" loading="lazy" />
+              <img
+                class="agenda-foto"
+                src={ev.imageUrl}
+                alt=""
+                loading="lazy"
+                style:object-position={agendaFotoPositie(ev)}
+              />
             {:else}
               <span class="agenda-foto agenda-foto-leeg" aria-hidden="true"></span>
             {/if}
