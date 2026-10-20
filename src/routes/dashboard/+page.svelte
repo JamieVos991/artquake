@@ -14,7 +14,7 @@
   import { onAuthStateChanged, signOut } from "firebase/auth";
   import { db, auth } from "$lib/firebase.js";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
-
+  import { agendaKleur, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
   let uitloggen = $state(false);
@@ -35,7 +35,8 @@
     "Workshop",
     "Besloten",
   ];
-  const standaardKleur = "#f2a81c";
+  // oranje = automatisch: de website kiest dan een kleur op basis van het type
+  const standaardKleur = standaardAgendaKleur;
 
   let band = $state("");
   let place = $state("");
@@ -106,6 +107,21 @@
     verwijderBezig = r.id;
     try {
       await deleteDoc(doc(db, "reserveringen", r.id));
+    } catch (err) {
+      alert("Verwijderen mislukt. Probeer het opnieuw.");
+    } finally {
+      verwijderBezig = null;
+    }
+  }
+
+  async function verwijderAgendaItem(a) {
+    if (!confirm(`"${a.band ?? "Dit agenda-item"}" op ${formatDatum(a.date)} verwijderen?`))
+      return;
+    verwijderBezig = a.id;
+    try {
+      await deleteDoc(doc(db, "agenda", a.id));
+      // wie dit item aan het bewerken was, krijgt weer een leeg formulier
+      if (bewerkId === a.id) leegFormulier();
     } catch (err) {
       alert("Verwijderen mislukt. Probeer het opnieuw.");
     } finally {
@@ -507,7 +523,7 @@
             <p class="db-leeg">Geen evenementen op komst.</p>
           {:else}
             <div class="db-lijst-kop db-lijst-kop-agenda" aria-hidden="true">
-              <span>Wat en waar</span><span>Datum</span><span>Tijd</span><span></span>
+              <span>Wat en waar</span><span>Datum</span><span>Tijd</span><span></span><span></span>
             </div>
             <ul class="db-lijst">
               {#each agendaItems as a (a.id)}
@@ -521,7 +537,7 @@
                         style:object-position={agendaFotoPositie(a)}
                       />
                     {:else}
-                      <span class="db-avatar db-avatar-klein" style:background={a.kleur || undefined}></span>
+                      <span class="db-avatar db-avatar-klein" style:background={agendaKleur(a)}></span>
                     {/if}
                     <span>
                       <strong>{a.band ?? "–"}</strong>
@@ -539,6 +555,15 @@
                     aria-label="{a.band ?? 'Agenda-item'} bewerken"
                   >
                     Bewerk
+                  </button>
+                  <button
+                    type="button"
+                    class="db-verwijder"
+                    disabled={verwijderBezig === a.id}
+                    onclick={() => verwijderAgendaItem(a)}
+                    aria-label="{a.band ?? 'Agenda-item'} verwijderen"
+                  >
+                    {verwijderBezig === a.id ? "…" : "Verwijder"}
                   </button>
                 </li>
               {/each}
@@ -584,8 +609,13 @@
                 </datalist>
               </label>
               <label class="db-veld db-veld-kleur">
-                <span>Kleur *</span>
-                <input type="color" bind:value={kleur} required />
+                <span title="Laat je hem oranje, dan kiest de website een kleur bij het type">Kleur *</span>
+                <input
+                  type="color"
+                  bind:value={kleur}
+                  required
+                  title="Oranje = automatisch, op basis van het type"
+                />
               </label>
             </div>
             <label class="db-veld">
@@ -977,7 +1007,7 @@
   }
   .db-lijst-kop-agenda,
   .db-regel-agenda {
-    grid-template-columns: minmax(0, 1fr) 96px 110px 70px;
+    grid-template-columns: minmax(0, 1fr) 96px 110px 64px 84px;
   }
   .db-regel-agenda.is-bewerkt {
     background: var(--db-oranje-licht);

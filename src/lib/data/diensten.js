@@ -88,7 +88,7 @@ export const diensten = [
 		// coaching gaat in overleg, dus geen verwijzing naar de agenda
 		geenAgenda: true,
 		intro: "Begeleiding op maat, voor makers, bands en dansgroepen",
-		text: "Iedere maker heeft andere doelen en andere twijfels. Wij helpen je om je eigen pad te vinden, of dat nu gaat over artistieke ontwikkeling, zelfvertrouwen op het podium of het uitstippelen van de volgende stap.\n\nDat kan in een persoonlijk traject, maar ook samen: we coachen bands en dansgroepen. Van samen leren repeteren en een set opbouwen tot staan als één geheel op het podium.\n\nJe hoeft daarvoor niet al ver te zijn. Zo begeleidt Emre ook een band die nog helemaal aan het begin staat.\n\nJe werkt samen met een coach uit onze crew. Samen kijk je waar je nu staat, waar je naartoe wilt en wat daarvoor nodig is.",
+		text: "Iedere maker heeft andere doelen en andere twijfels. Wij helpen je om je eigen pad te vinden, of dat nu gaat over artistieke ontwikkeling, zelfvertrouwen op het podium of het uitstippelen van de volgende stap.\n\nDat kan in een persoonlijk traject, maar ook samen: we coachen bands en dansgroepen. Van samen leren repeteren en een set opbouwen tot staan als één geheel op het podium.\n\nJe hoeft daarvoor niet al ver te zijn. Zo begeleidt onder andere Emre ook bands die nog helemaal aan het begin staan (zie het filmpje).\n\nJe werkt samen met een coach uit onze crew. Samen kijk je waar je nu staat, waar je naartoe wilt en wat daarvoor nodig is.",
 	},
 	{
 		slug: "in-opdracht",

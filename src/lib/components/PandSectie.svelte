@@ -10,8 +10,8 @@
     { naam: "Zaal met podium, licht en geluid", x: 560, y: 650, kant: "rij" },
     { naam: "Atelier", x: 330, y: 650, kant: "rij" },
     { naam: "Opnamestudio", x: 100, y: 820, kant: "zij" },
-    { naam: "Dansstudio", x: 330, y: 1210, kant: "rij" },
-    { naam: "Fotostudio", x: 640, y: 1210, kant: "rij" },
+    { naam: "Fotostudio", x: 330, y: 1210, kant: "rij" },
+    { naam: "Dansstudio", x: 640, y: 1210, kant: "rij" },
   ];
   const nr = (i) => String(i + 1).padStart(2, "0");
 

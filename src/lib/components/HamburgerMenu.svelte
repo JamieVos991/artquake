@@ -7,8 +7,9 @@
   import { db } from "$lib/firebase.js";
   import { navigatie } from "$lib/data/navigatie.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
+  import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
   import dansFoto from "$lib/assets/pictures/hero/meiden-die-dansen.avif";
-  import zingFoto from "$lib/assets/pictures/hero/meid-die-zingt.avif";
+  import zingFoto from "$lib/assets/pictures/hero/zangeres-met-gitaar.avif";
   import optredenFoto from "$lib/assets/pictures/hero/optreden.avif";
   import zingenFoto from "$lib/assets/pictures/hero/meiden-die-zingen.avif";
   import tekenFoto from "$lib/assets/pictures/hero/meid-die-tekent.avif";
@@ -86,15 +87,6 @@
   function sluitMenu() {
     open = false;
     knopEl?.focus();
-  }
-
-  function tekstKleur(hex) {
-    if (!hex) return "var(--color-fg)";
-    const c = hex.replace("#", "");
-    const r = parseInt(c.substring(0, 2), 16);
-    const g = parseInt(c.substring(2, 4), 16);
-    const b = parseInt(c.substring(4, 6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#0b0b0b" : "#f4f1ea";
   }
 
   function formatDatum(d) {
@@ -198,8 +190,8 @@
               <li class="menu-event">
                 <span
                   class="menu-thumb"
-                  style:background={ev.kleur || "var(--color-primary)"}
-                  style:color={tekstKleur(ev.kleur)}
+                  style:background={agendaKleur(ev)}
+                  style:color={agendaTekstKleur(agendaKleur(ev))}
                 >
                   {#if ev.imageUrl}
                     <img

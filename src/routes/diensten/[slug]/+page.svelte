@@ -48,8 +48,7 @@
 <section
   class="dp-body"
   class:dp-body-video={video}
-  class:dp-body-naast={video && dienst.videoNaast}
-  class:dp-body-galerij={galerij.length}
+  class:dp-body-naast={video && dienst.videoNaast}  class:dp-body-galerij={galerij.length}
 >
   {#if video}
     <figure class="dp-video">

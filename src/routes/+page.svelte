@@ -8,6 +8,7 @@
   import { diensten as services } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
+  import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
 
   const dienstVideos = import.meta.glob("../lib/assets/videos/*.mp4", {
     eager: true,
@@ -86,21 +87,17 @@
     return `${day}.${m}`;
   }
 
-  function agendaTekstKleur(hex) {
-    if (!hex) return "var(--color-fg)";
-    const c = hex.replace("#", "");
-    const r = parseInt(c.substring(0, 2), 16);
-    const g = parseInt(c.substring(2, 4), 16);
-    const b = parseInt(c.substring(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.6 ? "#0b0b0b" : "#f4f1ea";
-  }
-
   const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.{avif,webp,jpg,jpeg}", {
     eager: true,
     import: "default",
   });
   const heroImages = Object.values(heroModules);
+  // uitsnede per hero-foto (object-position); zonder regel hier: midden
+  const heroPosities = {
+    "zangeres-met-gitaar": "center top",
+  };
+  const heroPositie = (src) =>
+    Object.entries(heroPosities).find(([naam]) => src.includes(naam))?.[1];
   const firstHeroImage = heroImages[0];
 
   let heroIndex = $state(0);
@@ -308,6 +305,7 @@
             class:active={i === heroIndex}
             {src}
             alt=""
+            style:object-position={heroPositie(src)}
             loading={i === 0 ? "eager" : "lazy"}
             fetchpriority={i === 0 ? "high" : undefined}
           />
@@ -416,10 +414,11 @@
         <li class="agenda-empty">Binnenkort meer agenda items.</li>
       {:else}
         {#each agendaItems as ev (ev.id)}
+          {@const kleur = agendaKleur(ev)}
           <li
             class="agenda-row"
-            style="background:{ev.kleur ||
-              'var(--color-bg)'}; color:{agendaTekstKleur(ev.kleur)}"
+            style:background={kleur}
+            style:color={agendaTekstKleur(kleur)}
           >
             {#if ev.imageUrl}
               <img
@@ -537,7 +536,8 @@
         <p class="crew-intro-getal">{crew.length}</p>
         <p class="crew-intro-kop">CREWLEDEN</p>
         <p class="crew-intro-tekst">
-          Organisatie, coaches, docenten, fotografen en een presentator. Samen
+          Bestuursleden, organisatoren, coaches, docenten, fotografen en een
+          presentator. Samen
           houden zij Artquake draaiende.
         </p>
       </li>
@@ -1150,7 +1150,8 @@
     object-fit: cover;
   }
   .agenda-foto-leeg {
-    background: rgba(11, 11, 11, 0.12);
+    background: currentColor;
+    opacity: 0.12;
   }
   .agenda-date {
     font:
