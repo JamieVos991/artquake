@@ -11,20 +11,16 @@
     onSnapshot,
     serverTimestamp,
   } from "firebase/firestore";
-  import { onAuthStateChanged, signOut } from "firebase/auth";
-  import { db, auth, storage } from "$lib/firebase.js";
-  import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { db, auth } from "$lib/firebase.js";
+  import { uploadFoto } from "$lib/fotoUpload.js";
+  import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
+  import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
-  let uitloggen = $state(false);
-
-  async function handleUitloggen() {
-    uitloggen = true;
-    await signOut(auth);
-    goto(`${base}/login`);
-  }
+  // uitloggen gaat via het menu
 
   // matcht het bestaande schema van de 'agenda'-collectie (band, place, date,
   // startTime, endTime, type, imageUrl) zodat het compatibel blijft met de
@@ -60,6 +56,7 @@
   let reserveringenGeladen = $state(false);
   let unsubscribeAgenda;
   let unsubscribeReserveringen;
+  let unsubscribeArtiesten;
 
   function studioLabel(id) {
     return studios.find((s) => s.id === id)?.label ?? id ?? "–";
@@ -94,19 +91,117 @@
 
   async function verwijderReservering(r) {
     const naam = r.naam || "deze reservering";
+    const metMail = r.email ? `\n\n${r.email} krijgt een mail dat de reservering is verwijderd.` : "";
     if (
       !confirm(
-        `Reservering van ${naam} (${formatDatum(r.datum)}, ${r.starttijd}–${r.eindtijd}) verwijderen?`
+        `Reservering van ${naam} (${formatDatum(r.datum)}, ${r.starttijd}–${r.eindtijd}) verwijderen?${metMail}`
       )
     )
       return;
     verwijderBezig = r.id;
     try {
       await deleteDoc(doc(db, "reserveringen", r.id));
+      if (reserveringBewerkId === r.id) leegReserveringFormulier();
+      if (r.email && !(await stuurReserveringMail(r, "verwijderd"))) {
+        alert(`De reservering is verwijderd, maar de mail naar ${r.email} kon niet worden verstuurd.`);
+      }
     } catch (err) {
       alert("Verwijderen mislukt. Probeer het opnieuw.");
     } finally {
       verwijderBezig = null;
+    }
+  }
+
+  // ── reservering bewerken ──
+  // zelfde tijden als het boekingsformulier: elk half uur van 09:00 tot 21:00
+  const reserveringTijden = Array.from({ length: 25 }, (_, i) => {
+    const m = 9 * 60 + i * 30;
+    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  });
+
+  let reserveringBewerkId = $state(null);
+  let rStudio = $state("");
+  let rNaam = $state("");
+  let rEmail = $state("");
+  let rDatum = $state("");
+  let rStart = $state("");
+  let rEind = $state("");
+  let reserveringOpslaan = $state(false);
+  let reserveringFout = $state("");
+  let reserveringGelukt = $state("");
+
+  function leegReserveringFormulier() {
+    reserveringBewerkId = null;
+    rStudio = rNaam = rEmail = rDatum = rStart = rEind = "";
+  }
+
+  function bewerkReservering(r) {
+    reserveringBewerkId = r.id;
+    rStudio = r.studio ?? "";
+    rNaam = r.naam ?? "";
+    rEmail = r.email ?? "";
+    rDatum = r.datum ?? "";
+    rStart = r.starttijd ?? "";
+    rEind = r.eindtijd ?? "";
+    reserveringFout = "";
+    reserveringGelukt = "";
+    // het formulier verschijnt pas na deze klik, dus even wachten
+    setTimeout(() =>
+      document
+        .getElementById("reservering-formulier")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+    );
+  }
+
+  function annuleerReserveringBewerken() {
+    leegReserveringFormulier();
+    reserveringFout = "";
+    reserveringGelukt = "";
+  }
+
+  async function slaReserveringOp(e) {
+    e.preventDefault();
+    reserveringFout = "";
+    reserveringGelukt = "";
+    if (rEind <= rStart) {
+      reserveringFout = "De eindtijd moet na de begintijd liggen.";
+      return;
+    }
+    const overlap = reserveringen.find(
+      (r) =>
+        r.id !== reserveringBewerkId &&
+        r.studio === rStudio &&
+        r.datum === rDatum &&
+        rStart < r.eindtijd &&
+        rEind > r.starttijd
+    );
+    if (overlap) {
+      reserveringFout = `Deze ruimte is dan al gereserveerd door ${overlap.naam ?? "iemand anders"} (${overlap.starttijd}–${overlap.eindtijd}).`;
+      return;
+    }
+    reserveringOpslaan = true;
+    const velden = {
+      studio: rStudio,
+      naam: rNaam.trim(),
+      email: rEmail.trim(),
+      datum: rDatum,
+      starttijd: rStart,
+      eindtijd: rEind,
+    };
+    try {
+      await updateDoc(doc(db, "reserveringen", reserveringBewerkId), {
+        ...velden,
+        gewijzigdOp: serverTimestamp(),
+      });
+      const gemaild = await stuurReserveringMail(velden, "gewijzigd");
+      reserveringGelukt = gemaild
+        ? `Opgeslagen ✓ ${velden.email} heeft een mail met de nieuwe gegevens gekregen.`
+        : "Opgeslagen ✓ De mail kon niet worden verstuurd.";
+      leegReserveringFormulier();
+    } catch (err) {
+      reserveringFout = "Opslaan mislukt. Probeer het opnieuw.";
+    } finally {
+      reserveringOpslaan = false;
     }
   }
 
@@ -126,6 +221,18 @@
   }
 
   function startDataSubscripties() {
+    unsubscribeArtiesten = onSnapshot(
+      collection(db, "artiesten"),
+      (snapshot) => {
+        artiesten = snapshot.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (a.naam ?? "").localeCompare(b.naam ?? ""));
+        artiestenGeladen = true;
+      },
+      () => {
+        artiestenGeladen = true;
+      }
+    );
     unsubscribeAgenda = onSnapshot(
       collection(db, "agenda"),
       (snapshot) => {
@@ -164,6 +271,9 @@
   function stopDataSubscripties() {
     unsubscribeAgenda?.();
     unsubscribeReserveringen?.();
+    unsubscribeArtiesten?.();
+    artiesten = [];
+    artiestenGeladen = false;
     agendaItems = [];
     reserveringen = [];
     agendaGeladen = false;
@@ -179,7 +289,7 @@
       stopDataSubscripties();
       if (user) {
         startDataSubscripties();
-      } else if (!uitloggen) {
+      } else {
         goto(`${base}/login`);
       }
     });
@@ -239,53 +349,133 @@
   let uploadVoortgang = $state(null); // null = geen upload bezig, anders 0–100
   let uploadFout = $state("");
 
-  // maakt de foto kleiner (max 1600px breed of hoog, WebP) zodat de
-  // website snel blijft; lukt dat niet, dan gaat het origineel omhoog
-  async function verkleinFoto(bestand) {
+  // ── artiesten ──
+  const artiestTypes = ["Podium", "Expo"];
+  // uitsnede van de artiestfoto op de website (object-position)
+  const artiestUitsneden = [
+    { waarde: "50% 20%", label: "Boven" },
+    { waarde: "50% 50%", label: "Midden" },
+    { waarde: "50% 80%", label: "Onder" },
+  ];
+
+  let artiesten = $state([]);
+  let artiestenGeladen = $state(false);
+  let artiestZoek = $state("");
+  let aantalPodium = $derived(artiesten.filter((a) => a.type === "Podium").length);
+  let gefilterdeArtiesten = $derived(
+    artiesten.filter((a) =>
+      (a.naam ?? "").toLowerCase().includes(artiestZoek.trim().toLowerCase())
+    )
+  );
+
+  let artiestBewerkId = $state(null);
+  let aNaam = $state("");
+  let aType = $state("Podium");
+  let aBeschrijving = $state("");
+  let aInstagram = $state("");
+  let aImageUrl = $state("");
+  let aFotoPositie = $state("");
+  let artiestOpslaan = $state(false);
+  let artiestFout = $state("");
+  let artiestGelukt = $state("");
+  let artiestUploadVoortgang = $state(null);
+
+  function leegArtiestFormulier() {
+    artiestBewerkId = null;
+    aNaam = "";
+    aType = "Podium";
+    aBeschrijving = "";
+    aInstagram = "";
+    aImageUrl = "";
+    aFotoPositie = "";
+  }
+
+  function bewerkArtiest(a) {
+    artiestBewerkId = a.id;
+    aNaam = a.naam ?? "";
+    aType = a.type || "Podium";
+    aBeschrijving = a.beschrijving ?? "";
+    aInstagram = a.instagram ?? "";
+    aImageUrl = a.imageUrl ?? "";
+    aFotoPositie = a.fotoPositie ?? "";
+    artiestFout = "";
+    artiestGelukt = "";
+    document
+      .getElementById("artiest-formulier")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function annuleerArtiest() {
+    leegArtiestFormulier();
+    artiestFout = "";
+    artiestGelukt = "";
+  }
+
+  async function kiesArtiestFoto(e) {
+    const bestand = e.currentTarget.files?.[0];
+    e.currentTarget.value = "";
+    if (!bestand) return;
+    artiestFout = "";
     try {
-      const beeld = await createImageBitmap(bestand);
-      const schaal = Math.min(1, 1600 / Math.max(beeld.width, beeld.height));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(beeld.width * schaal);
-      canvas.height = Math.round(beeld.height * schaal);
-      canvas.getContext("2d").drawImage(beeld, 0, 0, canvas.width, canvas.height);
-      const blob = await new Promise((r) => canvas.toBlob(r, "image/webp", 0.82));
-      return blob ?? bestand;
-    } catch {
-      return bestand;
+      aImageUrl = await uploadFoto(bestand, "artiesten-images", (p) => (artiestUploadVoortgang = p));
+    } catch (err) {
+      artiestFout = err.message;
+    } finally {
+      artiestUploadVoortgang = null;
     }
   }
 
-  async function uploadFoto(e) {
+  async function slaArtiestOp(e) {
+    e.preventDefault();
+    artiestFout = "";
+    artiestGelukt = "";
+    artiestOpslaan = true;
+    const velden = {
+      naam: aNaam.trim(),
+      type: aType,
+      beschrijving: aBeschrijving.trim(),
+      instagram: aInstagram.trim(),
+      imageUrl: aImageUrl,
+      fotoPositie: aFotoPositie,
+    };
+    try {
+      if (artiestBewerkId) {
+        await updateDoc(doc(db, "artiesten", artiestBewerkId), velden);
+        artiestGelukt = `${velden.naam} opgeslagen ✓`;
+      } else {
+        await addDoc(collection(db, "artiesten"), velden);
+        artiestGelukt = `${velden.naam} toegevoegd ✓`;
+      }
+      leegArtiestFormulier();
+    } catch (err) {
+      artiestFout = "Opslaan mislukt. Probeer het opnieuw.";
+    } finally {
+      artiestOpslaan = false;
+    }
+  }
+
+  async function verwijderArtiest(a) {
+    if (!confirm(`${a.naam ?? "Deze artiest"} van de website verwijderen?`)) return;
+    verwijderBezig = a.id;
+    try {
+      await deleteDoc(doc(db, "artiesten", a.id));
+      if (artiestBewerkId === a.id) leegArtiestFormulier();
+    } catch (err) {
+      alert("Verwijderen mislukt. Probeer het opnieuw.");
+    } finally {
+      verwijderBezig = null;
+    }
+  }
+
+  async function kiesAgendaFoto(e) {
     const bestand = e.currentTarget.files?.[0];
     e.currentTarget.value = "";
     if (!bestand) return;
     uploadFout = "";
-    if (!bestand.type.startsWith("image/")) {
-      uploadFout = "Kies een afbeelding (jpg, png, webp…).";
-      return;
-    }
-    uploadVoortgang = 0;
     try {
-      const blob = await verkleinFoto(bestand);
-      const extensie = blob.type === "image/webp" ? "webp" : bestand.name.split(".").pop();
-      const naam = bestand.name
-        .replace(/\.[^.]+$/, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .slice(0, 40);
-      const plek = ref(storage, `agenda-images/${Date.now()}-${naam}.${extensie}`);
-      const taak = uploadBytesResumable(plek, blob, { contentType: blob.type });
-      taak.on("state_changed", (s) => {
-        uploadVoortgang = Math.round((s.bytesTransferred / s.totalBytes) * 100);
-      });
-      await taak;
-      imageUrl = await getDownloadURL(plek);
+      imageUrl = await uploadFoto(bestand, "agenda-images", (p) => (uploadVoortgang = p));
     } catch (err) {
-      uploadFout =
-        err?.code === "storage/unauthorized"
-          ? "Uploaden niet toegestaan: de opslagregels in Firebase staan dit nog niet toe."
-          : "Uploaden mislukt. Probeer het opnieuw.";
+      uploadFout = err.message;
     } finally {
       uploadVoortgang = null;
     }
@@ -351,6 +541,12 @@
     ...reserveringen.filter((r) => !reserveringIsAfgelopen(r)).reverse(),
     ...reserveringen.filter(reserveringIsAfgelopen),
   ]);
+  let reserveringZoek = $state("");
+  let gezochteReserveringen = $derived(
+    reserveringenOpVolgorde.filter((r) =>
+      (r.naam ?? "").toLowerCase().includes(reserveringZoek.trim().toLowerCase())
+    )
+  );
   let komendeReserveringen = $derived(
     reserveringen.filter((r) => !reserveringIsAfgelopen(r)).length
   );
@@ -383,24 +579,11 @@
 {:else}
   <div class="db">
     <main class="db-paneel" id="overzicht">
-      <header class="db-top">
-        <p class="db-welkom">Welkom bij <strong>Artquake</strong></p>
-        <div class="db-gebruiker">
-          <a class="db-verwijder db-top-knop" href={base || "/"}>Naar de website</a>
-          <button class="db-verwijder db-top-knop" type="button" onclick={handleUitloggen}>Uitloggen</button>
-          <span class="db-avatar">{initialen(ingelogdeGebruiker.email)}</span>
-          <span class="db-gebruiker-tekst">
-            <strong>Beheerder</strong>
-            <span>{ingelogdeGebruiker.email}</span>
-          </span>
-        </div>
-      </header>
-
       <div class="db-kop">
         <h1>Overzicht</h1>
       </div>
 
-      <!-- kaart met reserveringen van deze week -->
+      <!-- kaarten: reserveringen (deze week en altijd), artiesten en agenda -->
       <section class="db-kaarten" aria-label="Statistieken">
         <article class="db-kaart db-kaart-oranje">
           <span class="db-label db-label-donker">Deze week</span>
@@ -409,12 +592,34 @@
             <p><span>Al geweest</span><span>{dezeWeekGeweest}/{dezeWeek.length}</span></p>
             <div class="db-balk"><i style:width="{dezeWeek.length ? (dezeWeekGeweest / dezeWeek.length) * 100 : 0}%"></i></div>
           </div>
-          <a class="db-knop" href="#reserveringen">Bekijk</a>
+        </article>
+
+        <article class="db-kaart db-kaart-donker">
+          <span class="db-label db-label-oranje">Altijd</span>
+          <h2>{reserveringen.length} {reserveringen.length === 1 ? "reservering" : "reserveringen"} in totaal</h2>
+          <div class="db-voortgang">
+            <p><span>Nog te komen</span><span>{komendeReserveringen}/{reserveringen.length}</span></p>
+            <div class="db-balk"><i style:width="{reserveringen.length ? (komendeReserveringen / reserveringen.length) * 100 : 0}%"></i></div>
+          </div>
+        </article>
+
+        <article class="db-kaart db-kaart-paars">
+          <span class="db-label db-label-donker">Artiesten</span>
+          <h2>{artiesten.length} {artiesten.length === 1 ? "artiest" : "artiesten"} op de website</h2>
+          <div class="db-voortgang">
+            <p><span>Podium · Expo</span><span>{aantalPodium} · {artiesten.length - aantalPodium}</span></p>
+            <div class="db-balk"><i style:width="{artiesten.length ? (aantalPodium / artiesten.length) * 100 : 0}%"></i></div>
+          </div>
+        </article>
+
+        <article class="db-kaart db-kaart-licht">
+          <span class="db-label db-label-donker">Agenda</span>
+          <h2>{komendeAgenda} {komendeAgenda === 1 ? "activiteit" : "activiteiten"} op komst</h2>
         </article>
       </section>
 
       <!-- reserveringen -->
-      <div class="db-rij db-rij-enkel">
+      <div class="db-rij" class:db-rij-enkel={!reserveringBewerkId} class:db-rij-agenda={reserveringBewerkId}>
         <section class="db-blok" id="reserveringen">
           <header class="db-blok-kop">
             <h2>Reserveringen</h2>
@@ -426,13 +631,26 @@
           {:else if reserveringen.length === 0}
             <p class="db-leeg">Nog geen reserveringen binnengekomen.</p>
           {:else}
+            {#if reserveringGelukt}
+              <p class="db-gelukt db-melding">{reserveringGelukt}</p>
+            {/if}
+            <input
+              class="db-zoek"
+              type="search"
+              placeholder="zoek op naam"
+              aria-label="Zoek een reservering op naam"
+              bind:value={reserveringZoek}
+            />
+            {#if gezochteReserveringen.length === 0}
+              <p class="db-leeg">Geen reserveringen gevonden voor "{reserveringZoek.trim()}".</p>
+            {:else}
             <div class="db-lijst-kop" aria-hidden="true">
-              <span>Wie en waar</span><span>Datum</span><span>Tijd</span><span></span>
+              <span>Wie en waar</span><span>Datum</span><span>Tijd</span><span></span><span></span>
             </div>
             <ul class="db-lijst">
-              {#each reserveringenOpVolgorde as r (r.id)}
+              {#each gezochteReserveringen as r (r.id)}
                 {@const geweest = reserveringIsAfgelopen(r)}
-                <li class="db-regel" class:is-geweest={geweest}>
+                <li class="db-regel" class:is-geweest={geweest} class:is-bewerkt={reserveringBewerkId === r.id}>
                   <span class="db-regel-wie">
                     <span class="db-avatar db-avatar-klein">{initialen(r.naam)}</span>
                     <span>
@@ -446,6 +664,14 @@
                   >
                   <button
                     type="button"
+                    class="db-verwijder db-bewerk"
+                    onclick={() => bewerkReservering(r)}
+                    aria-label="Reservering van {r.naam ?? 'onbekend'} bewerken"
+                  >
+                    Bewerk
+                  </button>
+                  <button
+                    type="button"
                     class="db-verwijder"
                     disabled={verwijderBezig === r.id}
                     onclick={() => verwijderReservering(r)}
@@ -456,8 +682,74 @@
                 </li>
               {/each}
             </ul>
+            {/if}
           {/if}
         </section>
+
+        {#if reserveringBewerkId}
+          <section class="db-blok db-formulier-blok" id="reservering-formulier">
+            <header class="db-blok-kop">
+              <h2>Reservering bewerken</h2>
+            </header>
+            <form class="db-formulier" onsubmit={slaReserveringOp}>
+              <label class="db-veld">
+                <span>Ruimte *</span>
+                <select bind:value={rStudio} required>
+                  {#each Object.entries(studioNamen) as [id, naam]}
+                    <option value={id}>{naam}</option>
+                  {/each}
+                </select>
+              </label>
+              <label class="db-veld">
+                <span>Naam *</span>
+                <input type="text" bind:value={rNaam} required />
+              </label>
+              <label class="db-veld">
+                <span>E-mail *</span>
+                <input type="email" bind:value={rEmail} required />
+              </label>
+              <div class="db-veld-rij">
+                <label class="db-veld">
+                  <span>Datum *</span>
+                  <input type="date" bind:value={rDatum} required />
+                </label>
+                <label class="db-veld">
+                  <span>Begin *</span>
+                  <select bind:value={rStart} required>
+                    {#each reserveringTijden.slice(0, -1) as t}
+                      <option value={t}>{t}</option>
+                    {/each}
+                  </select>
+                </label>
+                <label class="db-veld">
+                  <span>Eind *</span>
+                  <select bind:value={rEind} required>
+                    {#each reserveringTijden.slice(1) as t}
+                      <option value={t}>{t}</option>
+                    {/each}
+                  </select>
+                </label>
+              </div>
+              <p class="db-hint">Na opslaan krijgt de huurder een mail met de nieuwe gegevens.</p>
+
+              {#if reserveringFout}
+                <p class="db-fout">{reserveringFout}</p>
+              {/if}
+
+              <button class="db-knop db-knop-breed" type="submit" disabled={reserveringOpslaan}>
+                {reserveringOpslaan ? "Bezig…" : "Opslaan en mailen"}
+              </button>
+              <button
+                class="db-verwijder db-annuleer"
+                type="button"
+                disabled={reserveringOpslaan}
+                onclick={annuleerReserveringBewerken}
+              >
+                Annuleren
+              </button>
+            </form>
+          </section>
+        {/if}
       </div>
 
       <!-- agenda -->
@@ -590,7 +882,7 @@
                     type="file"
                     accept="image/*"
                     disabled={uploadVoortgang !== null}
-                    onchange={uploadFoto}
+                    onchange={kiesAgendaFoto}
                   />
                 </label>
                 {#if imageUrl && uploadVoortgang === null}
@@ -646,11 +938,173 @@
         </section>
       </div>
 
+      <!-- artiesten -->
+      <div class="db-rij db-rij-agenda" id="artiesten">
+        <section class="db-blok">
+          <header class="db-blok-kop">
+            <h2>Artiesten</h2>
+            <span class="db-blok-info">{artiesten.length} op de website</span>
+          </header>
+          <input
+            class="db-zoek"
+            type="search"
+            placeholder="zoek een artiest"
+            aria-label="Zoek een artiest"
+            bind:value={artiestZoek}
+          />
+          {#if !artiestenGeladen}
+            <p class="db-leeg">Laden…</p>
+          {:else if gefilterdeArtiesten.length === 0}
+            <p class="db-leeg">Geen artiesten gevonden.</p>
+          {:else}
+            <ul class="db-lijst">
+              {#each gefilterdeArtiesten as a (a.id)}
+                <li class="db-regel db-regel-artiest" class:is-bewerkt={artiestBewerkId === a.id}>
+                  <span class="db-regel-wie">
+                    {#if a.imageUrl}
+                      <img
+                        class="db-avatar db-avatar-klein"
+                        src={a.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        style:object-position={artiestFotoPositie(a)}
+                      />
+                    {:else}
+                      <span class="db-avatar db-avatar-klein">{initialen(a.naam)}</span>
+                    {/if}
+                    <span>
+                      <strong>{a.naam ?? "–"}</strong>
+                      <span>{[a.type, a.beschrijving].filter(Boolean).join(" · ")}</span>
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    class="db-verwijder db-bewerk"
+                    onclick={() => bewerkArtiest(a)}
+                    aria-label="{a.naam ?? 'Artiest'} bewerken"
+                  >
+                    Bewerk
+                  </button>
+                  <button
+                    type="button"
+                    class="db-verwijder"
+                    disabled={verwijderBezig === a.id}
+                    onclick={() => verwijderArtiest(a)}
+                    aria-label="{a.naam ?? 'Artiest'} verwijderen"
+                  >
+                    {verwijderBezig === a.id ? "…" : "Verwijder"}
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </section>
+
+        <section class="db-blok db-formulier-blok" id="artiest-formulier">
+          <header class="db-blok-kop">
+            <h2>{artiestBewerkId ? "Artiest bewerken" : "Artiest toevoegen"}</h2>
+          </header>
+          <form class="db-formulier" onsubmit={slaArtiestOp}>
+            <label class="db-veld">
+              <span>Naam *</span>
+              <input type="text" placeholder="bijv. Leech" bind:value={aNaam} required />
+            </label>
+            <div class="db-veld-rij db-veld-rij-artiest">
+              <label class="db-veld">
+                <span>Omschrijving</span>
+                <input type="text" placeholder="bijv. Band of Singer-songwriter" bind:value={aBeschrijving} />
+              </label>
+              <label class="db-veld db-veld-type">
+                <span>Type</span>
+                <select bind:value={aType}>
+                  {#each artiestTypes as t}
+                    <option value={t}>{t}</option>
+                  {/each}
+                </select>
+              </label>
+            </div>
+            <label class="db-veld">
+              <span>Instagram</span>
+              <input type="url" placeholder="https://www.instagram.com/… (optioneel)" bind:value={aInstagram} />
+            </label>
+            <div class="db-veld">
+              <span>Foto</span>
+              <div class="db-foto-upload">
+                {#if aImageUrl}
+                  <img class="db-foto-voorbeeld" src={aImageUrl} alt="" />
+                {/if}
+                <label class="db-verwijder db-foto-kies" class:is-bezig={artiestUploadVoortgang !== null}>
+                  {#if artiestUploadVoortgang !== null}
+                    Uploaden… {artiestUploadVoortgang}%
+                  {:else}
+                    {aImageUrl ? "Andere foto kiezen" : "Foto kiezen"}
+                  {/if}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={artiestUploadVoortgang !== null}
+                    onchange={kiesArtiestFoto}
+                  />
+                </label>
+                {#if aImageUrl && artiestUploadVoortgang === null}
+                  <button type="button" class="db-verwijder" onclick={() => (aImageUrl = "")}>
+                    Foto weghalen
+                  </button>
+                {/if}
+              </div>
+            </div>
+            {#if aImageUrl}
+              <div class="db-veld">
+                <span>Welk deel van de foto?</span>
+                <div class="db-uitsnede">
+                  {#each artiestUitsneden as u}
+                    <label class="db-uitsnede-optie">
+                      <input type="radio" name="artiestUitsnede" value={u.waarde} bind:group={aFotoPositie} />
+                      <img class="db-uitsnede-artiest" src={aImageUrl} alt="" style:object-position={u.waarde} />
+                      <span>{u.label}</span>
+                    </label>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+
+            {#if artiestFout}
+              <p class="db-fout">{artiestFout}</p>
+            {/if}
+            {#if artiestGelukt}
+              <p class="db-gelukt">{artiestGelukt}</p>
+            {/if}
+
+            <button
+              class="db-knop db-knop-breed"
+              type="submit"
+              disabled={artiestOpslaan || artiestUploadVoortgang !== null}
+            >
+              {artiestOpslaan ? "Bezig…" : artiestBewerkId ? "Opslaan" : "Toevoegen"}
+            </button>
+            {#if artiestBewerkId}
+              <button
+                class="db-verwijder db-annuleer"
+                type="button"
+                disabled={artiestOpslaan}
+                onclick={annuleerArtiest}
+              >
+                Annuleren
+              </button>
+            {/if}
+          </form>
+        </section>
+      </div>
     </main>
   </div>
 {/if}
 
 <style>
+  /* Dashboard in de stijl van de homepage: donkere achtergrond, zware
+     Archivo-koppen in hoofdletters, Space Mono-labels, effen merkkleuren
+     en harde verschoven schaduwen (zoals de crewkaarten en het
+     contactformulier). */
+
   .auth-gate {
     min-height: 100vh;
     display: flex;
@@ -663,90 +1117,41 @@
   }
 
   .db {
-    --db-rand: rgba(11, 11, 11, 0.85);
-    --db-zacht: rgba(11, 11, 11, 0.6);
-    --db-paars-licht: #dcc4fb;
-    --db-oranje-licht: #f8d37f;
-    display: flex;
-    gap: 14px;
+    --db-rand: var(--color-bg);
+    --db-zacht: rgba(11, 11, 11, 0.65);
+    --db-schaduw: 10px;
     min-height: 100vh;
-    padding: 14px;
-    background: #1c1c1c;
+    padding: 40px 40px 64px;
+    background: var(--color-bg);
     font-family: var(--font-display);
-    color: var(--color-bg);
+    color: var(--color-fg);
   }
 
   /* paneel */
   .db-paneel {
-    flex: 1;
-    min-width: 0;
-    padding: clamp(18px, 2.400vw, 30px);
-    background: var(--color-fg);
-    border-radius: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
     scroll-margin-top: 14px;
-  }
-  .db-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 26px;
-    /* ruimte voor de menuknop rechtsboven */
-    padding-right: 64px;
-    min-height: 44px;
-  }
-  .db-welkom {
-    margin: 0;
-    font-size: 14px;
-    color: var(--db-zacht);
-  }
-  .db-welkom strong {
-    color: var(--color-primary);
-    font-weight: 800;
-    font-size: 17px;
-  }
-  .db-gebruiker {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .db-gebruiker-tekst {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    font-size: 12px;
-    line-height: 1.25;
-    color: var(--db-zacht);
-  }
-  .db-gebruiker-tekst strong {
-    color: var(--color-bg);
-    font-size: 13px;
-  }
-  .db-gebruiker-tekst span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .db-avatar {
     flex: none;
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 50%;
-    background: var(--db-oranje-licht);
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--color-bg);
+    background: var(--color-accent);
     color: var(--color-bg);
-    font-weight: 800;
+    font-weight: 900;
     font-size: 13px;
     object-fit: cover;
   }
   .db-avatar-klein {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     font-size: 12px;
-    background: var(--db-paars-licht);
+    background: var(--color-primary);
+    color: var(--color-fg);
   }
 
   .db-kop {
@@ -755,49 +1160,80 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    margin-bottom: 18px;
+    margin-bottom: 32px;
+    /* ruimte voor de menuknop rechtsboven */
+    padding-right: 64px;
   }
   .db-kop h1 {
     margin: 0;
-    font-weight: 700;
-    font-size: clamp(24px, 2.600vw, 32px);
-    letter-spacing: -0.010em;
+    font-weight: 900;
+    font-stretch: 125%;
+    font-size: clamp(44px, 6.4vw, 92px);
+    line-height: 0.85;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    color: var(--color-fg);
+    text-shadow: 6px 6px 0 var(--color-primary);
   }
+
   /* gekleurde kaarten */
   .db-kaarten {
     display: grid;
-    grid-template-columns: minmax(0, 420px);
-    gap: 14px;
-    margin-bottom: 14px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+    margin-bottom: 40px;
   }
   .db-kaart {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 14px;
-    padding: 18px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 18px;
+    gap: 16px;
+    padding: 22px;
   }
   .db-kaart-oranje {
-    background: var(--db-oranje-licht);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-primary);
+  }
+  .db-kaart-paars {
+    background: var(--color-primary);
+    color: var(--color-fg);
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-accent);
+  }
+  .db-kaart-licht {
+    background: var(--color-fg);
+    color: var(--color-bg);
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-primary);
+  }
+  /* donkere kaart met crème rand, zoals de omlijnde blokken op de homepage */
+  .db-kaart-donker {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: 3px solid var(--color-fg);
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-accent);
   }
   .db-kaart h2 {
     margin: 0;
-    font-weight: 700;
-    font-size: clamp(18px, 1.700vw, 22px);
-    line-height: 1.2;
+    font-weight: 900;
+    font-stretch: 118%;
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
   }
   .db-label {
-    padding: 6px 10px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 7px 10px;
+    font: 700 11px/1 "Space Mono", monospace;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
   .db-label-donker {
     background: var(--color-bg);
     color: var(--color-fg);
+  }
+  .db-label-oranje {
+    background: var(--color-accent);
+    color: var(--color-bg);
   }
   .db-voortgang {
     align-self: stretch;
@@ -805,55 +1241,67 @@
   .db-voortgang p {
     display: flex;
     justify-content: space-between;
-    margin: 0 0 6px;
-    font-size: 12px;
-    color: var(--db-zacht);
+    margin: 0 0 8px;
+    font: 700 11px/1.2 "Space Mono", monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.85;
   }
   .db-balk {
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(11, 11, 11, 0.14);
+    height: 8px;
+    background: color-mix(in srgb, currentColor 22%, transparent);
     overflow: hidden;
   }
   .db-balk i {
     display: block;
     height: 100%;
-    border-radius: inherit;
-    background: var(--color-bg);
+    background: currentColor;
     transition: width 0.4s ease;
   }
   .db-knop {
     align-self: flex-end;
-    padding: 10px 18px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 10px;
-    background: var(--color-primary);
+    padding: 12px 20px;
+    border: 0;
+    background: var(--color-bg);
     color: var(--color-fg);
-    font: 600 13px/1 var(--font-display);
+    font: 700 12px/1 "Space Mono", monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
   .db-knop:hover:not(:disabled) {
-    background: var(--color-primary-dark);
+    background: var(--color-fg);
+    color: var(--color-bg);
   }
   .db-knop:disabled {
     opacity: 0.6;
     cursor: default;
   }
+  /* de grote knop in een formulier, zoals VERSTUUR op de homepage */
   .db-knop-breed {
     align-self: stretch;
-    padding: 14px 18px;
+    padding: 16px 18px;
     text-align: center;
-    font-size: 14px;
+    background: var(--color-primary);
+    color: var(--color-fg);
+    font: 800 18px/1 "Archivo", sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .db-knop-breed:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    color: var(--color-fg);
   }
 
   /* blokken */
   .db-rij {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 28px;
+    margin-bottom: 40px;
     scroll-margin-top: 14px;
   }
   .db-rij-agenda {
@@ -875,41 +1323,53 @@
   }
   .db-blok {
     min-width: 0;
-    padding: 20px 22px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 18px;
-    background: #fbf9f4;
+    padding: 24px;
+    background: var(--color-fg);
+    color: var(--color-bg);
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-primary);
     scroll-margin-top: 14px;
+  }
+  .db-formulier-blok {
+    box-shadow: var(--db-schaduw) var(--db-schaduw) 0 var(--color-accent);
   }
   .db-blok-kop {
     display: flex;
-    align-items: baseline;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
+    gap: 10px 14px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 3px solid var(--color-bg);
   }
   .db-blok-kop h2 {
     margin: 0;
-    font-weight: 700;
-    font-size: 19px;
+    font-weight: 900;
+    font-stretch: 118%;
+    font-size: clamp(26px, 2.4vw, 34px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
   }
   .db-blok-info {
-    font-size: 13px;
+    margin-right: auto;
     color: var(--color-primary);
-    font-weight: 600;
+    font: 700 11px/1 "Space Mono", monospace;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     text-decoration: none;
   }
   .db-leeg {
     margin: 0;
     padding: 18px 0;
-    font-size: 14px;
+    font: 400 13px/1.6 "Space Mono", monospace;
     color: var(--db-zacht);
   }
 
   .db-lijst-kop,
   .db-regel {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 96px 110px 84px;
+    grid-template-columns: minmax(0, 1fr) 96px 110px 64px 84px;
     align-items: center;
     gap: 12px;
   }
@@ -917,8 +1377,33 @@
   .db-regel-agenda {
     grid-template-columns: minmax(0, 1fr) 96px 110px 64px 84px;
   }
-  .db-regel-agenda.is-bewerkt {
-    background: var(--db-oranje-licht);
+  .db-regel.is-bewerkt {
+    background: var(--color-accent);
+  }
+  .db-regel-artiest {
+    grid-template-columns: minmax(0, 1fr) 64px 84px;
+  }
+  .db-zoek {
+    width: 100%;
+    max-width: 280px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    padding: 11px 14px;
+    border: 2px solid var(--color-bg);
+    background: #fff;
+    color: var(--color-bg);
+    font: 400 13px/1.2 "Space Mono", monospace;
+  }
+  .db-zoek::placeholder {
+    color: #8d8d8d;
+  }
+  .db-zoek:focus {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 0;
+  }
+  /* artiestfoto's staan op de website bijna vierkant */
+  .db-uitsnede-optie img.db-uitsnede-artiest {
+    aspect-ratio: 1 / 1;
   }
   .db-bewerk:hover:not(:disabled) {
     background: var(--color-bg);
@@ -932,10 +1417,10 @@
     gap: 10px;
   }
   .db-foto-voorbeeld {
-    width: 96px;
+    width: 112px;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border-radius: 6px;
+    border: 2px solid var(--color-bg);
   }
   .db-foto-kies {
     position: relative;
@@ -961,13 +1446,15 @@
   .db-uitsnede {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
   }
   .db-uitsnede-optie {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
+    gap: 6px;
+    font: 700 11px/1 "Space Mono", monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     cursor: pointer;
   }
   .db-uitsnede-optie input {
@@ -978,8 +1465,7 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border: 2px solid transparent;
-    border-radius: 6px;
+    border: 3px solid transparent;
   }
   .db-uitsnede-optie input:checked + img {
     border-color: var(--color-primary);
@@ -998,24 +1484,26 @@
     color: var(--color-fg);
   }
   .db-lijst-kop {
-    padding-bottom: 8px;
-    font-size: 12px;
+    padding-bottom: 10px;
+    font: 700 11px/1 "Space Mono", monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--db-zacht);
   }
   .db-lijst {
     list-style: none;
     margin: 0;
     padding: 0;
-    max-height: 420px;
+    max-height: 440px;
     overflow-y: auto;
   }
   .db-regel {
-    padding: 12px 0;
-    border-top: 1px solid rgba(11, 11, 11, 0.14);
+    padding: 12px 8px;
+    border-top: 2px solid rgba(11, 11, 11, 0.16);
     font-size: 14px;
   }
   .db-regel.is-geweest {
-    opacity: 0.5;
+    opacity: 0.45;
   }
   .db-regel-wie {
     display: flex;
@@ -1026,29 +1514,31 @@
   .db-regel-wie > span:last-child {
     display: flex;
     flex-direction: column;
+    gap: 3px;
     min-width: 0;
-    font-size: 12px;
+    font: 400 12px/1.3 "Space Mono", monospace;
     color: var(--db-zacht);
   }
   .db-regel-wie strong {
     color: var(--color-bg);
-    font-size: 14px;
-    font-weight: 600;
+    font: 800 16px/1.1 "Archivo", sans-serif;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .db-regel-datum,
   .db-regel-tijd {
-    font-weight: 600;
+    font: 700 13px/1.2 "Space Mono", monospace;
   }
   .db-verwijder {
     justify-self: end;
-    padding: 6px 10px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 8px;
+    padding: 8px 10px;
+    border: 2px solid var(--color-bg);
     background: transparent;
     color: var(--color-bg);
-    font: 500 12px/1 var(--font-display);
+    font: 700 11px/1 "Space Mono", monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
     transition:
       background 0.15s,
@@ -1064,31 +1554,40 @@
   .db-formulier {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
   .db-veld {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     min-width: 0;
-    font-size: 12px;
-    color: var(--db-zacht);
+    color: var(--color-bg);
+    font: 700 11px/1.2 "Space Mono", monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
   .db-veld input,
+  .db-veld select,
   .db-veld textarea {
     width: 100%;
     box-sizing: border-box;
-    padding: 10px 12px;
-    border: 1.500px solid var(--db-rand);
-    border-radius: 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--color-bg);
     background: #fff;
     color: var(--color-bg);
-    font: 500 14px/1.3 var(--font-display);
+    font: 400 14px/1.3 "Space Mono", monospace;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .db-veld input::placeholder,
+  .db-veld textarea::placeholder {
+    color: #8d8d8d;
   }
   .db-veld input:focus,
+  .db-veld select:focus,
   .db-veld textarea:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 1px;
+    outline: 3px solid var(--color-primary);
+    outline-offset: 0;
   }
   .db-veld textarea {
     resize: vertical;
@@ -1101,48 +1600,72 @@
   .db-veld-rij-type {
     grid-template-columns: 1fr 72px;
   }
+  .db-veld-rij-artiest {
+    grid-template-columns: 1fr 120px;
+  }
   .db-veld-kleur input {
-    height: 42px;
+    height: 46px;
     padding: 4px;
   }
   .db-fout,
   .db-gelukt {
     margin: 0;
-    font-size: 13px;
-    font-weight: 600;
+    font: 700 12px/1.5 "Space Mono", monospace;
   }
   .db-fout {
     color: #c0392b;
+  }
+  .db-melding {
+    margin-bottom: 12px;
+  }
+  .db-hint {
+    margin: 0;
+    font: 400 12px/1.5 "Space Mono", monospace;
+    color: var(--db-zacht);
   }
   .db-gelukt {
     color: #2f7d4f;
   }
 
+  /* vier kaarten passen niet naast elkaar op een kleiner scherm */
+  @media (max-width: 1200px) {
+    .db-kaarten {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 1000px) {
-    .db-kaarten,
     .db-rij,
     .db-rij-agenda {
       grid-template-columns: 1fr;
     }
   }
 
+  @media (max-width: 560px) {
+    .db-kaarten {
+      grid-template-columns: 1fr;
+    }
+  }
+
   @media (max-width: 700px) {
     .db {
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
+      --db-schaduw: 6px;
+      padding: 20px 20px 48px;
     }
-    .db-paneel {
-      border-radius: 18px;
+    .db-kaarten,
+    .db-rij {
+      gap: 22px;
+      margin-bottom: 28px;
     }
-    .db-gebruiker-tekst {
-      display: none;
+    .db-blok {
+      padding: 18px;
     }
     .db-lijst-kop {
       display: none;
     }
     .db-regel,
-    .db-regel-agenda {
+    .db-regel-agenda,
+    .db-regel-artiest {
       grid-template-columns: minmax(0, 1fr) auto;
       row-gap: 6px;
     }

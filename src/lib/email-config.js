@@ -25,6 +25,14 @@ export const EMAILJS_TEMPLATE_ID_CODE = 'template_q9x1mif';
 export const EMAILJS_TEMPLATE_ID_CONFIRM = 'template_9tzlnda';
 export const EMAILJS_PUBLIC_KEY = 'Jrzv7YJlfecQ-BptO';
 
+// Optioneel: een eigen template voor "je reservering is gewijzigd" en "je
+// reservering is verwijderd" (email-templates/gewijzigd.html en
+// verwijderd.html). Het gratis plan van EmailJS heeft maar twee templates;
+// zolang deze leeg zijn, gaan die mails via het bevestigingstemplate
+// hierboven, met een andere kop en tekst.
+export const EMAILJS_TEMPLATE_ID_GEWIJZIGD = '';
+export const EMAILJS_TEMPLATE_ID_VERWIJDERD = '';
+
 export const codeVerificatieActief = Boolean(
   EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID_CODE && EMAILJS_PUBLIC_KEY
 );

@@ -3,8 +3,11 @@
   import { fade, fly } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
   import { page } from "$app/state";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
   import { collection, getDocs } from "firebase/firestore";
-  import { db } from "$lib/firebase.js";
+  import { onAuthStateChanged, signOut } from "firebase/auth";
+  import { db, auth } from "$lib/firebase.js";
   import { navigatie } from "$lib/data/navigatie.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
@@ -27,11 +30,35 @@
     schrijf: schrijfFoto,
     zing: zingFoto,
   };
-  const items = navigatie.map((it) => ({
-    ...it,
-    label: it.label.toUpperCase(),
-    foto: fotos[it.foto],
-  }));
+  // wie is ingelogd, ziet Dashboard in plaats van Login en kan uitloggen
+  let ingelogd = $state(false);
+  onMount(() => onAuthStateChanged(auth, (user) => (ingelogd = !!user)));
+
+  const items = $derived(
+    navigatie
+      .map((it) =>
+        ingelogd && it.href === "/login"
+          ? { ...it, label: "Dashboard", href: "/dashboard" }
+          : it
+      )
+      .concat(
+        ingelogd
+          ? [{ label: "Uitloggen", uitloggen: true, info: "TOT DE VOLGENDE KEER", foto: "interieur" }]
+          : []
+      )
+      .map((it) => ({
+        ...it,
+        label: it.label.toUpperCase(),
+        foto: fotos[it.foto],
+      }))
+  );
+
+  async function uitloggen() {
+    open = false;
+    // eerst weg van een pagina die login vereist, dan pas uitloggen
+    await goto(base || "/");
+    await signOut(auth);
+  }
 
   let open = $state(false);
 
@@ -53,7 +80,7 @@
 
   const huidigeIndex = $derived(
     items.findIndex((it) => {
-      if (it.href.includes("#")) return false;
+      if (!it.href || it.href.includes("#")) return false;
       const pad = page.url.pathname.replace(/\/$/, "");
       if (it.href === "/") return pad === base;
       return pad.startsWith(`${base}${it.href}`);
@@ -151,16 +178,28 @@
               class:is-huidig={i === huidigeIndex}
               class:is-actief={i === hoverIndex}
             >
-              <a
-                href="{base}{it.href}"
-                onmouseenter={() => (hoverIndex = i)}
-                onfocus={() => (hoverIndex = i)}
-                onclick={() => (open = false)}
-                aria-current={i === huidigeIndex ? "page" : undefined}
-              >
-                <span class="menu-nr">{String(i + 1).padStart(2, "0")}</span>
-                <span class="menu-label">{it.label}</span>
-              </a>
+              {#if it.uitloggen}
+                <button
+                  type="button"
+                  onmouseenter={() => (hoverIndex = i)}
+                  onfocus={() => (hoverIndex = i)}
+                  onclick={uitloggen}
+                >
+                  <span class="menu-nr">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="menu-label">{it.label}</span>
+                </button>
+              {:else}
+                <a
+                  href="{base}{it.href}"
+                  onmouseenter={() => (hoverIndex = i)}
+                  onfocus={() => (hoverIndex = i)}
+                  onclick={() => (open = false)}
+                  aria-current={i === huidigeIndex ? "page" : undefined}
+                >
+                  <span class="menu-nr">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="menu-label">{it.label}</span>
+                </a>
+              {/if}
             </li>
           {/each}
         </ol>
@@ -349,7 +388,8 @@
     padding: 0;
     list-style: none;
   }
-  .menu-item a {
+  .menu-item a,
+  .menu-item button {
     position: relative;
     display: grid;
     grid-template-columns: 56px 1fr;
@@ -359,6 +399,15 @@
     color: inherit;
     text-decoration: none;
     outline: none;
+  }
+  /* Uitloggen is een knop, maar ziet eruit als de andere menu-items */
+  .menu-item button {
+    width: 100%;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
   }
   .menu-nr {
     align-self: start;
@@ -391,7 +440,8 @@
   }
 
   /* hover: band over de volle breedte */
-  .menu-item.is-actief a {
+  .menu-item.is-actief a,
+  .menu-item.is-actief button {
     background: var(--color-accent);
     color: var(--color-bg);
   }
@@ -402,7 +452,8 @@
   .menu-item.is-actief .menu-label::after {
     background: var(--color-bg);
   }
-  .menu-item a:focus-visible {
+  .menu-item a:focus-visible,
+  .menu-item button:focus-visible {
     outline: 3px solid var(--color-primary-light);
     outline-offset: -3px;
   }
@@ -598,7 +649,8 @@
     .menu-foto {
       display: none;
     }
-    .menu-item a {
+    .menu-item a,
+    .menu-item button {
       grid-template-columns: 40px 1fr;
       padding-right: 24px;
     }

@@ -19,11 +19,11 @@
   import {
     EMAILJS_SERVICE_ID,
     EMAILJS_TEMPLATE_ID_CODE,
-    EMAILJS_TEMPLATE_ID_CONFIRM,
     EMAILJS_PUBLIC_KEY,
     codeVerificatieActief,
     bevestigingsmailActief,
   } from "$lib/email-config.js";
+  import { stuurReserveringMail } from "$lib/reserveringMail.js";
 
   // Reserveren is tijdelijk alleen voor ingelogde crew: wie niet is
   // ingelogd gaat naar de inlogpagina en komt daarna hier terug.
@@ -49,31 +49,6 @@
       { naam, email: naar, code },
       { publicKey: EMAILJS_PUBLIC_KEY }
     );
-  }
-
-  async function stuurBevestigingsmail(reservering, studioNaam) {
-    if (!bevestigingsmailActief) return;
-    try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID_CONFIRM,
-        {
-          naam: reservering.naam,
-          email: reservering.email,
-          studio: studioNaam,
-          datum: new Date(`${reservering.datum}T00:00`).toLocaleDateString(
-            "nl-NL",
-            { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-          ),
-          starttijd: reservering.starttijd,
-          eindtijd: reservering.eindtijd,
-        },
-        { publicKey: EMAILJS_PUBLIC_KEY }
-      );
-    } catch (err) {
-      // De reservering zelf staat al vast in Firebase; als alleen de mail
-      // mislukt (bv. EmailJS-quota) laten we de gebruiker dat niet merken.
-    }
   }
 
   const studios = [
@@ -256,10 +231,9 @@
     gemaakteReservering = { id: ref.id, ...gegevens };
     geannuleerd = false;
     done = true;
-    stuurBevestigingsmail(
-      gemaakteReservering,
-      studioObj?.label.replace("\n", " ") ?? selectedStudio
-    );
+    // De reservering zelf staat al vast in Firebase; als alleen de mail
+    // mislukt (bv. EmailJS-quota) laten we de gebruiker dat niet merken.
+    stuurReserveringMail(gemaakteReservering, "bevestigd");
   }
 
   async function submit(e) {

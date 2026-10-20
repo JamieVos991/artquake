@@ -1,0 +1,44 @@
+<!--
+  EmailJS-template voor "je reservering is gewijzigd" (na Bewerk in het dashboard).
+  Onderwerp (Subject-veld in EmailJS): Je reservering is gewijzigd: {{studio}}
+  Gebruikte variabelen: {{naam}}, {{email}}, {{studio}}, {{datum}}, {{starttijd}}, {{eindtijd}}
+  Zet de Template ID daarna in src/lib/email-config.js bij EMAILJS_TEMPLATE_ID_GEWIJZIGD.
+
+  Let op: plak alles vanaf de eerste <div> hieronder. De opmaak gebruikt
+  bewust <div>'s als buitenkant, omdat de EmailJS-editor een <table> aan het
+  begin van de template weghaalt (dan staat lichte tekst op wit).
+-->
+<div style="background:#0b0b0b; padding:32px 16px;">
+  <div style="max-width:480px; margin:0 auto; background:#141414; border-radius:8px; overflow:hidden;">
+    <div style="background:#f2a81c; padding:20px 32px;">
+      <span style="font-family:Arial, Helvetica, sans-serif; font-weight:900; font-size:20px; letter-spacing:0.02em; color:#0b0b0b;">ARTQUAKE</span>
+    </div>
+    <div style="padding:32px; background:#141414;">
+      <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-weight:700; font-size:11px; letter-spacing:0.14em; color:#f2a81c;">
+        GEWIJZIGD
+      </p>
+      <p style="margin:0 0 20px; font-family:Arial, Helvetica, sans-serif; font-weight:900; font-size:24px; line-height:1.2; color:#f4f1ea;">
+        Je reservering is gewijzigd.
+      </p>
+      <p style="margin:0 0 20px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#f4f1ea;">
+        Hoi {{naam}}, we hebben je reservering aangepast. Dit zijn de nieuwe gegevens:
+      </p>
+      <div style="background:#0b0b0b; border-left:4px solid #f2a81c; border-radius:6px; margin-bottom:20px; padding:16px 20px;">
+        <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#9a9a9a;">Ruimte</p>
+        <p style="margin:0 0 14px; font-family:Arial, Helvetica, sans-serif; font-size:15px; font-weight:700; color:#f4f1ea;">{{studio}}</p>
+        <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#9a9a9a;">Datum</p>
+        <p style="margin:0 0 14px; font-family:Arial, Helvetica, sans-serif; font-size:15px; font-weight:700; color:#f4f1ea;">{{datum}}</p>
+        <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#9a9a9a;">Tijd</p>
+        <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:15px; font-weight:700; color:#f4f1ea;">{{starttijd}} tot {{eindtijd}}</p>
+      </div>
+      <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.6; color:#9a9a9a;">
+        Komt dit niet uit, of klopt er iets niet? Neem contact op via <a href="mailto:info@art-quake.com" style="color:#b57bf5;">info@art-quake.com</a> of +31 6 401 29 447.
+      </p>
+    </div>
+    <div style="padding:20px 32px; background:#141414; border-top:1px solid #242424;">
+      <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:0.08em; color:#9a9a9a;">
+        ARTQUAKE · Sara de Bronovoland 7, Heerhugowaard
+      </p>
+    </div>
+  </div>
+</div>

@@ -11,6 +11,8 @@
   let ctaNaam = $state('');
   let ctaEmail = $state('');
   let ctaBericht = $state('');
+  // honeypot tegen spam: mensen zien dit veld niet, bots vullen het wel in
+  let ctaHoney = $state('');
   let ctaVersturen = $state(false);
   let ctaVerstuurd = $state(false);
   let ctaFout = $state('');
@@ -18,6 +20,12 @@
   async function verstuurContact(e) {
     e.preventDefault();
     ctaFout = '';
+    // een bot heeft het verborgen veld ingevuld: doe alsof het gelukt is
+    // en verstuur niets
+    if (ctaHoney) {
+      ctaVerstuurd = true;
+      return;
+    }
     ctaVersturen = true;
     try {
       const res = await fetch('https://formsubmit.co/ajax/jamievos100@gmail.com', {
@@ -27,6 +35,8 @@
           naam: ctaNaam,
           email: ctaEmail,
           bericht: ctaBericht,
+          // FormSubmit gooit een bericht weg als _honey is ingevuld
+          _honey: ctaHoney,
           _subject: `Nieuw bericht via artquake.nl van ${ctaNaam}`,
         }),
       });
@@ -70,6 +80,11 @@
     <label class="cta-field-label">
       <span class="visually-hidden">Je vraag of bericht</span>
       <textarea class="cta-field cta-textarea" name="bericht" placeholder="je vraag of bericht" rows="3" bind:value={ctaBericht} required></textarea>
+    </label>
+    <!-- honeypot: onzichtbaar en niet bereikbaar met tab, alleen bots vullen dit in -->
+    <label class="cta-honey" aria-hidden="true">
+      Laat dit veld leeg
+      <input type="text" name="_honey" tabindex="-1" autocomplete="off" bind:value={ctaHoney} />
     </label>
 
     {#if ctaFout}
@@ -211,6 +226,14 @@
   }
   .cta-field-label {
     display: block;
+  }
+  /* buiten beeld i.p.v. display:none, omdat sommige bots verborgen velden overslaan */
+  .cta-honey {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
   .cta-field {
     width: 100%;

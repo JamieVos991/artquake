@@ -345,9 +345,7 @@
         Artquake biedt oefenruimtes, organiseert optredens, exposities, events,
         workshops, masterclasses, lessen, coaching en promotie. Alles wat je
         nodig hebt om jezelf verder te ontwikkelen, behalve slaap.
-      </p>
-      <p class="mission-stats">339+ MAKERS</p>
-    </aside>
+      </p>    </aside>
   </section>
 
   <section class="services" id="services" aria-label="Wat we doen">
@@ -886,9 +884,6 @@
   }
   .mission-side p {
     margin: 0;
-  }
-  .mission-stats {
-    font-weight: 700;
   }
 
   /* section head */
@@ -1891,6 +1886,9 @@
       gap: 11px;
     }
 
+    .agenda-list {
+      gap: 20px;
+    }
     /* telefoon: een kaart met de foto over de volle breedte bovenaan,
        daaronder datum en type, de naam en de details op één regel */
     .agenda-row {
