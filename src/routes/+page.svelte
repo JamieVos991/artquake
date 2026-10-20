@@ -24,6 +24,29 @@
     e.currentTarget.querySelector("video")?.pause();
   }
 
+  // Op een telefoon kun je niet hoveren: daar speelt de video zodra het blok
+  // door het midden van het scherm scrolt, en stopt hij als je verder scrolt.
+  // Niet bij "minder beweging" (prefers-reduced-motion).
+  function speelInBeeld(node) {
+    const touch = window.matchMedia("(hover: none)").matches;
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!touch || rustig) return;
+    const video = node.querySelector("video");
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        node.classList.toggle("is-in-beeld", entry.isIntersecting);
+        if (entry.isIntersecting) video?.play().catch(() => {});
+        else video?.pause();
+      },
+      // alleen de strook in het midden van het scherm telt
+      { rootMargin: "-35% 0px -35% 0px" }
+    );
+    observer.observe(node);
+    return { destroy: () => observer.disconnect() };
+  }
+  const speelInBeeldAlsVideo = (node, heeftVideo) =>
+    heeftVideo ? speelInBeeld(node) : undefined;
+
   let agendaItems = $state([]);
   let agendaGeladen = $state(false);
   let uitgelichteArtiesten = $state([]);
@@ -367,6 +390,7 @@
           onmouseleave={s.video ? pauzeerVideo : undefined}
           onfocusin={s.video ? speelVideo : undefined}
           onfocusout={s.video ? pauzeerVideo : undefined}
+          use:speelInBeeldAlsVideo={s.video}
         >
           {#if s.video}
             <video
@@ -960,8 +984,10 @@
   .service-met-video {
     overflow: hidden;
   }
+  /* .is-in-beeld zet speelInBeeld() op een telefoon, als vervanger van hover */
   .service-met-video:hover,
-  .service-met-video:focus-within {
+  .service-met-video:focus-within,
+  .service-met-video:global(.is-in-beeld) {
     opacity: 1;
   }
   .service-video {
@@ -985,8 +1011,10 @@
   }
   .service-met-video:hover .service-video,
   .service-met-video:focus-within .service-video,
+  .service-met-video:global(.is-in-beeld) .service-video,
   .service-met-video:hover::after,
-  .service-met-video:focus-within::after {
+  .service-met-video:focus-within::after,
+  .service-met-video:global(.is-in-beeld)::after {
     opacity: 1;
   }
   .service-met-video .service-id,
@@ -999,7 +1027,9 @@
   .service-met-video:hover .service-id,
   .service-met-video:hover .service-title,
   .service-met-video:focus-within .service-id,
-  .service-met-video:focus-within .service-title {
+  .service-met-video:focus-within .service-title,
+  .service-met-video:global(.is-in-beeld) .service-id,
+  .service-met-video:global(.is-in-beeld) .service-title {
     color: var(--color-fg);
   }
   .service-met-video .service-link {
@@ -1251,20 +1281,24 @@
   }
 
   /* talent */
+  /* zelfde knop als LAAD MEER op de artiestenpagina */
   .talent-more {
-    display: inline-block;
-    margin: 28px 0 0 8px;
+    display: block;
+    width: fit-content;
+    margin: 36px auto 0;
+    padding: 14px 32px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border-radius: 26px;
     font:
-      700 12px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.14em;
-    color: var(--color-bg);
+      800 14px/1 "Archivo",
+      sans-serif;
+    letter-spacing: 0.04em;
     text-decoration: none;
-    border-bottom: 2px solid var(--color-primary);
-    padding-bottom: 3px;
+    transition: opacity 0.15s;
   }
   .talent-more:hover {
-    color: var(--color-primary);
+    opacity: 0.8;
   }
 
   /* talent */

@@ -319,10 +319,11 @@
     height: 100%;
     object-fit: cover;
   }
+  /* rechtsboven in de hoek, vrij van de videobediening onderin */
   .route-unmute {
     position: absolute;
+    top: 10px;
     right: 10px;
-    bottom: 54px;
     padding: 9px 14px;
     background: var(--color-bg);
     color: var(--color-fg);
