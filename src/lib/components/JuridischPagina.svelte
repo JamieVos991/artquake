@@ -33,14 +33,15 @@
 
 <style>
   .jp-header {
-    padding: 24px 40px;
+    /* logo even groot en op dezelfde plek als op de homepage */
+    padding: 40px 30px;
     background: var(--color-bg);
   }
   .jp-brand {
     display: inline-block;
   }
   .jp-logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     display: block;
   }
@@ -108,11 +109,16 @@
   }
 
   @media (max-width: 640px) {
-    .jp-header,
     .jp-intro,
     .jp-body {
       padding-left: 20px;
       padding-right: 20px;
+    }
+    .jp-header {
+      padding: 28px 16px;
+    }
+    .jp-logo {
+      height: 92px;
     }
   }
 </style>

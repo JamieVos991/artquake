@@ -42,11 +42,12 @@
     position: absolute;
     top: 0;
     left: 0;
-    padding: 24px 30px;
+    /* logo even groot en op dezelfde plek als op de homepage */
+    padding: 40px 30px;
   }
   .fout-brand img {
     display: block;
-    height: 80px;
+    height: 120px;
     width: auto;
   }
 
@@ -94,10 +95,10 @@
 
   @media (max-width: 640px) {
     .fout-brand {
-      padding: 14px 16px;
+      padding: 28px 16px;
     }
     .fout-brand img {
-      height: 64px;
+      height: 92px;
     }
     .fout-titel {
       text-shadow: 6px 6px 0 var(--color-primary);

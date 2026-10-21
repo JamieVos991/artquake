@@ -994,7 +994,8 @@
     animation-range: cover 0px cover 260px;
   }
   .service-card {
-    /* padding: 22px; */
+    /* de titel schaalt mee met de breedte van het blok (cqi) */
+    container-type: inline-size;
     position: relative;
     display: flex;
     padding: 20px;
@@ -1132,7 +1133,9 @@
     margin: 0;
     font-weight: 900;
     font-stretch: 118%;
-    font-size: 40px;
+    /* het langste woord (COACHING, OPDRACHT) is ruim 6x de lettergrootte breed;
+       zo past het altijd heel in het blok en breekt het niet midden in het woord */
+    font-size: clamp(24px, 15.5cqi, 40px);
     line-height: 0.9;
     overflow-wrap: break-word;
   }
