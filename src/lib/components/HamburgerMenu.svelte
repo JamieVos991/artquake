@@ -643,6 +643,8 @@
     right: 10px;
     top: 50%;
     height: 2px;
+    /* halve dikte omhoog, zodat het kruis precies in het midden staat */
+    margin-top: -1px;
     background: var(--color-fg);
     transform: rotate(45deg);
   }
