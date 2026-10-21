@@ -1,4 +1,4 @@
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "$lib/firebase.js";
 
 // maakt de foto kleiner (max 1600px breed of hoog, WebP) zodat de
@@ -47,5 +47,18 @@ export async function uploadFoto(bestand, map, onVoortgang = () => {}) {
 				? "Uploaden niet toegestaan: de opslagregels in Firebase staan dit nog niet toe."
 				: "Uploaden mislukt. Probeer het opnieuw."
 		);
+	}
+}
+
+// Verwijdert een eerder geüploade foto uit Firebase Storage. Alleen voor
+// links naar onze eigen Storage; andere links (bv. de oude website) blijven.
+// Lukt het niet (al weg, geen verbinding), dan is dat geen probleem: de
+// foto staat dan hooguit nog ongebruikt in Storage.
+export async function verwijderFoto(url) {
+	if (!url?.startsWith("https://firebasestorage.googleapis.com/")) return;
+	try {
+		await deleteObject(ref(storage, url));
+	} catch {
+		// niets aan te doen
 	}
 }

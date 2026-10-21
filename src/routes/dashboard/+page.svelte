@@ -14,7 +14,7 @@
   import { onAuthStateChanged } from "firebase/auth";
   import { db, auth } from "$lib/firebase.js";
   import { markeerCrewBrowser } from "$lib/crew.js";
-  import { uploadFoto } from "$lib/fotoUpload.js";
+  import { uploadFoto, verwijderFoto } from "$lib/fotoUpload.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { artiestSocials } from "$lib/data/socials.js";
@@ -207,14 +207,36 @@
     }
   }
 
+  // ── foto's opruimen in Firebase Storage ──
+  // Verwijdert een foto, tenzij een ander agenda-item of een artiest hem nog gebruikt.
+  function ruimFotoOp(url, eigenId) {
+    if (!url) return;
+    const nogInGebruik = [...agendaItems, ...artiesten].some(
+      (x) => x.id !== eigenId && x.imageUrl === url
+    );
+    if (!nogInGebruik) verwijderFoto(url);
+  }
+  // Foto's die in het formulier zijn geüpload maar (nog) niet opgeslagen.
+  // Bij annuleren gaan ze weg; bij opslaan alleen de foto's die niet gekozen zijn.
+  const agendaUploads = new Set();
+  const artiestUploads = new Set();
+  function ruimUploadsOp(uploads, behalve = "") {
+    for (const url of uploads) if (url !== behalve) verwijderFoto(url);
+    uploads.clear();
+  }
+
   async function verwijderAgendaItem(a) {
     if (!confirm(`"${a.band ?? "Dit agenda-item"}" op ${formatDatum(a.date)} verwijderen?`))
       return;
     verwijderBezig = a.id;
     try {
       await deleteDoc(doc(db, "agenda", a.id));
+      ruimFotoOp(a.imageUrl, a.id);
       // wie dit item aan het bewerken was, krijgt weer een leeg formulier
-      if (bewerkId === a.id) leegFormulier();
+      if (bewerkId === a.id) {
+        ruimUploadsOp(agendaUploads);
+        leegFormulier();
+      }
     } catch (err) {
       alert("Verwijderen mislukt. Probeer het opnieuw.");
     } finally {
@@ -323,6 +345,7 @@
   }
 
   function bewerkAgendaItem(a) {
+    ruimUploadsOp(agendaUploads);
     bewerkId = a.id;
     band = a.band ?? "";
     place = a.place ?? "";
@@ -343,6 +366,7 @@
   }
 
   function annuleerBewerken() {
+    ruimUploadsOp(agendaUploads);
     leegFormulier();
     error = "";
     success = false;
@@ -397,6 +421,7 @@
   }
 
   function bewerkArtiest(a) {
+    ruimUploadsOp(artiestUploads);
     artiestBewerkId = a.id;
     aNaam = a.naam ?? "";
     aType = a.type || "Podium";
@@ -413,6 +438,7 @@
   }
 
   function annuleerArtiest() {
+    ruimUploadsOp(artiestUploads);
     leegArtiestFormulier();
     artiestFout = "";
     artiestGelukt = "";
@@ -425,6 +451,7 @@
     artiestFout = "";
     try {
       aImageUrl = await uploadFoto(bestand, "artiesten-images", (p) => (artiestUploadVoortgang = p));
+      artiestUploads.add(aImageUrl);
     } catch (err) {
       artiestFout = err.message;
     } finally {
@@ -446,6 +473,8 @@
       imageUrl: aImageUrl,
       fotoPositie: aFotoPositie,
     };
+    const oudeFoto = artiestBewerkId ? artiesten.find((x) => x.id === artiestBewerkId)?.imageUrl : "";
+    const id = artiestBewerkId;
     try {
       if (artiestBewerkId) {
         await updateDoc(doc(db, "artiesten", artiestBewerkId), velden);
@@ -454,6 +483,8 @@
         await addDoc(collection(db, "artiesten"), velden);
         artiestGelukt = `${velden.naam} is toegevoegd.`;
       }
+      if (oudeFoto && oudeFoto !== velden.imageUrl) ruimFotoOp(oudeFoto, id);
+      ruimUploadsOp(artiestUploads, velden.imageUrl);
       leegArtiestFormulier();
     } catch (err) {
       artiestFout = "Opslaan mislukt. Probeer het opnieuw.";
@@ -467,7 +498,11 @@
     verwijderBezig = a.id;
     try {
       await deleteDoc(doc(db, "artiesten", a.id));
-      if (artiestBewerkId === a.id) leegArtiestFormulier();
+      ruimFotoOp(a.imageUrl, a.id);
+      if (artiestBewerkId === a.id) {
+        ruimUploadsOp(artiestUploads);
+        leegArtiestFormulier();
+      }
     } catch (err) {
       alert("Verwijderen mislukt. Probeer het opnieuw.");
     } finally {
@@ -482,6 +517,7 @@
     uploadFout = "";
     try {
       imageUrl = await uploadFoto(bestand, "agenda-images", (p) => (uploadVoortgang = p));
+      agendaUploads.add(imageUrl);
     } catch (err) {
       uploadFout = err.message;
     } finally {
@@ -507,6 +543,9 @@
       fotoUitsnede,
       beschrijving,
     };
+    // de foto die nu in de agenda staat (vóór het opslaan, de lijst wordt direct bijgewerkt)
+    const oudeFoto = bewerkId ? agendaItems.find((x) => x.id === bewerkId)?.imageUrl : "";
+    const id = bewerkId;
     try {
       if (bewerkId) {
         await updateDoc(doc(db, "agenda", bewerkId), {
@@ -521,6 +560,9 @@
         });
         succesTekst = "Agenda-item is toegevoegd.";
       }
+      // vervangen of weggehaalde foto en niet gekozen uploads opruimen
+      if (oudeFoto && oudeFoto !== imageUrl) ruimFotoOp(oudeFoto, id);
+      ruimUploadsOp(agendaUploads, imageUrl);
       leegFormulier();
       success = true;
     } catch (err) {

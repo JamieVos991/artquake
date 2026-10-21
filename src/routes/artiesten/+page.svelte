@@ -6,6 +6,8 @@
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { artiestFotoPositie, artiestFotoZoom } from "$lib/data/fotoPosities.js";
   import { socialsVan } from "$lib/data/socials.js";
+  import { artiestSlug, vindArtiestBijSlug } from "$lib/data/artiestLink.js";
+  import { afterNavigate, replaceState } from "$app/navigation";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
 
@@ -55,18 +57,38 @@
   let gekozenSocials = $derived(gekozen ? socialsVan(gekozen) : []);
 
   async function openArtiest(a, e) {
-    opener = e.currentTarget;
+    opener = e?.currentTarget ?? null;
     gekozen = a;
     await tick();
-    dialoog.showModal();
+    if (!dialoog.open) dialoog.showModal();
+    // eigen link in de adresbalk, bv. /artiesten#leech (zonder extra stap in de geschiedenis)
+    replaceState(`#${artiestSlug(a)}`, {});
   }
   function sluitArtiest() {
     dialoog.close();
+    naSluiten();
   }
+  // via de knop/achtergrond (hierboven) en via Escape (close-event);
+  // kan dus twee keer lopen, de tweede keer doet niets
   function naSluiten() {
     opener?.focus();
     opener = null;
+    if (location.hash) replaceState(location.pathname + location.search, {});
   }
+
+  // Binnenkomen via een link met #naam: popup van die artiest openen
+  // zodra de artiesten geladen zijn.
+  let wachtendeHash = "";
+  function openUitHash(hash) {
+    const a = vindArtiestBijSlug(artiesten, hash);
+    if (a) openArtiest(a);
+  }
+  afterNavigate(({ to }) => {
+    const hash = to?.url.hash ?? "";
+    if (!hash) return;
+    if (geladen) openUitHash(hash);
+    else wachtendeHash = hash;
+  });
 
   function laadMeer() {
     zichtbaarAantal += stapGrootte;
@@ -76,6 +98,7 @@
     haalCollectieOp("artiesten")
       .then((docs) => {
         artiesten = docs.filter((a) => a.naam).sort(() => Math.random() - 0.5);
+        if (wachtendeHash) openUitHash(wachtendeHash);
       })
       .catch(() => {})
       .finally(() => (geladen = true));

@@ -7,6 +7,7 @@
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
   import { artiestFotoPositie, artiestFotoZoom } from "$lib/data/fotoPosities.js";
+  import { artiestSlug } from "$lib/data/artiestLink.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
 
@@ -520,7 +521,7 @@
       {:else}
         {#each uitgelichteArtiesten as t, i (t.id)}
           <li
-            class="talent-card bg-{talentBgVolgorde[
+            class="talent-card talent-card-klik bg-{talentBgVolgorde[
               i % talentBgVolgorde.length
             ]}"
           >
@@ -539,7 +540,10 @@
               {/if}
             </figure>
             <hgroup class="talent-meta">
-              <h3 class="talent-name">{t.naam}</h3>
+              <h3 class="talent-name">
+                <!-- de link ligt over de hele kaart en opent de popup op de artiestenpagina -->
+                <a class="talent-link" href="{base}/artiesten#{artiestSlug(t)}">{t.naam}</a>
+              </h3>
             </hgroup>
           </li>
         {/each}
@@ -1338,6 +1342,42 @@
   }
   .talent-card.bg-cream {
     border: 1px solid var(--color-bg);
+  }
+  .talent-card-klik {
+    position: relative;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s;
+  }
+  .talent-card-klik:hover,
+  .talent-card-klik:has(.talent-link:focus-visible) {
+    transform: translate(-3px, -3px);
+    box-shadow: 6px 6px 0 var(--color-bg);
+  }
+  .talent-card-klik:has(.talent-link:focus-visible) {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .talent-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .talent-link:focus-visible {
+    outline: none;
+  }
+  .talent-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .talent-card-klik {
+      transition: none;
+    }
+    .talent-card-klik:hover,
+    .talent-card-klik:has(.talent-link:focus-visible) {
+      transform: none;
+    }
   }
   .talent-photo {
     height: 280px;
