@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
   import { haalCollectieOp } from "$lib/publiekeData.js";
@@ -63,6 +64,12 @@
     content="Ontdek de jonge makers van Artquake: bands, singer-songwriters, dansers, DJ's en beeldend kunstenaars uit Dijk & Waard en omgeving. Ook te boeken voor je event."
   />
 </svelte:head>
+
+<DeelVoorbeeld
+  titel="Artiesten | Artquake"
+  beschrijving="Ontdek de jonge makers van Artquake: bands, singer-songwriters, dansers, DJ's en beeldend kunstenaars uit Dijk & Waard en omgeving. Ook te boeken voor je event."
+  afbeelding="artiesten"
+/>
 
 <header class="ap-header">
   <a class="ap-brand" href={base || "/"}>

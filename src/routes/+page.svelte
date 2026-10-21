@@ -3,6 +3,7 @@
   import logo from "$lib/assets/artquake-logo.avif";
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
+  import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
@@ -134,9 +135,18 @@
     return () => cancelIdle(id);
   });
 
+  // De foto's wisselen vanzelf; met de knop zet je dat stil (WCAG 2.2.2).
+  // Wie minder beweging wil (systeeminstelling) krijgt geen wissel en geen knop.
+  let heroPauze = $state(false);
+  let heroWisselt = $state(false);
+  onMount(() => {
+    heroWisselt =
+      heroImages.length > 1 &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
+
   $effect(() => {
-    if (heroImages.length <= 1) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!heroWisselt || heroPauze) return;
     const id = setInterval(() => {
       heroIndex = (heroIndex + 1) % heroImages.length;
     }, 3000);
@@ -316,6 +326,11 @@
   {/if}
 </svelte:head>
 
+<DeelVoorbeeld
+  titel="Artquake | Jong talent laat zich zien en horen"
+  beschrijving="Artquake in Heerhugowaard geeft jonge makers een podium en een netwerk: Talent Night, exposities, jamsessies, workshops, coaching en gratis oefenruimtes."
+/>
+
 <header class="hero-shell">
   <a class="brand" href={base}>
     <img class="brand-logo" src={logo} alt="Artquake, naar home" />
@@ -340,6 +355,23 @@
         <figcaption>Drop hero foto: publiek / artiest, 2400×1600</figcaption>
       {/if}
     </figure>
+    {#if heroWisselt}
+      <button
+        type="button"
+        class="hero-pauze"
+        aria-label={heroPauze ? "Foto's laten wisselen" : "Foto's pauzeren"}
+        onclick={() => (heroPauze = !heroPauze)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          {#if heroPauze}
+            <path d="M7 4.5v15l12.5-7.5z" />
+          {:else}
+            <rect x="5.5" y="4.5" width="4.5" height="15" />
+            <rect x="14" y="4.5" width="4.5" height="15" />
+          {/if}
+        </svg>
+      </button>
+    {/if}
     <h1 class="hero-copy">
       <span class="hero-line hero-line-orange">JONG TALENT</span>
       <span class="hero-line hero-line-cream">LAAT ZICH ZIEN EN HOREN</span>
@@ -754,6 +786,44 @@
         rgba(138, 25, 232, 0.22),
         transparent 60%
       );
+  }
+  /* links naast de menuknop (die staat op 20px van rechts en is 56px breed) */
+  .hero-pauze {
+    position: absolute;
+    top: 20px;
+    right: 88px;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    background: var(--color-fg);
+    color: var(--color-bg);
+    border: 3px solid var(--color-bg);
+    box-shadow: 4px 4px 0 var(--color-bg);
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .hero-pauze:hover {
+    transform: translate(-2px, -2px);
+  }
+  .hero-pauze svg {
+    width: 26px;
+    height: 26px;
+    fill: currentColor;
+  }
+  @media (max-width: 640px) {
+    .hero-pauze {
+      top: 14px;
+      right: 72px;
+      width: 48px;
+      height: 48px;
+    }
+    .hero-pauze svg {
+      width: 22px;
+      height: 22px;
+    }
   }
   .hero-copy {
     position: absolute;

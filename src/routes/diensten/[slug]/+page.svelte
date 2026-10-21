@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
+  import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
 
   let { data } = $props();
   // $derived: bij doorklikken van de ene naar de andere dienstpagina hergebruikt
@@ -104,6 +105,13 @@
   <title>{dienst.heading} | Artquake</title>
   <meta name="description" content={dienst.metaBeschrijving ?? dienst.intro} />
 </svelte:head>
+
+<DeelVoorbeeld
+  titel="{dienst.heading} | Artquake"
+  beschrijving={dienst.metaBeschrijving ?? dienst.intro}
+  afbeelding={dienst.slug}
+  afbeeldingAlt={dienst.heading}
+/>
 
 <header class="dp-header">
   <a class="dp-brand" href={base || "/"}>

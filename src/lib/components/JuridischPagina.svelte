@@ -1,6 +1,7 @@
 <script>
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
+  import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
 
   let { titel, bijgewerkt, beschrijving, children } = $props();
 </script>
@@ -11,6 +12,8 @@
     <meta name="description" content={beschrijving} />
   {/if}
 </svelte:head>
+
+<DeelVoorbeeld titel="{titel} | Artquake" beschrijving={beschrijving ?? "Artquake, creative space in Heerhugowaard"} />
 
 <header class="jp-header">
   <a class="jp-brand" href={base || "/"}>
