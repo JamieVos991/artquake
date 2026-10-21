@@ -40,6 +40,10 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-display);
+  /* Scrollanimaties draaien en schuiven blokken even buiten beeld; zonder
+     dit kon je daardoor horizontaal scrollen. clip i.p.v. hidden, omdat
+     hidden van body een scrollcontainer maakt en sticky dan niet meer werkt. */
+  overflow-x: clip;
 }
 
 a {
