@@ -284,9 +284,12 @@
           <ul class="ap-socials">
             {#each gekozenSocials as x}
               <li>
-                <a href={x.href} target="_blank" rel="noopener noreferrer"
-                  >{x.label}<span class="ap-visueel-verborgen"> (opent in een nieuw tabblad)</span></a
-                >
+                <a href={x.href} target="_blank" rel="noopener noreferrer" title={x.label}>
+                  <svg viewBox="0 0 24 24" class:ap-icoon-lijn={x.lijn} aria-hidden="true" focusable="false"
+                    ><path d={x.icoon} /></svg
+                  >
+                  <span class="ap-visueel-verborgen">{x.label} (opent in een nieuw tabblad)</span>
+                </a>
               </li>
             {/each}
           </ul>
@@ -787,23 +790,34 @@
     padding: 0;
     list-style: none;
   }
+  /* ronde knop met alleen het icoon; de naam staat er onzichtbaar bij voor schermlezers */
   .ap-socials a {
-    display: inline-block;
-    padding: 12px 18px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
     border: 2px solid var(--color-bg);
-    border-radius: 26px;
+    border-radius: 50%;
     color: var(--color-bg);
-    font: 700 13px/1 var(--font-mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: none;
-    transition:
-      background 0.15s,
-      color 0.15s;
   }
   .ap-socials a:hover {
     background: var(--color-bg);
     color: var(--color-fg);
+  }
+  .ap-socials a:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .ap-socials svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  .ap-socials svg.ap-icoon-lijn {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
   .ap-load-more {
