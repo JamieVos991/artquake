@@ -3,19 +3,20 @@
   import logo from "$lib/assets/artquake-logo.avif";
 
   let { data } = $props();
-  const dienst = data.dienst;
+  // $derived: bij doorklikken van de ene naar de andere dienstpagina hergebruikt
+  // SvelteKit deze pagina; zo volgt de inhoud de nieuwe dienst mee
+  const dienst = $derived(data.dienst);
 
   const videos = import.meta.glob("../../../lib/assets/videos/*.mp4", {
     eager: true,
     import: "default",
   });
-  const videoBestand = dienst.video
-    ? videos[`../../../lib/assets/videos/${dienst.video}.mp4`]
-    : null;
-  const video =
-    videoBestand && dienst.videoStart
-      ? `${videoBestand}#t=${dienst.videoStart}`
-      : videoBestand;
+  const video = $derived.by(() => {
+    const bestand = dienst.video
+      ? videos[`../../../lib/assets/videos/${dienst.video}.mp4`]
+      : null;
+    return bestand && dienst.videoStart ? `${bestand}#t=${dienst.videoStart}` : bestand;
+  });
 
   // galerijfoto's staan in een map met dezelfde naam als de slug,
   // bijv. pictures/talent-night/ of pictures/coaching/
@@ -23,10 +24,12 @@
     "../../../lib/assets/pictures/*/*.avif",
     { eager: true, import: "default" }
   );
-  const galerij = (dienst.galerij ?? []).map((g) => ({
-    ...g,
-    src: galerijFotos[`../../../lib/assets/pictures/${dienst.slug}/${g.foto}.avif`],
-  }));
+  const galerij = $derived(
+    (dienst.galerij ?? []).map((g) => ({
+      ...g,
+      src: galerijFotos[`../../../lib/assets/pictures/${dienst.slug}/${g.foto}.avif`],
+    }))
+  );
 </script>
 
 <svelte:head>

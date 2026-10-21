@@ -137,14 +137,16 @@
       {/each}
     </ul>
   </nav>
-  <nav class="footer-col" aria-label="Contact">
-    <h3 class="footer-heading heading-cream">CONTACT</h3>
-    <ul>
-      <li><a href="mailto:info@art-quake.com">info@art-quake.com</a></li>
-      <li><a href="https://api.whatsapp.com/send?phone=31640129447">+31 6 401 29 447</a></li>
-      <li>Sara de Bronovoland 7<br />Heerhugowaard</li>
-    </ul>
-  </nav>
+  <section class="footer-col" aria-labelledby="footer-contact">
+    <h3 class="footer-heading heading-cream" id="footer-contact">CONTACT</h3>
+    <address>
+      <ul>
+        <li><a href="mailto:info@art-quake.com">info@art-quake.com</a></li>
+        <li><a href="https://api.whatsapp.com/send?phone=31640129447">+31 6 401 29 447</a></li>
+        <li>Sara de Bronovoland 7<br />Heerhugowaard</li>
+      </ul>
+    </address>
+  </section>
   <nav class="footer-col" aria-label="Socials">
     <h3 class="footer-heading heading-orange">SOCIALS</h3>
     <ul>
@@ -342,6 +344,10 @@
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+  /* <address> is standaard cursief */
+  .footer-col address {
+    font-style: normal;
   }
   /* ruimer tikgebied (min. 24px hoog) zodat links op telefoon goed te raken zijn */
   .footer-col a {

@@ -77,12 +77,14 @@
     <span class="ap-section-count">{gefilterdeArtiesten.length} MAKERS</span>
   </header>
 
-  <div class="ap-filters" role="group" aria-label="Filter op categorie">
+  <fieldset class="ap-filters">
+    <legend class="ap-visueel-verborgen">Filter op categorie</legend>
     {#each filters as f}
       <button
         type="button"
         class="ap-filter"
         class:is-active={actieveFilter === f}
+        aria-pressed={actieveFilter === f}
         onclick={() => kiesFilter(f)}
       >
         {f}
@@ -97,7 +99,7 @@
         oninput={() => (zichtbaarAantal = stapGrootte)}
       />
     </label>
-  </div>
+  </fieldset>
 
   {#if !geladen}
     <ul class="ap-grid" aria-hidden="true">
@@ -232,10 +234,14 @@
     letter-spacing: 0.16em;
   }
 
+  /* fieldset zonder de standaard rand en ruimte van de browser */
   .ap-filters {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    min-width: 0;
+    margin: 0;
+    border: 0;
     padding: 0 8px 28px;
   }
   .ap-filter {

@@ -272,12 +272,6 @@
     font-weight: 900;
     font-size: 17px;
   }
-  .laag-rand {
-    fill: var(--color-fg);
-    stroke: var(--color-fg);
-    stroke-width: 10px;
-    stroke-linejoin: round;
-  }
 
   /* inhoud in de bochten */
   .route-vak {
@@ -413,9 +407,6 @@
     }
     .bord-mobiel .stop-label {
       font-size: 10.5px;
-    }
-    .bord-mobiel .laag-rand {
-      stroke-width: 6px;
     }
 
     /* de vakken lossen op: elk onderdeel krijgt zijn eigen bocht */

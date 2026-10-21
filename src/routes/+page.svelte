@@ -344,14 +344,14 @@
 </header>
 
 <div class="page-main">
-  <p class="stripe-bar" aria-hidden="true">
+  <div class="stripe-bar" aria-hidden="true">
     <span class="stripe stripe-orange"></span>
     <span class="stripe stripe-purple"></span>
     <span class="stripe stripe-cream"></span>
     <span class="stripe stripe-dark"></span>
     <span class="stripe stripe-orange"></span>
     <span class="stripe stripe-purple"></span>
-  </p>
+  </div>
 
   <section class="mission" aria-label="Missie">
     <h2 class="mission-title">
@@ -402,14 +402,10 @@
           {/if}
           <span class="service-id">{s.id}</span>
           <h3 class="service-title">
-            {#each s.title.split("\n") as line, i}{#if i > 0}<br
-                />{/if}{line}{/each}
+            <a class="service-link" href={s.pand ? "#pand" : `${base}/diensten/${s.slug}`}>
+              {#each s.title.split("\n") as line, i}{#if i > 0}<br />{/if}{line}{/each}
+            </a>
           </h3>
-          <a
-            class="service-link"
-            href={s.pand ? "#pand" : `${base}/diensten/${s.slug}`}
-            aria-label="{s.heading}, lees meer"
-          ></a>
         </li>
       {/each}
     </ul>
@@ -599,15 +595,6 @@
 </div>
 
 <style>
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
   :global(.page-main) {
     background: var(--color-bg);
     display: block;
@@ -628,38 +615,6 @@
   .bg-purple {
     background: var(--color-primary);
     color: var(--color-fg);
-  }
-
-  /* marquee */
-  .marquee {
-    margin: 0;
-    height: 46px;
-    background: var(--color-accent);
-    color: var(--color-bg);
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    border-bottom: 4px solid var(--color-bg);
-  }
-  .marquee-track {
-    display: flex;
-    white-space: nowrap;
-    animation: aq-march 26s linear infinite;
-    font:
-      700 13px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.16em;
-  }
-  .marquee-set {
-    padding: 0 22px;
-  }
-  @keyframes aq-march {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
   }
 
   /* scroll-driven reveal animations */
@@ -695,22 +650,12 @@
       transform: scale(1) rotate(0);
     }
   }
-  @keyframes aq-skew {
-    from {
-      transform: translateY(40px) scale(1.06);
-    }
-    to {
-      transform: translateY(0) scale(1);
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .mission,
     .services-grid,
     .agenda-list,
     .talent-grid,
     .crew-grid,
-    .cta-copy,
-    .cta-form,
     .video-title,
     .video-sub {
       animation: none !important;
@@ -985,8 +930,11 @@
   .service-card:hover {
     opacity: 0.9;
   }
+  /* eigen laag: video en verloop liggen achter de tekst (z-index -1),
+     zodat de titel-link over het hele blok kan liggen */
   .service-met-video {
     overflow: hidden;
+    isolation: isolate;
     transition:
       opacity 0.15s,
       background-color 0.3s;
@@ -1004,6 +952,7 @@
      soms een haarlijntje van de blokkleur zichtbaar */
   .service-video {
     position: absolute;
+    z-index: -1;
     inset: -1px;
     width: calc(100% + 2px);
     height: calc(100% + 2px);
@@ -1015,6 +964,7 @@
   .service-met-video::after {
     content: "";
     position: absolute;
+    z-index: -1;
     inset: 0;
     background: linear-gradient(transparent 35%, rgba(11, 11, 11, 0.8));
     opacity: 0;
@@ -1031,8 +981,6 @@
   }
   .service-met-video .service-id,
   .service-met-video .service-title {
-    position: relative;
-    z-index: 1;
     transition: color 0.3s;
   }
   /* op de video is lichte tekst nodig, ook in de lichte blokken */
@@ -1044,12 +992,20 @@
   .service-met-video:global(.is-in-beeld) .service-title {
     color: var(--color-fg);
   }
-  .service-met-video .service-link {
-    z-index: 2;
-  }
+  /* de titel is de link; ::after rekt hem uit over het hele blok */
   .service-link {
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+  }
+  .service-link::after {
+    content: "";
     position: absolute;
     inset: 0;
+  }
+  .service-card:has(.service-link:focus-visible) {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 3px;
   }
   .service-big {
     grid-column: span 2;
@@ -1124,13 +1080,6 @@
     font-size: 24px;
     line-height: 1.15;
   }
-  .service-text {
-    margin: 0;
-    font:
-      400 13px/1.5 "Space Mono",
-      monospace;
-    max-width: 340px;
-  }
 
   /* agenda */
   .agenda {
@@ -1154,15 +1103,6 @@
     font-size: clamp(38px, 5.2vw, 76px);
     line-height: 0.85;
     letter-spacing: -0.03em;
-  }
-  .agenda-cta {
-    font:
-      700 12px/1.5 "Space Mono",
-      monospace;
-    letter-spacing: 0.12em;
-    text-align: right;
-    color: inherit;
-    text-decoration: none;
   }
   .agenda-list {
     list-style: none;
@@ -1562,67 +1502,6 @@
       400 12px/1.6 "Space Mono",
       monospace;
   }
-  .crew-bottom {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 16px;
-    align-items: stretch;
-  }
-  .crew-quote {
-    margin: 0;
-    background: var(--color-fg);
-    color: var(--color-bg);
-    padding: 34px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 24px;
-    box-shadow: 12px 12px 0 var(--color-primary);
-  }
-  .quote-label {
-    margin: 0;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.16em;
-    color: var(--color-primary);
-  }
-  .quote-text {
-    margin: 0;
-    font:
-      700 32px/1.15 "Archivo",
-      sans-serif;
-    text-wrap: pretty;
-  }
-  .quote-attr {
-    font:
-      400 13px/1.5 "Space Mono",
-      monospace;
-    color: #5a5a5a;
-  }
-  .quote-attr cite {
-    font-style: normal;
-  }
-  .crew-photo-large {
-    min-height: 320px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: repeating-linear-gradient(
-      45deg,
-      #1c1c1c 0 12px,
-      #151515 12px 24px
-    );
-  }
-  .crew-photo-large figcaption {
-    text-align: center;
-    color: #6b6b6b;
-    font:
-      400 12px/1.4 "Space Mono",
-      monospace;
-  }
 
   /* video */
   .video-section {
@@ -1651,169 +1530,6 @@
     font:
       400 16px/1.5 "Space Mono",
       monospace;
-  }
-
-  /* cta */
-  .cta {
-    position: relative;
-    background: var(--color-accent);
-    color: var(--color-bg);
-    padding: 74px 40px;
-    border-bottom: 4px solid var(--color-bg);
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
-    gap: clamp(20px, 3vw, 50px);
-    align-items: center;
-  }
-  .cta-blob {
-    position: absolute;
-    right: -60px;
-    top: -60px;
-    width: 320px;
-    height: 320px;
-    border-radius: 160px;
-    background: var(--color-primary);
-  }
-  .cta-copy {
-    position: relative;
-    margin: 0;
-    animation: aq-skew linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 30%;
-  }
-  .cta-title {
-    margin: 0 0 18px;
-    font-weight: 900;
-    font-stretch: 125%;
-    font-size: clamp(48px, 7vw, 104px);
-    line-height: 0.84;
-    letter-spacing: -0.035em;
-  }
-  .cta-text {
-    margin: 0;
-    max-width: 560px;
-    font:
-      400 14px/1.6 "Space Mono",
-      monospace;
-  }
-  .cta-form {
-    position: relative;
-    background: var(--color-bg);
-    color: var(--color-fg);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border: 3px solid var(--color-bg);
-    box-shadow: 12px 12px 0 var(--color-primary);
-    animation: aq-skew linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 30%;
-  }
-  .cta-form-label {
-    margin: 0;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.14em;
-    color: var(--color-accent);
-  }
-  .cta-field {
-    width: 100%;
-    box-sizing: border-box;
-    background: #242424;
-    border: none;
-    padding: 14px;
-    font:
-      400 13px/1 "Space Mono",
-      monospace;
-    color: var(--color-fg);
-  }
-  .cta-field::placeholder {
-    color: #8d8d8d;
-  }
-  .cta-textarea {
-    font-family: "Space Mono", monospace;
-    line-height: 1.5;
-    resize: vertical;
-  }
-  .cta-submit {
-    background: var(--color-primary);
-    color: var(--color-fg);
-    padding: 16px;
-    text-align: center;
-    border-radius: 26px;
-    font:
-      800 18px/1 "Archivo",
-      sans-serif;
-    border: none;
-    cursor: pointer;
-  }
-
-  /* footer */
-  .footer {
-    background: var(--color-bg);
-    color: var(--color-fg);
-    padding: 56px 40px 34px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-    gap: clamp(16px, 3vw, 36px);
-    font:
-      400 12px/1.9 "Space Mono",
-      monospace;
-  }
-  .footer-brand {
-    grid-column: 1;
-    display: block;
-    margin: 0 0 12px;
-    height: 64px;
-    width: auto;
-  }
-  .footer-tag {
-    grid-column: 1;
-    margin: 0;
-    color: #9a9a9a;
-  }
-  .footer-col ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .footer-col a {
-    color: inherit;
-    text-decoration: none;
-  }
-  .footer-col a:hover {
-    text-decoration: underline;
-  }
-  .footer-heading {
-    margin: 0 0 4px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-  }
-  .heading-orange {
-    color: var(--color-accent);
-  }
-  .heading-lilac {
-    color: var(--color-primary-light);
-  }
-  .heading-cream {
-    color: var(--color-fg);
-  }
-  .footer-bottom {
-    grid-column: 1 / -1;
-    margin: 34px 0 0;
-    padding-top: 16px;
-    border-top: 2px solid #242424;
-    display: flex;
-    justify-content: space-between;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.14em;
-    color: #7d7d7d;
   }
 
   /* tablet */
@@ -1849,19 +1565,6 @@
     .talent-grid {
       grid-template-columns: 1fr;
     }
-    .crew-bottom {
-      grid-template-columns: 1fr;
-    }
-    .cta {
-      grid-template-columns: 1fr;
-    }
-    .footer {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .footer-brand,
-    .footer-tag {
-      grid-column: 1 / -1;
-    }
   }
 
   /* phone */
@@ -1887,13 +1590,11 @@
     }
 
     .mission,
-    .services,
-    .agenda,
-    .talent,
-    .crew,
-    .video-section,
-    .cta,
-    .footer {
+  .services,
+  .agenda,
+  .talent,
+  .crew,
+  .video-section {
       padding-left: 20px;
       padding-right: 20px;
     }
@@ -1996,23 +1697,6 @@
     .agenda-meta > * + *::before {
       content: "·";
       margin: 0 8px;
-    }
-
-
-    .footer {
-      grid-template-columns: 1fr;
-    }
-    .footer-brand,
-    .footer-tag,
-    .footer-col {
-      grid-column: 1;
-    }
-    .footer-brand {
-      height: 48px;
-    }
-    .footer-bottom {
-      flex-direction: column;
-      gap: 6px;
     }
   }
 </style>

@@ -869,8 +869,8 @@
                 <option value="Gratis"></option>
               </datalist>
             </label>
-            <div class="db-veld">
-              <span>Foto</span>
+            <fieldset class="db-veld">
+              <legend>Foto</legend>
               <div class="db-foto-upload">
                 {#if imageUrl}
                   <img class="db-foto-voorbeeld" src={imageUrl} alt="" />
@@ -897,10 +897,10 @@
               {#if uploadFout}
                 <p class="db-fout">{uploadFout}</p>
               {/if}
-            </div>
+            </fieldset>
             {#if imageUrl}
-              <div class="db-veld">
-                <span>Welk deel van de foto?</span>
+              <fieldset class="db-veld">
+                <legend>Welk deel van de foto?</legend>
                 <div class="db-uitsnede">
                   {#each agendaFotoUitsneden as u}
                     <label class="db-uitsnede-optie">
@@ -910,7 +910,7 @@
                     </label>
                   {/each}
                 </div>
-              </div>
+              </fieldset>
             {/if}
             <label class="db-veld">
               <span>Beschrijving</span>
@@ -1030,8 +1030,8 @@
               <span>Instagram</span>
               <input type="url" placeholder="https://www.instagram.com/… (optioneel)" bind:value={aInstagram} />
             </label>
-            <div class="db-veld">
-              <span>Foto</span>
+            <fieldset class="db-veld">
+              <legend>Foto</legend>
               <div class="db-foto-upload">
                 {#if aImageUrl}
                   <img class="db-foto-voorbeeld" src={aImageUrl} alt="" />
@@ -1055,10 +1055,10 @@
                   </button>
                 {/if}
               </div>
-            </div>
+            </fieldset>
             {#if aImageUrl}
-              <div class="db-veld">
-                <span>Welk deel van de foto?</span>
+              <fieldset class="db-veld">
+                <legend>Welk deel van de foto?</legend>
                 <div class="db-uitsnede">
                   {#each artiestUitsneden as u}
                     <label class="db-uitsnede-optie">
@@ -1068,7 +1068,7 @@
                     </label>
                   {/each}
                 </div>
-              </div>
+              </fieldset>
             {/if}
 
             {#if artiestFout}
@@ -1568,6 +1568,16 @@
     font: 700 11px/1.2 "Space Mono", monospace;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+  /* fieldset/legend zonder de standaard rand en ruimte van de browser */
+  fieldset.db-veld {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .db-veld legend {
+    padding: 0;
+    margin-bottom: 6px;
   }
   .db-veld input,
   .db-veld select,

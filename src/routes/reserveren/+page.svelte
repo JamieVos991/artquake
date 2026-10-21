@@ -461,18 +461,13 @@
       </div>
       <ul class="studios">
         {#each studios as s}
-          <li
-            class="studio bg-{s.bg}"
-            onclick={() => pickStudio(s.id)}
-            onkeydown={(e) => e.key === "Enter" && pickStudio(s.id)}
-            role="button"
-            tabindex="0"
-          >
-            <span class="studio-status"> {s.status}</span>
-            <h2 class="studio-name">
-              {#each s.label.split("\n") as line, i}{#if i > 0}<br
-                  />{/if}{line}{/each}
-            </h2>
+          <li>
+            <button type="button" class="studio bg-{s.bg}" onclick={() => pickStudio(s.id)}>
+              <span class="studio-name">
+                {#each s.label.split("\n") as line, i}{#if i > 0}<br
+                    />{/if}{line}{/each}
+              </span>
+            </button>
           </li>
         {/each}
       </ul>
@@ -791,13 +786,21 @@
     border-bottom: 3px solid rgba(244, 241, 234, 0.35);
   }
 
+  .studios > li {
+    display: flex;
+  }
   .studio {
+    flex: 1;
+    width: 100%;
     padding: 28px 24px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     cursor: pointer;
     min-height: 200px;
+    border: 0;
+    text-align: left;
+    font: inherit;
     outline: none;
     transition:
       filter 0.12s,
@@ -823,13 +826,9 @@
     background: var(--color-primary);
     color: var(--color-fg);
   }
-
-  .studio-status {
-    font:
-      700 9px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.18em;
-    opacity: 0.7;
+  .bg-white {
+    background: var(--color-fg);
+    color: var(--color-bg);
   }
 
   .studio-name {

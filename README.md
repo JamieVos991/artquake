@@ -1,42 +1,54 @@
-# sv
+# Artquake
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Website van Stichting Villa Artquake in Heerhugowaard: jong talent laat zich zien en horen.
+Live op https://jamievos991.github.io/artquake/
 
-## Creating a project
+Gebouwd met SvelteKit (Svelte 5) als statische site op GitHub Pages, met Firebase voor de
+gegevens en de inlog van de crew.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+## Starten
 
 ```sh
-# recreate this project
-npx sv@0.17.0 create --template minimal --no-types --install npm myapp
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Op Windows in PowerShell: `npm.cmd` in plaats van `npm` als scripts geblokkeerd zijn.
+Zie je een wijziging niet terug? Stop de dev-server (`Ctrl + C`) en start hem opnieuw.
 
-To create a production version of your app:
+## Live zetten
 
-```sh
-npm run build
-```
+Elke push naar `master` wordt door GitHub Actions gebouwd en op GitHub Pages gezet
+(`.github/workflows/deploy.yml`). Na 1 à 2 minuten staat de nieuwe versie online.
 
-You can preview the production build with `npm run preview`.
+## Waar staat wat
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Map / bestand | Inhoud |
+|---|---|
+| `src/routes/+page.svelte` | Homepage |
+| `src/routes/+layout.svelte` | Menu, contactformulier en footer op elke pagina |
+| `src/routes/diensten/[slug]` | Dienstpagina's (Talent Night, Coaching, …) |
+| `src/routes/artiesten` | Alle artiesten |
+| `src/routes/dashboard` | Beheer van agenda, artiesten en reserveringen (alleen crew) |
+| `src/routes/reserveren` | Reserveren van ruimtes (nu alleen crew) |
+| `src/lib/data/diensten.js` | Teksten, video's en foto's van de diensten |
+| `src/lib/data/site.js` | Domein voor sitemap en robots.txt |
+| `src/lib/publiekeData.js` | Agenda en artiesten lezen zonder de Firebase-SDK |
+| `src/lib/firebase.js` | Firebase voor de crewpagina's |
+| `src/lib/email-config.js` | EmailJS voor reserveringsmails |
+| `email-templates/` | HTML voor de EmailJS-templates |
+| `firestore.rules`, `storage.rules` | Beveiligingsregels van Firebase |
+
+## Beheerders
+
+Alleen accounts waarvan de UID als document in de Firestore-collectie `beheerders` staat,
+kunnen iets wijzigen. Nieuw crewlid: account maken in de Firebase-console
+(Authentication > Users > Add user), UID kopiëren en een document met die UID als
+Document ID toevoegen aan `beheerders`.
+
+## Media
+
+- Foto's staan als AVIF in `src/lib/assets/pictures/`.
+- De blokken bij "Wat we doen" tonen korte preview-clips uit `src/lib/assets/videos/preview/`
+  (8 seconden, zonder geluid). Nieuwe video? Maak er ook een clip met dezelfde naam bij,
+  anders laadt het blok de hele video.

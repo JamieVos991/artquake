@@ -203,43 +203,6 @@
     margin-bottom: 16px;
   }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .brand-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    color: var(--color-fg);
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .brand-name {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 2px;
-    color: var(--color-fg);
-  }
-
-  .admin-badge {
-    background: var(--color-accent);
-    color: var(--color-bg);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    padding: 4px 10px;
-    border-radius: 4px;
-  }
-
   /* title */
   .card-title {
     font-family: var(--font-display);

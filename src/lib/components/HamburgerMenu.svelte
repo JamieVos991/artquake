@@ -132,9 +132,19 @@
     laadAgenda();
   }
 
+  // Na sluiten (knop, Escape, klik ernaast) gaat de focus terug naar de
+  // menuknop. Dat kan pas als de uitschuif-animatie klaar is: tot dan is de
+  // dialog nog modaal en is de rest van de pagina niet te bereiken.
+  let focusTerug = false;
   function sluitMenu() {
+    focusTerug = true;
     open = false;
-    knopEl?.focus();
+  }
+  function naUitschuiven(e) {
+    // eerst de modale stand opheffen, anders is de knop nog onbereikbaar
+    e.currentTarget.close?.();
+    if (focusTerug) knopEl?.focus();
+    focusTerug = false;
   }
 
   function formatDatum(d) {
@@ -144,36 +154,29 @@
 
   let menuEl = $state();
 
+  // Het menu is een echte <dialog>. showModal() regelt de rest: de pagina
+  // erachter is onbereikbaar, de focus gaat naar het eerste menu-item en blijft
+  // in het menu, en Escape sluit (via het cancel-event hieronder).
   $effect(() => {
     if (!open || !menuEl) return;
+    if (!menuEl.open) menuEl.showModal();
     const vorige = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
-    // Toetsenbord: focus gaat het menu in en blijft daarbinnen tot het dicht is
-    // (zoals bij elk modaal venster). Escape sluit, focus gaat terug naar de knop.
-    const focusbaar = () =>
-      [...menuEl.querySelectorAll("a[href], button")].filter((e) => !e.disabled);
-    const eerste = setTimeout(() => focusbaar()[0]?.focus());
-    const onKey = (e) => {
-      if (e.key === "Escape") return sluitMenu();
-      if (e.key !== "Tab") return;
-      const lijst = focusbaar();
-      const i = lijst.indexOf(document.activeElement);
-      if (e.shiftKey && i <= 0) {
-        e.preventDefault();
-        lijst.at(-1)?.focus();
-      } else if (!e.shiftKey && i === lijst.length - 1) {
-        e.preventDefault();
-        lijst[0]?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
     return () => {
-      clearTimeout(eerste);
       document.body.style.overflow = vorige;
-      window.removeEventListener("keydown", onKey);
     };
   });
+
+  // Escape: zelf sluiten, zodat de uitschuif-animatie nog kan spelen
+  function onCancel(e) {
+    e.preventDefault();
+    sluitMenu();
+  }
+
+  // klik op de donkere achtergrond (::backdrop) komt binnen op de dialog zelf
+  function onDialogKlik(e) {
+    if (e.target === menuEl) sluitMenu();
+  }
 
   // sluit het menu na navigatie
   $effect(() => {
@@ -195,19 +198,14 @@
   </button>
 
   {#if open}
-    <div
-      class="menu-scrim"
-      onclick={sluitMenu}
-      aria-hidden="true"
-      transition:fade={{ duration: 250 }}
-    ></div>
-    <div
+    <dialog
       bind:this={menuEl}
       class="menu"
       id="hoofdmenu"
-      role="dialog"
-      aria-modal="true"
       aria-label="Menu"
+      oncancel={onCancel}
+      onclick={onDialogKlik}
+      onoutroend={naUitschuiven}
       in:schuif
       out:schuif={{ uit: true }}
     >
@@ -232,8 +230,11 @@
                   <span class="menu-label">{it.label}</span>
                 </button>
               {:else}
+                <!-- autofocus: de dialog zet de focus bij openen op het eerste menu-item -->
+                <!-- svelte-ignore a11y_autofocus -->
                 <a
                   href="{base}{it.href}"
+                  autofocus={i === 0}
                   onmouseenter={() => (hoverIndex = i)}
                   onfocus={() => (hoverIndex = i)}
                   onclick={() => (open = false)}
@@ -309,7 +310,7 @@
       <button type="button" class="menu-sluit" aria-label="Menu sluiten" onclick={sluitMenu}>
         <span></span><span></span>
       </button>
-    </div>
+    </dialog>
   {/if}
 
 <style>
@@ -345,10 +346,8 @@
   }
 
   /* overlay */
-  .menu-scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 95;
+  /* de donkere laag achter het menu (hoort bij <dialog>) */
+  .menu::backdrop {
     background: rgba(11, 11, 11, 0.85);
     backdrop-filter: blur(3px);
   }
@@ -356,6 +355,14 @@
     position: fixed;
     inset: clamp(0px, 3vw, 40px);
     z-index: 100;
+    /* standaardopmaak van <dialog> in de browser uitzetten */
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    color: inherit;
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     --foto-b: clamp(150px, 15vw, 230px);
