@@ -1,12 +1,15 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
   import { haalCollectieOp } from "$lib/publiekeData.js";
-  import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
+  import { artiestFotoPositie, artiestFotoZoom } from "$lib/data/fotoPosities.js";
+  import { socialsVan } from "$lib/data/socials.js";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
+
+  // kleur van het PODIUM/EXPO-label, passend bij de kleur van de kaart
   const badgeVolgorde = {
     dark: "orange",
     purple: "cream",
@@ -41,6 +44,28 @@
   function kiesFilter(f) {
     actieveFilter = f;
     zichtbaarAantal = stapGrootte;
+  }
+
+  // popup met meer over de artiest (native <dialog>: Escape sluit, focus blijft erin)
+  let dialoog = $state();
+  let gekozen = $state(null);
+  let opener = null;
+  const alineas = (tekst) =>
+    (tekst ?? "").split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+  let gekozenSocials = $derived(gekozen ? socialsVan(gekozen) : []);
+
+  async function openArtiest(a, e) {
+    opener = e.currentTarget;
+    gekozen = a;
+    await tick();
+    dialoog.showModal();
+  }
+  function sluitArtiest() {
+    dialoog.close();
+  }
+  function naSluiten() {
+    opener?.focus();
+    opener = null;
   }
 
   function laadMeer() {
@@ -160,7 +185,7 @@
     <ul class="ap-grid">
       {#each getoondeArtiesten as a, i (a.id)}
         {@const bg = bgVolgorde[i % bgVolgorde.length]}
-        <li class="ap-card bg-{bg}">
+        <li class="ap-card ap-card-klik bg-{bg}">
           <figure class="ap-photo">
             {#if a.imageUrl}
               <img
@@ -169,6 +194,7 @@
                 alt=""
                 loading="lazy"
                 style:object-position={artiestFotoPositie(a)}
+                style:transform={artiestFotoZoom(a)}
               />
             {:else}
               <figcaption>[ ARTIESTFOTO<br />1200×1500 ]</figcaption>
@@ -177,17 +203,14 @@
               <span class="ap-badge badge-{badgeVolgorde[bg]}">{a.type}</span>
             {/if}
           </figure>
-          <h3 class="ap-name">{a.naam}</h3>
+          <h3 class="ap-name" style:--tekens={a.naam.length}>
+            <!-- de knop ligt (onzichtbaar) over de hele kaart -->
+            <button type="button" class="ap-open" aria-haspopup="dialog" onclick={(e) => openArtiest(a, e)}
+              >{a.naam}</button
+            >
+          </h3>
           {#if a.beschrijving}
             <p class="ap-desc">{a.beschrijving}</p>
-          {/if}
-          {#if a.instagram}
-            <a
-              class="ap-profiel"
-              href={a.instagram}
-              target="_blank"
-              rel="noopener">PROFIEL</a
-            >
           {/if}
         </li>
       {/each}
@@ -200,6 +223,55 @@
     {/if}
   {/if}
 </section>
+
+<dialog
+  class="ap-dialoog"
+  bind:this={dialoog}
+  aria-labelledby="ap-dialoog-naam"
+  onclose={naSluiten}
+  onclick={(e) => e.target === dialoog && sluitArtiest()}
+>
+  {#if gekozen}
+    <div class="ap-dialoog-binnen">
+      <button type="button" class="ap-sluit" aria-label="Sluiten" onclick={sluitArtiest}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+      <figure class="ap-dialoog-foto">
+        {#if gekozen.imageUrl}
+          <img
+            src={gekozen.imageUrl}
+            alt=""
+            style:object-position={artiestFotoPositie(gekozen)}
+            style:transform={artiestFotoZoom(gekozen)}
+          />
+        {/if}
+      </figure>
+      <div class="ap-dialoog-tekst">
+        <h2 class="ap-dialoog-naam" id="ap-dialoog-naam" style:--tekens={gekozen.naam.length}>{gekozen.naam}</h2>
+        {#if gekozen.beschrijving}
+          <p class="ap-dialoog-soort">{gekozen.beschrijving}</p>
+        {/if}
+        {#each alineas(gekozen.bio) as alinea}
+          <p class="ap-dialoog-bio">{alinea}</p>
+        {:else}
+          <p class="ap-dialoog-bio">Meer over {gekozen.naam} volgt binnenkort.</p>
+        {/each}
+        {#if gekozenSocials.length}
+          <h3 class="ap-dialoog-kop">VOLG {gekozen.naam.toUpperCase()}</h3>
+          <ul class="ap-socials">
+            {#each gekozenSocials as x}
+              <li>
+                <a href={x.href} target="_blank" rel="noopener noreferrer"
+                  >{x.label}<span class="ap-visueel-verborgen"> (opent in een nieuw tabblad)</span></a
+                >
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    </div>
+  {/if}
+</dialog>
 
 <style>
   /* header */
@@ -413,6 +485,8 @@
     gap: 18px;
   }
   .ap-card {
+    /* de naam schaalt mee met de breedte van de kaart (cqi) */
+    container-type: inline-size;
     padding: 14px;
     display: flex;
     flex-direction: column;
@@ -466,6 +540,10 @@
       rgba(20, 20, 20, 0.08) 12px 24px
     );
   }
+  .ap-img,
+  .ap-dialoog-foto img {
+    transform-origin: 50% 100%;
+  }
   .ap-img {
     width: 100%;
     height: 100%;
@@ -480,6 +558,7 @@
     letter-spacing: 0.08em;
     padding: 0 12px;
   }
+
   .ap-badge {
     position: absolute;
     top: 12px;
@@ -514,14 +593,14 @@
     font-family: var(--font-display);
     font-weight: 900;
     font-stretch: 110%;
-    font-size: 26px;
+    /* past de hele naam op 1 regel: één teken is ongeveer 0,78em breed.
+       Korte namen 26px, lange kleiner, nooit kleiner dan 16px. */
+    font-size: clamp(16px, calc(100cqi / (var(--tekens, 12) * 0.78)), 26px);
     line-height: 1.1;
     /* extra ruimte zodat voor- en achternaam niet als één woord lezen */
     word-spacing: 0.3em;
     text-transform: uppercase;
     overflow-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
   }
   .ap-desc {
     margin: 0;
@@ -529,21 +608,197 @@
       400 13px/1.5 "Space Mono",
       monospace;
   }
-  .ap-profiel {
-    align-self: flex-start;
-    margin-top: 4px;
-    padding: 9px 16px;
-    border: 1.5px solid currentColor;
-    border-radius: 4px;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
-    letter-spacing: 0.1em;
-    color: inherit;
-    text-decoration: none;
+  /* klikbare kaart: de knop in de naam ligt over de hele kaart */
+  .ap-card-klik {
+    position: relative;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s;
   }
-  .ap-profiel:hover {
-    opacity: 0.7;
+  .ap-card-klik:hover,
+  .ap-card-klik:has(.ap-open:focus-visible) {
+    transform: translate(-3px, -3px);
+    box-shadow: 6px 6px 0 var(--color-bg);
+  }
+  .ap-card-klik.bg-dark:hover,
+  .ap-card-klik.bg-dark:has(.ap-open:focus-visible) {
+    box-shadow: 6px 6px 0 var(--color-primary);
+  }
+  .ap-card-klik:has(.ap-open:focus-visible) {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .ap-open {
+    all: unset;
+    cursor: pointer;
+  }
+  .ap-open::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ap-card-klik {
+      transition: none;
+    }
+    .ap-card-klik:hover,
+    .ap-card-klik:has(.ap-open:focus-visible) {
+      transform: none;
+    }
+  }
+
+  /* popup */
+  :global(html:has(.ap-dialoog[open])) {
+    overflow: hidden;
+  }
+  .ap-dialoog {
+    width: min(820px, calc(100% - 32px));
+    max-width: none;
+    max-height: calc(100dvh - 48px);
+    padding: 0;
+    border: 3px solid var(--color-bg);
+    background: var(--color-fg);
+    color: var(--color-bg);
+    box-shadow: 14px 14px 0 var(--color-primary);
+    overflow: auto;
+  }
+  .ap-dialoog::backdrop {
+    background: rgba(11, 11, 11, 0.8);
+  }
+  .ap-dialoog[open] {
+    animation: ap-in 0.2s ease-out;
+  }
+  @keyframes ap-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ap-dialoog[open] {
+      animation: none;
+    }
+  }
+  .ap-dialoog-binnen {
+    position: relative;
+    display: grid;
+    /* foto smal links, tekst krijgt de meeste ruimte */
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .ap-sluit {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    background: var(--color-accent);
+    border: 3px solid var(--color-bg);
+    box-shadow: 4px 4px 0 var(--color-bg);
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .ap-sluit:hover {
+    transform: translate(-2px, -2px);
+  }
+  .ap-sluit svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .ap-dialoog-foto {
+    position: relative;
+    /* ingelijst: kleiner dan de tekstkolom, dus los met rand en schaduw */
+    margin: 28px 0 28px 28px;
+    aspect-ratio: 4 / 5;
+    background: var(--color-bg);
+    border: 3px solid var(--color-bg);
+    box-shadow: 8px 8px 0 var(--color-accent);
+    overflow: hidden;
+  }
+  .ap-dialoog-foto img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* overal dezelfde ruimte tussen titels en teksten (alleen gap, geen marges) */
+  .ap-dialoog-tekst {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 72px 36px 36px;
+  }
+  .ap-dialoog-naam {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 110%;
+    font-size: clamp(22px, calc(100cqi / (var(--tekens, 12) * 0.78)), 44px);
+    line-height: 1;
+    word-spacing: 0.3em;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+  }
+  .ap-dialoog-soort {
+    margin: 0;
+    color: var(--color-primary);
+    font:
+      700 14px/1.4 "Space Mono",
+      monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ap-dialoog-bio {
+    margin: 0;
+    font:
+      400 16px/1.65 "Space Mono",
+      monospace;
+  }
+  .ap-dialoog-kop {
+    margin: 0;
+    font:
+      700 12px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.16em;
+    color: var(--color-primary);
+  }
+  .ap-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ap-socials a {
+    display: inline-block;
+    padding: 12px 18px;
+    border: 2px solid var(--color-bg);
+    border-radius: 26px;
+    color: var(--color-bg);
+    font:
+      700 13px/1 "Space Mono",
+      monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
+  .ap-socials a:hover {
+    background: var(--color-bg);
+    color: var(--color-fg);
   }
 
   .ap-load-more {
@@ -617,6 +872,25 @@
     .ap-zoek {
       flex-basis: 100%;
       max-width: none;
+    }
+  }
+  /* popup onder elkaar: foto boven, tekst eronder */
+  @media (max-width: 720px) {
+    .ap-dialoog-binnen {
+      grid-template-columns: 1fr;
+    }
+    .ap-dialoog-foto {
+      aspect-ratio: 4 / 3;
+      max-height: 36dvh;
+      min-height: 0;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      border-bottom: 3px solid var(--color-bg);
+      box-shadow: none;
+    }
+    .ap-dialoog-tekst {
+      padding: 24px 20px 28px;
     }
   }
 </style>

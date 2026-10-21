@@ -6,7 +6,7 @@
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
-  import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
+  import { artiestFotoPositie, artiestFotoZoom } from "$lib/data/fotoPosities.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
 
@@ -532,6 +532,7 @@
                   alt=""
                   loading="lazy"
                   style:object-position={artiestFotoPositie(t)}
+                  style:transform={artiestFotoZoom(t)}
                 />
               {:else}
                 <figcaption>[ ARTIESTFOTO<br />1200×1500 ]</figcaption>
@@ -1369,6 +1370,7 @@
     overflow: hidden;
   }
   .talent-img {
+    transform-origin: 50% 100%;
     width: 100%;
     height: 100%;
     object-fit: cover;

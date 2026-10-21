@@ -17,6 +17,7 @@
   import { uploadFoto } from "$lib/fotoUpload.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
+  import { artiestSocials } from "$lib/data/socials.js";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   let authGecontroleerd = $state(false);
@@ -374,7 +375,9 @@
   let aNaam = $state("");
   let aType = $state("Podium");
   let aBeschrijving = $state("");
-  let aInstagram = $state("");
+  let aBio = $state("");
+  // { instagram: "", tiktok: "", ... }: één veld per social
+  let aSocials = $state(Object.fromEntries(artiestSocials.map((x) => [x.veld, ""])));
   let aImageUrl = $state("");
   let aFotoPositie = $state("");
   let artiestOpslaan = $state(false);
@@ -387,7 +390,8 @@
     aNaam = "";
     aType = "Podium";
     aBeschrijving = "";
-    aInstagram = "";
+    aBio = "";
+    for (const x of artiestSocials) aSocials[x.veld] = "";
     aImageUrl = "";
     aFotoPositie = "";
   }
@@ -397,7 +401,8 @@
     aNaam = a.naam ?? "";
     aType = a.type || "Podium";
     aBeschrijving = a.beschrijving ?? "";
-    aInstagram = a.instagram ?? "";
+    aBio = a.bio ?? "";
+    for (const x of artiestSocials) aSocials[x.veld] = a[x.veld] ?? "";
     aImageUrl = a.imageUrl ?? "";
     aFotoPositie = a.fotoPositie ?? "";
     artiestFout = "";
@@ -436,7 +441,8 @@
       naam: aNaam.trim(),
       type: aType,
       beschrijving: aBeschrijving.trim(),
-      instagram: aInstagram.trim(),
+      bio: aBio.trim(),
+      ...Object.fromEntries(artiestSocials.map((x) => [x.veld, aSocials[x.veld].trim()])),
       imageUrl: aImageUrl,
       fotoPositie: aFotoPositie,
     };
@@ -655,7 +661,6 @@
                 {@const geweest = reserveringIsAfgelopen(r)}
                 <li class="db-regel" class:is-geweest={geweest} class:is-bewerkt={reserveringBewerkId === r.id}>
                   <span class="db-regel-wie">
-                    <span class="db-avatar db-avatar-klein">{initialen(r.naam)}</span>
                     <span>
                       <strong>{r.naam ?? "–"}</strong>
                       <span>{studioLabel(r.studio)}{geweest ? " · afgelopen" : ""}</span>
@@ -1027,9 +1032,24 @@
               </label>
             </div>
             <label class="db-veld">
-              <span>Instagram</span>
-              <input type="url" placeholder="https://www.instagram.com/… (optioneel)" bind:value={aInstagram} />
+              <span>Over de artiest</span>
+              <textarea
+                rows="5"
+                placeholder="verschijnt in de popup op de artiestenpagina (optioneel); een lege regel begint een nieuwe alinea"
+                bind:value={aBio}
+              ></textarea>
             </label>
+            <fieldset class="db-veld">
+              <legend>Socials (optioneel, plak de hele link)</legend>
+              <div class="db-socials">
+                {#each artiestSocials as x}
+                  <label class="db-veld">
+                    <span>{x.label}</span>
+                    <input type="url" placeholder={x.voorbeeld} bind:value={aSocials[x.veld]} />
+                  </label>
+                {/each}
+              </div>
+            </fieldset>
             <fieldset class="db-veld">
               <legend>Foto</legend>
               <div class="db-foto-upload">
@@ -1578,6 +1598,11 @@
   .db-veld legend {
     padding: 0;
     margin-bottom: 6px;
+  }
+  .db-socials {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
   }
   .db-veld input,
   .db-veld select,

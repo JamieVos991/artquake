@@ -65,6 +65,18 @@ export const artiestFotoPosities = {
 	"yliwFWa4U6xbMPyeu0R7": "50% 47%", // Marlies Prasing
 };
 
+// Foto's met een witte rand bovenin het bestand zelf: zoveel procent groter
+// tonen, vanaf de onderkant, zodat de rand buiten beeld valt.
+export const artiestFotoRandBoven = {
+	"GpO05s6YbERFEvqg5TBy": 2, // Pyramid (5px wit op 1024)
+};
+
+// style:transform en style:transform-origin voor een foto (of niets)
+export function artiestFotoZoom(artiest) {
+	const procent = artiestFotoRandBoven[artiest.id];
+	return procent ? `scale(${1 + procent / 100})` : undefined;
+}
+
 export function artiestFotoPositie(artiest) {
 	return artiest.fotoPositie ?? artiestFotoPosities[artiest.id] ?? standaardFotoPositie;
 }

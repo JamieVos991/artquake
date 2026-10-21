@@ -85,17 +85,17 @@
       <!-- elke tekst twee keer: eerst een crème rand, daarbovenop de letters -->
       {#each ["rand", "letters"] as laag}
         {#if s.kant === "rij"}
-          <text class="stop-label laag-{laag}" x={s.x + 20} y={s.y + 4}
+          <text class="stop-label" class:laag-rand={laag === "rand"} x={s.x + 20} y={s.y + 4}
             >{stops[i].naam.toUpperCase()}</text
           >
         {:else}
           <text
-            class="stop-label laag-{laag}"
+            class="stop-label" class:laag-rand={laag === "rand"}
             transform="translate({s.x - 4} {s.y + 20}) rotate(90)"
             >{stops[i].naam.toUpperCase()}</text
           >
         {/if}
-        <text class="stop-nr laag-{laag}" x={s.x} y={s.y + 7}>{nr(i)}</text>
+        <text class="stop-nr" class:laag-rand={laag === "rand"} x={s.x} y={s.y + 7}>{nr(i)}</text>
       {/each}
     {/each}
   </svg>
@@ -115,17 +115,17 @@
     {#each stops as s, i}
       {#each ["rand", "letters"] as laag}
         {#if s.kant === "rij"}
-          <text class="stop-label laag-{laag}" x={s.x + 46} y={s.y + 5}
+          <text class="stop-label" class:laag-rand={laag === "rand"} x={s.x + 46} y={s.y + 5}
             >{s.naam.toUpperCase()}</text
           >
         {:else}
           <text
-            class="stop-label laag-{laag}"
+            class="stop-label" class:laag-rand={laag === "rand"}
             transform="translate({s.x - 5} {s.y + 46}) rotate(90)"
             >{s.naam.toUpperCase()}</text
           >
         {/if}
-        <text class="stop-nr laag-{laag}" x={s.x} y={s.y + 11}>{nr(i)}</text>
+        <text class="stop-nr" class:laag-rand={laag === "rand"} x={s.x} y={s.y + 11}>{nr(i)}</text>
       {/each}
     {/each}
   </svg>
@@ -272,6 +272,13 @@
     font-weight: 900;
     font-size: 17px;
   }
+  /* crème rand rond de letters, zodat ze loskomen van de streepjes op de baan */
+  .laag-rand {
+    fill: var(--color-fg);
+    stroke: var(--color-fg);
+    stroke-width: 10px;
+    stroke-linejoin: round;
+  }
 
   /* inhoud in de bochten */
   .route-vak {
@@ -407,6 +414,9 @@
     }
     .bord-mobiel .stop-label {
       font-size: 10.5px;
+    }
+    .bord-mobiel .laag-rand {
+      stroke-width: 6px;
     }
 
     /* de vakken lossen op: elk onderdeel krijgt zijn eigen bocht */
