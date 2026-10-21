@@ -723,7 +723,9 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    height: 100dvh;
+    /* svh i.p.v. dvh: blijft gelijk als de adresbalk op een telefoon
+       in- en uitschuift, anders springt de pagina tijdens het scrollen */
+    height: 100svh;
   }
 
   /* brand */
