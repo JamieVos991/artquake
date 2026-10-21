@@ -16,3 +16,14 @@ export function agendaType(item) {
 	return type.toLowerCase() === "optreden" ? "Optredens" : type;
 }
 
+
+// "zaterdag 25 oktober 2026"
+export function langeDatum(datum) {
+	if (!datum) return "";
+	return new Date(`${datum}T12:00:00`).toLocaleDateString("nl-NL", {
+		weekday: "long",
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
+}

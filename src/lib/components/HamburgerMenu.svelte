@@ -277,7 +277,7 @@
           {:else}
             {#each agenda as ev (ev.id)}
               <li class="menu-poster">
-                <a href="{base}/#agenda" onclick={() => (open = false)}>
+                <a href="{base}/agenda/{ev.id}" onclick={() => (open = false)}>
                   <img src={agendaPoster(ev)} alt="" loading="lazy" />
                   <span class="menu-poster-datum">{korteDatum(ev.date)}</span>
                   <span class="menu-visueel-verborgen">{ev.band}</span>

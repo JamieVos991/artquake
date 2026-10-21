@@ -40,6 +40,8 @@
   const standaardKleur = standaardAgendaKleur;
 
   let band = $state("");
+  // korte zin onder de titel op de pagina van de activiteit
+  let ondertitel = $state("");
   let place = $state(standaardLocatie);
   let type = $state("");
   let kleur = $state(standaardKleur);
@@ -406,6 +408,7 @@
   function leegFormulier() {
     bewerkId = null;
     band = "";
+    ondertitel = "";
     place = standaardLocatie;
     type = "";
     kleur = standaardKleur;
@@ -423,6 +426,7 @@
     ruimUploadsOp(agendaUploads);
     bewerkId = a.id;
     band = a.band ?? "";
+    ondertitel = a.ondertitel ?? "";
     place = a.place ?? "";
     type = a.type ?? "";
     kleur = a.kleur || standaardKleur;
@@ -624,6 +628,7 @@
     submitting = true;
     const velden = {
       band,
+      ondertitel: ondertitel.trim(),
       place,
       type,
       kleur,
@@ -972,6 +977,14 @@
             <label class="db-veld">
               <span>Naam *</span>
               <input type="text" placeholder="bijv. The Wombats" bind:value={band} required />
+            </label>
+            <label class="db-veld">
+              <span>Ondertitel</span>
+              <input
+                type="text"
+                placeholder="korte zin op de pagina van de activiteit, bv. Vier acts op één podium (optioneel)"
+                bind:value={ondertitel}
+              />
             </label>
             <label class="db-veld">
               <span>Locatie</span>

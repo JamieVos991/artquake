@@ -39,3 +39,12 @@ export async function haalCollectieOp(naam) {
 	} while (pagina);
 	return docs;
 }
+
+// Haalt één document op als { id, ...velden }, of null als het niet bestaat.
+export async function haalDocumentOp(naam, id) {
+	const res = await fetch(`${BASIS}/${naam}/${encodeURIComponent(id)}`);
+	if (res.status === 404) return null;
+	if (!res.ok) throw new Error(`${naam}/${id} laden mislukt (${res.status})`);
+	const d = await res.json();
+	return { id, ...velden(d.fields ?? {}) };
+}

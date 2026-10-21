@@ -3,7 +3,6 @@
   import logo from "$lib/assets/artquake-logo.avif";
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
-  import { agendaPrijs, agendaType } from "$lib/data/agendaTekst.js";
   import { agendaPoster } from "$lib/data/agendaPosters.js";
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
@@ -461,8 +460,6 @@
             <span class="skel agenda-foto"></span>
             <span class="skel skel-date"></span>
             <span class="skel skel-name"></span>
-            <span class="skel skel-meta"></span>
-            <span class="skel skel-type"></span>
           </li>
         {/each}
       {:else if agendaItems.length === 0}
@@ -490,20 +487,10 @@
             <time class="agenda-date" datetime={ev.date}
               >{formatAgendaDatum(ev.date)}</time
             >
-            <h3 class="agenda-name">{ev.band}</h3>
-            <p class="agenda-meta">
-              {#if ev.startTime}
-                <span
-                  >{ev.startTime}{ev.endTime ? ` – ${ev.endTime}` : ""}</span
-                >
-              {/if}
-              {#if ev.place}<span>{ev.place}</span>{/if}
-            </p>
-            <!-- type met de prijs eronder (bv. OPEN ENTREE / GRATIS) -->
-            <span class="agenda-type">
-              {#if agendaType(ev)}<span>{agendaType(ev)}</span>{/if}
-              <strong>{agendaPrijs(ev)}</strong>
-            </span>
+            <h3 class="agenda-name">
+              <!-- de link ligt over de hele regel; alle info staat op de eigen pagina -->
+              <a class="agenda-link" href="{base}/agenda/{ev.id}">{ev.band}</a>
+            </h3>
           </li>
         {/each}
       {/if}
@@ -1194,12 +1181,44 @@
     animation-range: cover 0px cover 260px;
   }
   .agenda-row {
+    position: relative;
     display: grid;
-    /* vaste kolommen (zodat alle regels recht onder elkaar staan); de naam krijgt de rest */
-    grid-template-columns: 88px 90px minmax(0, 1fr) minmax(0, 220px) 110px;
+    /* foto, datum en titel; alle andere info staat op de pagina van de activiteit */
+    grid-template-columns: 88px 90px minmax(0, 1fr);
     gap: 20px;
     align-items: center;
     padding: 14px 22px 14px 14px;
+    transition: transform 0.15s;
+  }
+  .agenda-row:not(.skel-row):hover,
+  .agenda-row:has(.agenda-link:focus-visible) {
+    transform: translateX(6px);
+  }
+  .agenda-row:has(.agenda-link:focus-visible) {
+    outline: 3px solid var(--color-bg);
+    outline-offset: 3px;
+  }
+  .agenda-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .agenda-link:focus-visible {
+    outline: none;
+  }
+  /* de hele regel is klikbaar */
+  .agenda-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .agenda-row {
+      transition: none;
+    }
+    .agenda-row:not(.skel-row):hover,
+    .agenda-row:has(.agenda-link:focus-visible) {
+      transform: none;
+    }
   }
   .agenda-foto {
     display: block;
@@ -1223,24 +1242,6 @@
     /* lange woorden (muziekproductie) afbreken in plaats van over de tijd heen lopen */
     hyphens: auto;
     overflow-wrap: break-word;
-  }
-  .agenda-meta {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font: 400 15px/1.4 var(--font-mono);
-  }
-  .agenda-type {
-    justify-self: end;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    font: 700 11px/1 var(--font-mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
   }
   .agenda-empty {
     padding: 32px 22px;
@@ -1271,15 +1272,6 @@
   .skel-name {
     height: 20px;
     width: 60%;
-  }
-  .skel-meta {
-    height: 14px;
-    width: 80%;
-  }
-  .skel-type {
-    height: 14px;
-    width: 60px;
-    justify-self: end;
   }
   .skel-card {
     background: var(--color-gray-950);
@@ -1650,16 +1642,11 @@
     }
     .agenda-row {
       grid-template-columns: 88px minmax(0, 1fr);
-      align-items: start;
       row-gap: 6px;
     }
-    /* foto links, de rest eronder gestapeld ernaast */
+    /* foto links, datum en titel ernaast onder elkaar */
     .agenda-foto {
-      grid-row: span 4;
-    }
-    .agenda-type {
-      justify-self: start;
-      align-items: flex-start;
+      grid-row: span 2;
     }
     .talent-grid {
       grid-template-columns: 1fr;
@@ -1737,18 +1724,15 @@
       gap: 20px;
     }
     /* telefoon: een kaart met de foto over de volle breedte bovenaan,
-       daaronder type en prijs als labels, de datum, de naam en
-       tijd en plaats onder elkaar */
+       daaronder de datum en de titel */
     .agenda-row {
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas:
         "foto"
-        "labels"
         "datum"
-        "naam"
-        "meta";
+        "naam";
       align-items: start;
-      gap: 8px;
+      gap: 6px;
       padding: 0 0 20px;
       overflow: hidden;
     }
@@ -1761,32 +1745,17 @@
       width: 100%;
       height: auto;
       aspect-ratio: 16 / 9;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .agenda-foto-leeg {
       display: none;
     }
-    /* zonder foto begint de kaart met wat ruimte boven de labels */
-    .agenda-foto-leeg ~ .agenda-type {
+    /* zonder foto begint de kaart met wat ruimte boven de datum */
+    .agenda-foto-leeg + .agenda-date {
       margin-top: 18px;
-    }
-    /* type en prijs als twee labels naast elkaar */
-    .agenda-type {
-      grid-area: labels;
-      justify-self: start;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-    }
-    .agenda-type > * {
-      padding: 6px 9px;
-      border: 1.5px solid currentColor;
-      border-radius: 4px;
     }
     .agenda-date {
       grid-area: datum;
-      margin-top: 6px;
       font-size: 26px;
     }
     .agenda-name {
@@ -1795,13 +1764,6 @@
       line-height: 1.05;
       /* genoeg ruimte op een telefoon: woorden heel laten */
       hyphens: manual;
-    }
-    .agenda-meta {
-      grid-area: meta;
-      margin-top: 4px;
-      gap: 2px;
-      font-size: 14px;
-      opacity: 0.9;
     }
   }
 </style>
