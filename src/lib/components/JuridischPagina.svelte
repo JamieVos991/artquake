@@ -53,9 +53,7 @@
   .jp-label {
     display: block;
     margin-bottom: 18px;
-    font:
-      700 13px/1 "Space Mono",
-      monospace;
+    font: 700 13px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
   .jp-titel {
@@ -73,9 +71,7 @@
     padding: 56px 40px 96px;
     background: var(--color-bg);
     color: var(--color-fg);
-    font:
-      400 15px/1.7 "Space Mono",
-      monospace;
+    font: 400 15px/1.7 var(--font-mono);
   }
   .jp-body :global(> *) {
     max-width: 720px;

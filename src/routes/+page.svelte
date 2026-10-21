@@ -745,7 +745,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #151515;
+    background: var(--color-gray-950);
   }
   .hero-photo {
     position: absolute;
@@ -760,10 +760,8 @@
     opacity: 1;
   }
   .hero-image figcaption {
-    color: #6b6b6b;
-    font:
-      400 12px/1.4 "Space Mono",
-      monospace;
+    color: var(--color-gray-400);
+    font: 400 12px/1.4 var(--font-mono);
     text-align: center;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -778,13 +776,13 @@
     pointer-events: none;
     background: linear-gradient(
         180deg,
-        rgba(11, 11, 11, 0.55) 0%,
-        rgba(11, 11, 11, 0.15) 34%,
-        rgba(11, 11, 11, 0.82) 100%
+        color-mix(in srgb, var(--color-bg) 55%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 15%, transparent) 34%,
+        color-mix(in srgb, var(--color-bg) 82%, transparent) 100%
       ),
       radial-gradient(
         120% 80% at 70% 20%,
-        rgba(138, 25, 232, 0.22),
+        color-mix(in srgb, var(--color-primary) 22%, transparent),
         transparent 60%
       );
   }
@@ -920,9 +918,7 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
-    font:
-      400 13px/1.6 "Space Mono",
-      monospace;
+    font: 400 13px/1.6 var(--font-mono);
     margin: 0;
     max-width: 480px;
   }
@@ -944,9 +940,7 @@
   }
   .section-eyebrow {
     margin: 0;
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
   .eyebrow-orange {
@@ -962,15 +956,13 @@
   .section-rule {
     flex: 1;
     height: 2px;
-    background: #242424;
+    background: var(--color-gray-800);
   }
   .section-rule-dark {
     background: var(--color-bg);
   }
   .section-count {
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
 
@@ -1042,7 +1034,7 @@
     position: absolute;
     z-index: -1;
     inset: 0;
-    background: linear-gradient(transparent 35%, rgba(11, 11, 11, 0.8));
+    background: linear-gradient(transparent 35%, color-mix(in srgb, var(--color-bg) 80%, transparent));
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
@@ -1124,9 +1116,7 @@
     box-shadow: inset 0 0 0 3px var(--color-fg);
   }
   .service-id {
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.14em;
   }
   .service-title {
@@ -1213,9 +1203,7 @@
     opacity: 0.12;
   }
   .agenda-date {
-    font:
-      700 30px/1 "Archivo",
-      sans-serif;
+    font: 700 30px/1 var(--font-display);
   }
   .agenda-name {
     margin: 0;
@@ -1229,18 +1217,14 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font:
-      400 15px/1.4 "Space Mono",
-      monospace;
+    font: 400 15px/1.4 var(--font-mono);
   }
   .agenda-meta strong {
     font-weight: 700;
   }
   .agenda-type {
     justify-self: end;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -1248,9 +1232,7 @@
   .agenda-empty {
     padding: 32px 22px;
     text-align: center;
-    font:
-      400 14px/1.6 "Space Mono",
-      monospace;
+    font: 400 14px/1.6 var(--font-mono);
     opacity: 0.85;
   }
 
@@ -1258,16 +1240,16 @@
   .skel {
     background: linear-gradient(
       90deg,
-      rgba(11, 11, 11, 0.14) 25%,
-      rgba(11, 11, 11, 0.05) 37%,
-      rgba(11, 11, 11, 0.14) 63%
+      color-mix(in srgb, var(--color-bg) 14%, transparent) 25%,
+      color-mix(in srgb, var(--color-bg) 5%, transparent) 37%,
+      color-mix(in srgb, var(--color-bg) 14%, transparent) 63%
     );
     background-size: 400% 100%;
     border-radius: 4px;
     animation: skel-shimmer 1.4s ease infinite;
   }
   .skel-row {
-    background: rgba(11, 11, 11, 0.06);
+    background: color-mix(in srgb, var(--color-bg) 6%, transparent);
   }
   .skel-date {
     height: 26px;
@@ -1287,7 +1269,7 @@
     justify-self: end;
   }
   .skel-card {
-    background: #141414;
+    background: var(--color-gray-950);
     cursor: default;
   }
   .skel-photo {
@@ -1321,9 +1303,7 @@
     background: var(--color-bg);
     color: var(--color-fg);
     border-radius: 26px;
-    font:
-      800 14px/1 "Archivo",
-      sans-serif;
+    font: 800 14px/1 var(--font-display);
     letter-spacing: 0.04em;
     text-decoration: none;
     transition: opacity 0.15s;
@@ -1367,8 +1347,8 @@
     justify-content: center;
     background: repeating-linear-gradient(
       45deg,
-      rgba(20, 20, 20, 0.16) 0 12px,
-      rgba(20, 20, 20, 0.06) 12px 24px
+      color-mix(in srgb, var(--color-bg) 16%, transparent) 0 12px,
+      color-mix(in srgb, var(--color-bg) 6%, transparent) 12px 24px
     );
     overflow: hidden;
   }
@@ -1380,24 +1360,22 @@
     display: block;
   }
   .talent-photo figcaption {
-    font:
-      400 11px/1.4 "Space Mono",
-      monospace;
+    font: 400 11px/1.4 var(--font-mono);
     text-align: center;
     letter-spacing: 0.08em;
   }
   .bg-dark .talent-photo {
     background: repeating-linear-gradient(
       45deg,
-      #242424 0 12px,
-      #1c1c1c 12px 24px
+      var(--color-gray-800) 0 12px,
+      var(--color-gray-900) 12px 24px
     );
   }
   .bg-purple .talent-photo {
     background: repeating-linear-gradient(
       45deg,
-      rgba(20, 20, 20, 0.22) 0 12px,
-      rgba(20, 20, 20, 0.08) 12px 24px
+      color-mix(in srgb, var(--color-bg) 22%, transparent) 0 12px,
+      color-mix(in srgb, var(--color-bg) 8%, transparent) 12px 24px
     );
   }
   .talent-meta {
@@ -1494,7 +1472,7 @@
     aspect-ratio: 5 / 7;
     overflow: hidden;
     scroll-snap-align: start;
-    background: #1b1b1b;
+    background: var(--color-gray-900);
     box-shadow: 10px 10px 0 var(--color-fg);
   }
   .crew-schaduw-purple {
@@ -1518,9 +1496,7 @@
     place-items: center;
     margin: 0;
     color: var(--color-muted);
-    font:
-      400 11px/1.4 "Space Mono",
-      monospace;
+    font: 400 11px/1.4 var(--font-mono);
   }
   .crew-meta {
     position: absolute;
@@ -1533,7 +1509,7 @@
     gap: 8px;
     margin: 0;
     padding: 70px 14px 20px;
-    background: linear-gradient(transparent, rgba(11, 11, 11, 0.92) 62%);
+    background: linear-gradient(transparent, color-mix(in srgb, var(--color-bg) 92%, transparent) 62%);
     color: var(--color-fg);
     text-align: center;
   }
@@ -1547,9 +1523,7 @@
   .crew-role {
     margin: 0;
     color: var(--color-accent);
-    font:
-      700 11px/1.2 "Space Mono",
-      monospace;
+    font: 700 11px/1.2 var(--font-mono);
     letter-spacing: 0.06em;
   }
   .crew-intro {
@@ -1577,9 +1551,7 @@
   }
   .crew-intro-tekst {
     margin-top: auto !important;
-    font:
-      400 12px/1.6 "Space Mono",
-      monospace;
+    font: 400 12px/1.6 var(--font-mono);
   }
 
   /* video */
@@ -1606,9 +1578,7 @@
   .video-sub {
     margin: 0 0 36px 8px;
     color: var(--color-fg);
-    font:
-      400 16px/1.5 "Space Mono",
-      monospace;
+    font: 400 16px/1.5 var(--font-mono);
   }
 
   /* tablet */

@@ -1141,7 +1141,7 @@
 
   .db {
     --db-rand: var(--color-bg);
-    --db-zacht: rgba(11, 11, 11, 0.65);
+    --db-zacht: color-mix(in srgb, var(--color-bg) 65%, transparent);
     --db-schaduw: 10px;
     min-height: 100vh;
     padding: 40px 40px 64px;
@@ -1246,7 +1246,7 @@
   }
   .db-label {
     padding: 7px 10px;
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
@@ -1265,7 +1265,7 @@
     display: flex;
     justify-content: space-between;
     margin: 0 0 8px;
-    font: 700 11px/1.2 "Space Mono", monospace;
+    font: 700 11px/1.2 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     opacity: 0.85;
@@ -1287,7 +1287,7 @@
     border: 0;
     background: var(--color-bg);
     color: var(--color-fg);
-    font: 700 12px/1 "Space Mono", monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-decoration: none;
@@ -1311,7 +1311,7 @@
     text-align: center;
     background: var(--color-primary);
     color: var(--color-fg);
-    font: 800 18px/1 "Archivo", sans-serif;
+    font: 800 18px/1 var(--font-display);
     letter-spacing: 0.02em;
   }
   .db-knop-breed:hover:not(:disabled) {
@@ -1377,7 +1377,7 @@
   .db-blok-info {
     margin-right: auto;
     color: var(--color-primary);
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     text-decoration: none;
@@ -1385,7 +1385,7 @@
   .db-leeg {
     margin: 0;
     padding: 18px 0;
-    font: 400 13px/1.6 "Space Mono", monospace;
+    font: 400 13px/1.6 var(--font-mono);
     color: var(--db-zacht);
   }
 
@@ -1413,12 +1413,12 @@
     margin-bottom: 12px;
     padding: 11px 14px;
     border: 2px solid var(--color-bg);
-    background: #fff;
+    background: var(--color-white);
     color: var(--color-bg);
-    font: 400 13px/1.2 "Space Mono", monospace;
+    font: 400 13px/1.2 var(--font-mono);
   }
   .db-zoek::placeholder {
-    color: #8d8d8d;
+    color: var(--color-gray-300);
   }
   .db-zoek:focus {
     outline: 3px solid var(--color-primary);
@@ -1475,7 +1475,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
@@ -1508,7 +1508,7 @@
   }
   .db-lijst-kop {
     padding-bottom: 10px;
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--db-zacht);
@@ -1522,7 +1522,7 @@
   }
   .db-regel {
     padding: 12px 8px;
-    border-top: 2px solid rgba(11, 11, 11, 0.16);
+    border-top: 2px solid color-mix(in srgb, var(--color-bg) 16%, transparent);
     font-size: 14px;
   }
   .db-regel.is-geweest {
@@ -1539,19 +1539,19 @@
     flex-direction: column;
     gap: 3px;
     min-width: 0;
-    font: 400 12px/1.3 "Space Mono", monospace;
+    font: 400 12px/1.3 var(--font-mono);
     color: var(--db-zacht);
   }
   .db-regel-wie strong {
     color: var(--color-bg);
-    font: 800 16px/1.1 "Archivo", sans-serif;
+    font: 800 16px/1.1 var(--font-display);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .db-regel-datum,
   .db-regel-tijd {
-    font: 700 13px/1.2 "Space Mono", monospace;
+    font: 700 13px/1.2 var(--font-mono);
   }
   .db-verwijder {
     justify-self: end;
@@ -1559,7 +1559,7 @@
     border: 2px solid var(--color-bg);
     background: transparent;
     color: var(--color-bg);
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
@@ -1568,9 +1568,9 @@
       color 0.15s;
   }
   .db-verwijder:hover:not(:disabled) {
-    background: #c0392b;
-    border-color: #c0392b;
-    color: #fff;
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: var(--color-white);
   }
 
   /* formulier */
@@ -1585,7 +1585,7 @@
     gap: 6px;
     min-width: 0;
     color: var(--color-bg);
-    font: 700 11px/1.2 "Space Mono", monospace;
+    font: 700 11px/1.2 var(--font-mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
@@ -1611,15 +1611,15 @@
     box-sizing: border-box;
     padding: 12px 14px;
     border: 2px solid var(--color-bg);
-    background: #fff;
+    background: var(--color-white);
     color: var(--color-bg);
-    font: 400 14px/1.3 "Space Mono", monospace;
+    font: 400 14px/1.3 var(--font-mono);
     letter-spacing: 0;
     text-transform: none;
   }
   .db-veld input::placeholder,
   .db-veld textarea::placeholder {
-    color: #8d8d8d;
+    color: var(--color-gray-300);
   }
   .db-veld input:focus,
   .db-veld select:focus,
@@ -1648,21 +1648,21 @@
   .db-fout,
   .db-gelukt {
     margin: 0;
-    font: 700 12px/1.5 "Space Mono", monospace;
+    font: 700 12px/1.5 var(--font-mono);
   }
   .db-fout {
-    color: #c0392b;
+    color: var(--color-error);
   }
   .db-melding {
     margin-bottom: 12px;
   }
   .db-hint {
     margin: 0;
-    font: 400 12px/1.5 "Space Mono", monospace;
+    font: 400 12px/1.5 var(--font-mono);
     color: var(--db-zacht);
   }
   .db-gelukt {
-    color: #2f7d4f;
+    color: var(--color-success);
   }
 
   /* vier kaarten passen niet naast elkaar op een kleiner scherm */

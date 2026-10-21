@@ -9,7 +9,10 @@
       rol: "Achtergrond, tekst op licht",
       tinten: [
         { hex: "#0B0B0B", token: "--color-bg" },
-        { hex: "#242424", token: "--color-border" },
+        { hex: "#111111", token: "--color-gray-950" },
+        { hex: "#1B1B1B", token: "--color-gray-900" },
+        { hex: "#242424", token: "--color-gray-800" },
+        { hex: "#2E2E2E", token: "--color-gray-700" },
       ],
     },
     {
@@ -34,7 +37,21 @@
     {
       naam: "Grijs",
       rol: "Bijschriften, minder belangrijke tekst",
-      tinten: [{ hex: "#9A9A9A", token: "--color-muted" }],
+      tinten: [
+        { hex: "#3A3A3A", token: "--color-gray-600" },
+        { hex: "#4A4A4A", token: "--color-gray-500" },
+        { hex: "#6B6B6B", token: "--color-gray-400" },
+        { hex: "#8D8D8D", token: "--color-gray-300" },
+        { hex: "#9A9A9A", token: "--color-muted" },
+      ],
+    },
+    {
+      naam: "Meldingen",
+      rol: "Fout en gelukt in het dashboard",
+      tinten: [
+        { hex: "#C0392B", token: "--color-error" },
+        { hex: "#2F7D4F", token: "--color-success" },
+      ],
     },
   ];
 
@@ -207,7 +224,7 @@
 
   .sg {
     padding: 64px 40px 96px;
-    background: #f1efe9;
+    background: var(--color-fg);
     color: var(--color-bg);
     border-bottom: 4px solid var(--color-bg);
   }
@@ -245,7 +262,7 @@
     gap: 10px;
     margin: 0 0 28px;
     padding-bottom: 14px;
-    border-bottom: 1px solid rgba(11, 11, 11, 0.2);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-bg) 20%, transparent);
     font-weight: 500;
     font-size: 26px;
   }
@@ -265,7 +282,7 @@
     display: block;
     margin-top: 6px;
     font: 400 11px/1.4 var(--font-mono);
-    color: #6b6b6b;
+    color: var(--color-gray-400);
   }
 
   /* kleuren */
@@ -278,7 +295,7 @@
     gap: 16px;
   }
   .sg-kleur {
-    background: #fff;
+    background: var(--color-white);
   }
   .sg-staal {
     display: flex;
@@ -298,11 +315,11 @@
   }
   .sg-hex {
     font: 400 11px/1.4 var(--font-mono);
-    color: #6b6b6b;
+    color: var(--color-gray-400);
   }
   .sg-rol {
     font-size: 12px;
-    color: #6b6b6b;
+    color: var(--color-gray-400);
   }
 
   /* typografie */
@@ -404,7 +421,7 @@
     align-items: flex-start;
     gap: 14px;
     padding: 24px;
-    background: #fff;
+    background: var(--color-white);
   }
   .sg-op-donker {
     background: var(--color-bg);
@@ -505,7 +522,7 @@
   .o-vlak {
     flex: 1;
     aspect-ratio: 4 / 5;
-    background: #1b1b1b;
+    background: var(--color-gray-900);
     box-shadow: 10px 10px 0 var(--color-primary);
   }
   .o-oranje {
@@ -513,7 +530,7 @@
   }
   .o-creme {
     box-shadow: 10px 10px 0 var(--color-fg);
-    outline: 1px solid rgba(11, 11, 11, 0.12);
+    outline: 1px solid color-mix(in srgb, var(--color-bg) 12%, transparent);
   }
   .sg-blokken {
     gap: 10px;
@@ -542,7 +559,7 @@
   }
   .o-blok-creme {
     background: var(--color-fg);
-    outline: 1px solid rgba(11, 11, 11, 0.12);
+    outline: 1px solid color-mix(in srgb, var(--color-bg) 12%, transparent);
   }
   .sg-maten {
     list-style: none;

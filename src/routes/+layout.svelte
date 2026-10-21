@@ -175,7 +175,7 @@
     padding: 12px 20px;
     background: var(--color-accent);
     color: var(--color-bg);
-    font: 700 14px/1 "Space Mono", monospace;
+    font: 700 14px/1 var(--font-mono);
     letter-spacing: 0.08em;
     text-decoration: none;
     transform: translateY(-200%);
@@ -240,7 +240,7 @@
   .cta-text {
     margin: 0;
     max-width: 560px;
-    font: 400 14px/1.6 "Space Mono", monospace;
+    font: 400 14px/1.6 var(--font-mono);
   }
   .cta-form {
     position: relative;
@@ -255,7 +255,7 @@
   }
   .cta-form-label {
     margin: 0;
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.14em;
     color: var(--color-accent);
   }
@@ -273,17 +273,17 @@
   .cta-field {
     width: 100%;
     box-sizing: border-box;
-    background: #242424;
+    background: var(--color-gray-800);
     border: none;
     padding: 14px;
-    font: 400 13px/1 "Space Mono", monospace;
+    font: 400 13px/1 var(--font-mono);
     color: var(--color-fg);
   }
   .cta-field::placeholder {
-    color: #8d8d8d;
+    color: var(--color-gray-300);
   }
   .cta-textarea {
-    font-family: "Space Mono", monospace;
+    font-family: var(--font-mono);
     line-height: 1.5;
     resize: vertical;
   }
@@ -293,7 +293,7 @@
     padding: 16px;
     text-align: center;
     border-radius: 26px;
-    font: 800 18px/1 "Archivo", sans-serif;
+    font: 800 18px/1 var(--font-display);
     border: none;
     cursor: pointer;
   }
@@ -311,7 +311,7 @@
   }
   .cta-feedback {
     margin: 0;
-    font: 700 12px/1.5 "Space Mono", monospace;
+    font: 700 12px/1.5 var(--font-mono);
     color: var(--color-primary-light);
   }
   .cta-feedback-error {
@@ -326,7 +326,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
     gap: clamp(35px, 3vw, 36px);
-    font: 400 12px/1.9 "Space Mono", monospace;
+    font: 400 12px/1.9 var(--font-mono);
   }
   .footer-brand {
     grid-column: 1;
@@ -338,7 +338,7 @@
   .footer-tag {
     grid-column: 1;
     margin: 0;
-    color: #9a9a9a;
+    color: var(--color-muted);
   }
   .footer-col ul {
     list-style: none;
@@ -372,12 +372,12 @@
     grid-column: 1 / -1;
     margin: 34px 0 0;
     padding-top: 16px;
-    border-top: 2px solid #242424;
+    border-top: 2px solid var(--color-gray-800);
     display: flex;
     justify-content: space-between;
-    font: 700 11px/1 "Space Mono", monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.14em;
-    color: #7d7d7d;
+    color: var(--color-gray-300);
   }
   .footer-legal {
     display: flex;

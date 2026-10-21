@@ -348,7 +348,7 @@
   /* overlay */
   /* de donkere laag achter het menu (hoort bij <dialog>) */
   .menu::backdrop {
-    background: rgba(11, 11, 11, 0.85);
+    background: color-mix(in srgb, var(--color-bg) 85%, transparent);
     backdrop-filter: blur(3px);
   }
   .menu {
@@ -424,9 +424,7 @@
     top: 28px;
     left: 32px;
     color: var(--color-accent);
-    font:
-      400 12px/1 "Space Mono",
-      monospace;
+    font: 400 12px/1 var(--font-mono);
     letter-spacing: 0.1em;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
@@ -462,9 +460,7 @@
   .menu-nr {
     align-self: start;
     padding-top: 0.55em;
-    font:
-      700 15px/1 "Space Mono",
-      monospace;
+    font: 700 15px/1 var(--font-mono);
     letter-spacing: 0.04em;
   }
   .menu-label {
@@ -531,9 +527,7 @@
   .menu-foto figcaption {
     margin-top: 20px;
     color: var(--color-accent);
-    font:
-      400 11px/1.4 "Space Mono",
-      monospace;
+    font: 400 11px/1.4 var(--font-mono);
     letter-spacing: 0.08em;
   }
   .menu-foto img {
@@ -588,7 +582,7 @@
     display: grid;
     place-items: center;
     aspect-ratio: 16 / 9;
-    border: 1px solid rgba(11, 11, 11, 0.2);
+    border: 1px solid color-mix(in srgb, var(--color-bg) 20%, transparent);
     border-radius: 6px;
     overflow: hidden;
     font-weight: 900;
@@ -608,9 +602,7 @@
   }
   .menu-event-info time,
   .menu-event-meta {
-    font:
-      400 10px/1.3 "Space Mono",
-      monospace;
+    font: 400 10px/1.3 var(--font-mono);
     letter-spacing: 0.06em;
   }
   .menu-event-info strong {
@@ -625,14 +617,12 @@
   }
   .menu-leeg {
     padding: 24px 0;
-    font:
-      400 13px/1.5 "Space Mono",
-      monospace;
+    font: 400 13px/1.5 var(--font-mono);
   }
   .menu-skel span {
     display: block;
     border-radius: 6px;
-    background: rgba(11, 11, 11, 0.08);
+    background: color-mix(in srgb, var(--color-bg) 8%, transparent);
   }
   .menu-skel span:first-child {
     aspect-ratio: 16 / 9;
@@ -644,9 +634,7 @@
     margin-top: 16px;
     color: var(--color-bg);
     text-decoration: none;
-    font:
-      400 11px/1 "Space Mono",
-      monospace;
+    font: 400 11px/1 var(--font-mono);
     letter-spacing: 0.08em;
   }
   .menu-alles:hover {

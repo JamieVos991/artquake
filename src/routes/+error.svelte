@@ -71,9 +71,7 @@
   .fout-tekst {
     margin: 0 0 36px;
     max-width: 420px;
-    font:
-      400 15px/1.6 "Space Mono",
-      monospace;
+    font: 400 15px/1.6 var(--font-mono);
   }
   /* zelfde knop als DOE MEE op de dienstpagina's */
   .fout-knop {
@@ -82,9 +80,7 @@
     background: var(--color-fg);
     color: var(--color-bg);
     border-radius: 26px;
-    font:
-      800 14px/1 "Archivo",
-      sans-serif;
+    font: 800 14px/1 var(--font-display);
     letter-spacing: 0.04em;
     text-decoration: none;
     transition: opacity 0.15s;

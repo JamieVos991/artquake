@@ -215,9 +215,7 @@
   }
   .dp-id {
     display: block;
-    font:
-      700 13px/1 "Space Mono",
-      monospace;
+    font: 700 13px/1 var(--font-mono);
     letter-spacing: 0.16em;
     margin-bottom: 18px;
   }
@@ -235,9 +233,7 @@
   .dp-tagline {
     margin: 0;
     max-width: 640px;
-    font:
-      400 16px/1.5 "Space Mono",
-      monospace;
+    font: 400 16px/1.5 var(--font-mono);
   }
 
   .dp-body {
@@ -252,9 +248,7 @@
   .dp-text {
     max-width: 680px;
     margin: 0 0 40px;
-    font:
-      400 15px/1.7 "Space Mono",
-      monospace;
+    font: 400 15px/1.7 var(--font-mono);
     opacity: 0.9;
   }
   .dp-agenda a {
@@ -270,9 +264,7 @@
     background: var(--color-fg);
     color: var(--color-bg);
     border-radius: 26px;
-    font:
-      800 14px/1 "Archivo",
-      sans-serif;
+    font: 800 14px/1 var(--font-display);
     letter-spacing: 0.04em;
     text-decoration: none;
     transition: opacity 0.15s;
@@ -317,15 +309,13 @@
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: #000;
+    background: var(--color-bg);
     box-shadow: 12px 12px 0 var(--color-primary);
   }
   .dp-video figcaption {
     margin-bottom: 28px;
     color: var(--color-accent);
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
 
@@ -337,9 +327,7 @@
   .dp-galerij-kop {
     margin: 0 0 28px;
     color: var(--color-accent);
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
   /* Pinterest-indeling: kolommen met foto's van wisselende hoogte */
@@ -368,7 +356,7 @@
     flex-basis: auto;
     min-height: 0;
     margin: 0;
-    background: #1b1b1b;
+    background: var(--color-gray-900);
     box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-primary);
   }
   .dp-schaduw-1 {
@@ -392,9 +380,7 @@
     overflow-wrap: anywhere;
     padding: 8px 12px;
     background: var(--color-bg);
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }

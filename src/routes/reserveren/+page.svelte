@@ -672,9 +672,7 @@
     align-items: center;
     justify-content: center;
     color: var(--color-muted);
-    font:
-      700 12px/1.5 "Space Mono",
-      monospace;
+    font: 700 12px/1.5 var(--font-mono);
     letter-spacing: 0.1em;
   }
   .shell {
@@ -688,7 +686,7 @@
   /* Progress */
   .progress-track {
     height: 5px;
-    background: #1e1e1e;
+    background: var(--color-gray-900);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -718,14 +716,12 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-right: 2px solid #1e1e1e;
+    border-right: 2px solid var(--color-gray-900);
   }
 
   .eyebrow {
     margin: 0 0 20px;
-    font:
-      700 10px/1 "Space Mono",
-      monospace;
+    font: 700 10px/1 var(--font-mono);
     letter-spacing: 0.2em;
     color: var(--color-accent);
   }
@@ -752,9 +748,7 @@
 
   .sub {
     margin: 0;
-    font:
-      400 13px/1.65 "Space Mono",
-      monospace;
+    font: 400 13px/1.65 var(--font-mono);
     color: var(--color-muted);
     max-width: 360px;
   }
@@ -780,10 +774,10 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 3px;
-    background: #111;
-    border-left: 3px solid #111;
+    background: var(--color-gray-950);
+    border-left: 3px solid var(--color-gray-950);
     /* lijn onderaan, zodat de donkere dansstudio niet overloopt in de pagina */
-    border-bottom: 3px solid rgba(244, 241, 234, 0.35);
+    border-bottom: 3px solid color-mix(in srgb, var(--color-fg) 35%, transparent);
   }
 
   .studios > li {
@@ -819,7 +813,7 @@
     color: var(--color-bg);
   }
   .bg-dark {
-    background: #181818;
+    background: var(--color-gray-900);
     color: var(--color-fg);
   }
   .bg-purple {
@@ -894,8 +888,8 @@
   }
 
   .inp {
-    background: #1a1a1a;
-    border: 1.5px solid #2a2a2a;
+    background: var(--color-gray-900);
+    border: 1.5px solid var(--color-gray-700);
     border-radius: 4px;
     color: var(--color-fg);
     font:
@@ -908,7 +902,7 @@
     box-sizing: border-box;
   }
   .inp::placeholder {
-    color: #3a3a3a;
+    color: var(--color-gray-600);
   }
   .inp:focus {
     border-color: var(--color-primary);
@@ -945,17 +939,13 @@
 
   .field-error {
     margin: -6px 0 0;
-    font:
-      700 12px/1.5 "Space Mono",
-      monospace;
+    font: 700 12px/1.5 var(--font-mono);
     color: var(--color-accent);
   }
 
   .field-hint {
     margin: -6px 0 0;
-    font:
-      400 12px/1.5 "Space Mono",
-      monospace;
+    font: 400 12px/1.5 var(--font-mono);
     color: var(--color-muted);
   }
 
@@ -983,9 +973,7 @@
     border: none;
     border-radius: 4px;
     color: var(--color-bg);
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.1em;
     cursor: pointer;
     padding: 18px 22px;
@@ -1008,9 +996,7 @@
   }
   .confirm-tag {
     margin: 0;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.2em;
     color: var(--color-accent);
   }
@@ -1024,9 +1010,7 @@
   }
   .confirm-text {
     margin: 0;
-    font:
-      400 14px/1.65 "Space Mono",
-      monospace;
+    font: 400 14px/1.65 var(--font-mono);
     color: var(--color-muted);
     max-width: 420px;
   }
@@ -1060,9 +1044,7 @@
     border: none;
     margin-top: 4px;
     padding: 0;
-    font:
-      700 12px/1.5 "Space Mono",
-      monospace;
+    font: 700 12px/1.5 var(--font-mono);
     text-decoration: underline;
     color: var(--color-muted);
     cursor: pointer;
@@ -1082,7 +1064,7 @@
     }
     .left {
       border-right: none;
-      border-bottom: 2px solid #1e1e1e;
+      border-bottom: 2px solid var(--color-gray-900);
       padding: 48px 28px;
       justify-content: flex-start;
     }

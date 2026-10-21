@@ -305,7 +305,7 @@
     height: 100%;
     aspect-ratio: 480 / 848;
     margin: 0;
-    background: #000;
+    background: var(--color-bg);
   }
   .route-video {
     box-shadow: 12px 12px 0 var(--color-primary);
@@ -330,9 +330,7 @@
     color: var(--color-fg);
     border: 2px solid var(--color-fg);
     border-radius: 20px;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.08em;
     cursor: pointer;
   }
@@ -342,9 +340,7 @@
   }
   .route-tekst {
     max-width: 380px;
-    font:
-      400 15px/1.6 "Space Mono",
-      monospace;
+    font: 400 15px/1.6 var(--font-mono);
   }
   .route-tekst p {
     margin: 0 0 20px;

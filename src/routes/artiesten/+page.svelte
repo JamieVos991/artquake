@@ -326,9 +326,7 @@
   }
   .ap-section-eyebrow {
     margin: 0;
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
     color: var(--color-primary);
   }
@@ -338,9 +336,7 @@
     background: var(--color-bg);
   }
   .ap-section-count {
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
   }
 
@@ -369,9 +365,7 @@
     border-radius: 26px;
     background: transparent;
     color: var(--color-bg);
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.1em;
     cursor: pointer;
     transition:
@@ -412,14 +406,12 @@
     border-radius: 26px;
     background: var(--color-bg);
     color: var(--color-fg);
-    font:
-      700 13px/1 "Space Mono",
-      monospace;
+    font: 700 13px/1 var(--font-mono);
     letter-spacing: 0.08em;
     transition: box-shadow 0.15s;
   }
   .ap-zoek input::placeholder {
-    color: #8d8d8d;
+    color: var(--color-gray-300);
   }
   /* het eigen wis-kruisje van de browser; we hebben een eigen knop */
   .ap-zoek input::-webkit-search-cancel-button {
@@ -469,9 +461,7 @@
   .ap-empty {
     padding: 40px 8px;
     text-align: center;
-    font:
-      400 14px/1.6 "Space Mono",
-      monospace;
+    font: 400 14px/1.6 var(--font-mono);
     color: var(--color-bg);
     opacity: 0.7;
   }
@@ -522,23 +512,23 @@
     justify-content: center;
     background: repeating-linear-gradient(
       45deg,
-      rgba(20, 20, 20, 0.16) 0 12px,
-      rgba(20, 20, 20, 0.06) 12px 24px
+      color-mix(in srgb, var(--color-bg) 16%, transparent) 0 12px,
+      color-mix(in srgb, var(--color-bg) 6%, transparent) 12px 24px
     );
     overflow: hidden;
   }
   .bg-dark .ap-photo {
     background: repeating-linear-gradient(
       45deg,
-      #242424 0 12px,
-      #1c1c1c 12px 24px
+      var(--color-gray-800) 0 12px,
+      var(--color-gray-900) 12px 24px
     );
   }
   .bg-purple .ap-photo {
     background: repeating-linear-gradient(
       45deg,
-      rgba(20, 20, 20, 0.22) 0 12px,
-      rgba(20, 20, 20, 0.08) 12px 24px
+      color-mix(in srgb, var(--color-bg) 22%, transparent) 0 12px,
+      color-mix(in srgb, var(--color-bg) 8%, transparent) 12px 24px
     );
   }
   .ap-img,
@@ -552,9 +542,7 @@
     display: block;
   }
   .ap-photo figcaption {
-    font:
-      400 11px/1.4 "Space Mono",
-      monospace;
+    font: 400 11px/1.4 var(--font-mono);
     text-align: center;
     letter-spacing: 0.08em;
     padding: 0 12px;
@@ -565,9 +553,7 @@
     top: 12px;
     left: 12px;
     padding: 6px 12px;
-    font:
-      700 11px/1 "Space Mono",
-      monospace;
+    font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     border-radius: 4px;
@@ -606,9 +592,7 @@
   .ap-desc {
     /* dichter onder de naam: de kaart heeft 10px tussenruimte, hier 4px */
     margin: -6px 0 0;
-    font:
-      400 13px/1.5 "Space Mono",
-      monospace;
+    font: 400 13px/1.5 var(--font-mono);
   }
   /* klikbare kaart: de knop in de naam ligt over de hele kaart */
   .ap-card-klik {
@@ -665,7 +649,7 @@
     overflow: auto;
   }
   .ap-dialoog::backdrop {
-    background: rgba(11, 11, 11, 0.8);
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
   }
   .ap-dialoog[open] {
     animation: ap-in 0.2s ease-out;
@@ -754,23 +738,17 @@
   .ap-dialoog-soort {
     margin: 0;
     color: var(--color-primary);
-    font:
-      700 14px/1.4 "Space Mono",
-      monospace;
+    font: 700 14px/1.4 var(--font-mono);
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
   .ap-dialoog-bio {
     margin: 0;
-    font:
-      400 16px/1.65 "Space Mono",
-      monospace;
+    font: 400 16px/1.65 var(--font-mono);
   }
   .ap-dialoog-kop {
     margin: 0;
-    font:
-      700 12px/1 "Space Mono",
-      monospace;
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.16em;
     color: var(--color-primary);
   }
@@ -788,9 +766,7 @@
     border: 2px solid var(--color-bg);
     border-radius: 26px;
     color: var(--color-bg);
-    font:
-      700 13px/1 "Space Mono",
-      monospace;
+    font: 700 13px/1 var(--font-mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-decoration: none;
@@ -811,9 +787,7 @@
     color: var(--color-fg);
     border: none;
     border-radius: 26px;
-    font:
-      800 14px/1 "Archivo",
-      sans-serif;
+    font: 800 14px/1 var(--font-display);
     letter-spacing: 0.04em;
     cursor: pointer;
     transition: opacity 0.15s;
@@ -824,11 +798,11 @@
 
   /* skeleton loader */
   .ap-skel-card {
-    background: #1a1a1a;
+    background: var(--color-gray-900);
     cursor: default;
   }
   .ap-skel {
-    background: linear-gradient(90deg, #242424 25%, #2e2e2e 37%, #242424 63%);
+    background: linear-gradient(90deg, var(--color-gray-800) 25%, var(--color-gray-700) 37%, var(--color-gray-800) 63%);
     background-size: 400% 100%;
     border-radius: 4px;
     animation: ap-shimmer 1.4s ease infinite;

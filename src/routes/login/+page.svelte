@@ -151,12 +151,12 @@
     line-height: 0.9;
     text-transform: uppercase;
     color: transparent;
-    -webkit-text-stroke: 1px #242424;
+    -webkit-text-stroke: 1px var(--color-gray-800);
     letter-spacing: -2px;
     padding: 0 40px;
   }
   .bg-text span:last-child {
-    color: #1a1a1a;
+    color: var(--color-gray-900);
     -webkit-text-stroke: 0;
   }
 
@@ -170,7 +170,7 @@
   .card {
     position: relative;
     width: min(420px, 100%);
-    background: #111;
+    background: var(--color-gray-950);
     border: var(--border-width) solid var(--color-primary);
     border-top: none;
     box-shadow:
@@ -230,8 +230,8 @@
   }
   .field-input {
     width: 100%;
-    background: #1c1c1c;
-    border: 1.5px solid #2e2e2e;
+    background: var(--color-gray-900);
+    border: 1.5px solid var(--color-gray-700);
     border-radius: 6px;
     color: var(--color-fg);
     font-family: var(--font-display);
@@ -241,7 +241,7 @@
     transition: border-color 0.15s;
   }
   .field-input::placeholder {
-    color: #4a4a4a;
+    color: var(--color-gray-500);
   }
   .field-input:focus {
     border-color: var(--color-primary);
@@ -276,7 +276,7 @@
 
   .field-error {
     margin: -8px 0 16px;
-    font: 700 12px/1.5 "Space Mono", monospace;
+    font: 700 12px/1.5 var(--font-mono);
     color: var(--color-accent);
   }
 
@@ -286,7 +286,7 @@
     color: var(--color-fg);
     border: none;
     border-radius: 6px;
-    font: 800 18px/1 "Archivo", sans-serif;
+    font: 800 18px/1 var(--font-display);
     letter-spacing: 2px;
     padding: 16px;
     cursor: pointer;
