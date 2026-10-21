@@ -23,7 +23,7 @@ export const studioNamen = {
 const teksten = {
 	bevestigd: {
 		onderwerp: "Reservering bevestigd",
-		label: "GELUKT ✓",
+		label: "GELUKT",
 		titel: "Reservering bevestigd.",
 		intro: "je reservering staat vast:",
 	},

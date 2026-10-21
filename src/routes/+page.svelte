@@ -343,7 +343,7 @@
   </section>
 </header>
 
-<main class="page-main">
+<div class="page-main">
   <p class="stripe-bar" aria-hidden="true">
     <span class="stripe stripe-orange"></span>
     <span class="stripe stripe-purple"></span>
@@ -596,7 +596,7 @@
     <p class="video-sub">Dewi leidt je rond door het Artquake pand 🩷</p>
     <PandSectie />
   </section>
-</main>
+</div>
 
 <style>
   .visually-hidden {

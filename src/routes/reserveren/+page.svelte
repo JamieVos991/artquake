@@ -421,7 +421,7 @@
           Je reservering is verwijderd. Tot een andere keer!
         </p>
       {:else}
-        <p class="confirm-tag">GELUKT ✓</p>
+        <p class="confirm-tag">GELUKT</p>
         <h1 class="confirm-title">RESERVERING<br />ONTVANGEN.</h1>
         <p class="confirm-text">
           {#if bevestigingsmailActief}

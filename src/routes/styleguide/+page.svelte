@@ -57,7 +57,7 @@
   <a href={base || "/"}><img src={logo} alt="Artquake, naar home" /></a>
 </header>
 
-<main class="sg">
+<div class="sg">
   <h1 class="sg-titel">Styleguide</h1>
   <p class="sg-intro">
     De huisstijl van de Artquake website: kleuren, typografie, knoppen en
@@ -192,7 +192,7 @@
       </div>
     </div>
   </section>
-</main>
+</div>
 
 <style>
   .sg-header {

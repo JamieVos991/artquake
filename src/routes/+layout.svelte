@@ -54,9 +54,14 @@
   }
 </script>
 
+<!-- alleen zichtbaar als je met de Tab-toets begint: springt over het menu heen -->
+<a class="skip-link" href="#inhoud">Naar de inhoud</a>
+
 <HamburgerMenu />
 
-{@render children()}
+<main id="inhoud" tabindex="-1">
+  {@render children()}
+</main>
 
 <section class="cta" id="doe-mee" aria-label="Contact">
   <span class="cta-blob" aria-hidden="true"></span>
@@ -87,12 +92,16 @@
       <input type="text" name="_honey" tabindex="-1" autocomplete="off" bind:value={ctaHoney} />
     </label>
 
-    {#if ctaFout}
-      <p class="cta-feedback cta-feedback-error">{ctaFout}</p>
-    {/if}
-    {#if ctaVerstuurd}
-      <p class="cta-feedback">Bedankt! Je bericht is verstuurd. We reageren zo snel mogelijk.</p>
-    {/if}
+    <!-- staat altijd op de pagina, zodat een schermlezer de melding voorleest
+         zodra die verschijnt -->
+    <div class="cta-meldingen" role="status" aria-live="polite">
+      {#if ctaFout}
+        <p class="cta-feedback cta-feedback-error">{ctaFout}</p>
+      {/if}
+      {#if ctaVerstuurd}
+        <p class="cta-feedback">Bedankt! Je bericht is verstuurd. We reageren zo snel mogelijk.</p>
+      {/if}
+    </div>
 
     <button type="submit" class="cta-submit" disabled={ctaVersturen}>
       {ctaVersturen ? 'BEZIG…' : 'VERSTUUR'}
@@ -156,6 +165,30 @@
 </footer>
 
 <style>
+  .skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 12px 20px;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font: 700 14px/1 "Space Mono", monospace;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus {
+    transform: none;
+    outline: 3px solid var(--color-fg);
+  }
+  #inhoud {
+    display: block;
+  }
+  #inhoud:focus {
+    outline: none;
+  }
+
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -268,6 +301,11 @@
   .cta-submit:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+  /* leeg: geen extra witruimte in het formulier, maar niet verbergen
+     (een verborgen meldingsvak wordt niet voorgelezen) */
+  .cta-meldingen:empty {
+    margin-bottom: -12px;
   }
   .cta-feedback {
     margin: 0;

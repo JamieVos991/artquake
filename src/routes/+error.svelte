@@ -11,7 +11,7 @@
   <title>{status} | Artquake</title>
 </svelte:head>
 
-<main class="fout">
+<div class="fout">
   <a class="fout-brand" href={base || "/"}>
     <img src={logo} alt="Artquake, naar home" />
   </a>
@@ -25,7 +25,7 @@
     </p>
     <a class="fout-knop" href={base || "/"}>NAAR HOME</a>
   </div>
-</main>
+</div>
 
 <style>
   .fout {

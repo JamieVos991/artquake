@@ -196,8 +196,8 @@
       });
       const gemaild = await stuurReserveringMail(velden, "gewijzigd");
       reserveringGelukt = gemaild
-        ? `Opgeslagen ✓ ${velden.email} heeft een mail met de nieuwe gegevens gekregen.`
-        : "Opgeslagen ✓ De mail kon niet worden verstuurd.";
+        ? `Opgeslagen. ${velden.email} heeft een mail met de nieuwe gegevens gekregen.`
+        : "Opgeslagen, maar de mail kon niet worden verstuurd.";
       leegReserveringFormulier();
     } catch (err) {
       reserveringFout = "Opslaan mislukt. Probeer het opnieuw.";
@@ -443,10 +443,10 @@
     try {
       if (artiestBewerkId) {
         await updateDoc(doc(db, "artiesten", artiestBewerkId), velden);
-        artiestGelukt = `${velden.naam} opgeslagen ✓`;
+        artiestGelukt = `${velden.naam} is opgeslagen.`;
       } else {
         await addDoc(collection(db, "artiesten"), velden);
-        artiestGelukt = `${velden.naam} toegevoegd ✓`;
+        artiestGelukt = `${velden.naam} is toegevoegd.`;
       }
       leegArtiestFormulier();
     } catch (err) {
@@ -507,13 +507,13 @@
           ...velden,
           gewijzigdOp: serverTimestamp(),
         });
-        succesTekst = "Agenda-item opgeslagen ✓";
+        succesTekst = "Agenda-item is opgeslagen.";
       } else {
         await addDoc(collection(db, "agenda"), {
           ...velden,
           createdAt: serverTimestamp(),
         });
-        succesTekst = "Agenda-item toegevoegd ✓";
+        succesTekst = "Agenda-item is toegevoegd.";
       }
       leegFormulier();
       success = true;
@@ -581,7 +581,7 @@
   </div>
 {:else}
   <div class="db">
-    <main class="db-paneel" id="overzicht">
+    <div class="db-paneel" id="overzicht">
       <div class="db-kop">
         <h1>Overzicht</h1>
       </div>
@@ -1098,7 +1098,7 @@
           </form>
         </section>
       </div>
-    </main>
+    </div>
   </div>
 {/if}
 

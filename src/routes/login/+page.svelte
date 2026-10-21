@@ -303,7 +303,9 @@
     font-size: 11px;
     letter-spacing: 1.5px;
     cursor: pointer;
-    padding: 0;
+    /* tikgebied van minstens 24px hoog, zonder dat de knop groter oogt */
+    min-height: 32px;
+    padding: 0 4px;
   }
   .toggle-btn:hover {
     color: var(--color-fg);

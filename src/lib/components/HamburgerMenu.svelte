@@ -142,13 +142,34 @@
     return `${y}-${m}-${day}`;
   }
 
+  let menuEl = $state();
+
   $effect(() => {
-    if (!open) return;
+    if (!open || !menuEl) return;
     const vorige = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const onKey = (e) => e.key === "Escape" && sluitMenu();
+
+    // Toetsenbord: focus gaat het menu in en blijft daarbinnen tot het dicht is
+    // (zoals bij elk modaal venster). Escape sluit, focus gaat terug naar de knop.
+    const focusbaar = () =>
+      [...menuEl.querySelectorAll("a[href], button")].filter((e) => !e.disabled);
+    const eerste = setTimeout(() => focusbaar()[0]?.focus());
+    const onKey = (e) => {
+      if (e.key === "Escape") return sluitMenu();
+      if (e.key !== "Tab") return;
+      const lijst = focusbaar();
+      const i = lijst.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) {
+        e.preventDefault();
+        lijst.at(-1)?.focus();
+      } else if (!e.shiftKey && i === lijst.length - 1) {
+        e.preventDefault();
+        lijst[0]?.focus();
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => {
+      clearTimeout(eerste);
       document.body.style.overflow = vorige;
       window.removeEventListener("keydown", onKey);
     };
@@ -181,6 +202,7 @@
       transition:fade={{ duration: 250 }}
     ></div>
     <div
+      bind:this={menuEl}
       class="menu"
       id="hoofdmenu"
       role="dialog"

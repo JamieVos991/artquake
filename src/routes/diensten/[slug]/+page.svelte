@@ -82,7 +82,8 @@
           style:aspect-ratio={g.verhouding}
         >
           <img src={g.src} alt={g.titel} loading="lazy" />
-          <span class="dp-galerij-titel">{g.titel}</span>
+          <!-- de alt-tekst zegt het al; zonder aria-hidden leest een schermlezer het twee keer -->
+          <span class="dp-galerij-titel" aria-hidden="true">{g.titel}</span>
         </li>
       {/each}
     </ul>
