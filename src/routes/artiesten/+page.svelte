@@ -21,6 +21,7 @@
   let zichtbaarAantal = $state(stapGrootte);
   let actieveFilter = $state("ALLE");
   let zoekterm = $state("");
+  let zoekVeld = $state();
 
   let gefilterdeArtiesten = $derived.by(() => {
     const zoek = zoekterm.trim().toLowerCase();
@@ -28,7 +29,10 @@
       (a) =>
         (actieveFilter === "ALLE" ||
           (a.type ?? "").toUpperCase() === actieveFilter) &&
-        (!zoek || a.naam.toLowerCase().includes(zoek))
+        // zoekt in naam en omschrijving (bv. "band" of "singer-songwriter")
+        (!zoek ||
+          a.naam.toLowerCase().includes(zoek) ||
+          (a.beschrijving ?? "").toLowerCase().includes(zoek))
     );
   });
   let getoondeArtiesten = $derived(gefilterdeArtiesten.slice(0, zichtbaarAantal));
@@ -74,32 +78,58 @@
   <header class="ap-section-head">
     <h2 class="ap-section-eyebrow">ALLE ARTIESTEN</h2>
     <span class="ap-section-rule"></span>
-    <span class="ap-section-count">{gefilterdeArtiesten.length} MAKERS</span>
+    <span class="ap-section-count" aria-live="polite"
+      >{gefilterdeArtiesten.length} {gefilterdeArtiesten.length === 1 ? "MAKER" : "MAKERS"}</span
+    >
   </header>
 
-  <fieldset class="ap-filters">
-    <legend class="ap-visueel-verborgen">Filter op categorie</legend>
-    {#each filters as f}
-      <button
-        type="button"
-        class="ap-filter"
-        class:is-active={actieveFilter === f}
-        aria-pressed={actieveFilter === f}
-        onclick={() => kiesFilter(f)}
-      >
-        {f}
-      </button>
-    {/each}
-    <label class="ap-zoek">
-      <span class="ap-visueel-verborgen">Zoek een artiest</span>
+  <div class="ap-balk">
+    <fieldset class="ap-filters">
+      <legend class="ap-visueel-verborgen">Filter op categorie</legend>
+      {#each filters as f}
+        <button
+          type="button"
+          class="ap-filter"
+          class:is-active={actieveFilter === f}
+          aria-pressed={actieveFilter === f}
+          onclick={() => kiesFilter(f)}
+        >
+          {f}
+        </button>
+      {/each}
+    </fieldset>
+
+    <search class="ap-zoek">
+      <label class="ap-visueel-verborgen" for="artiest-zoek">Zoek een artiest</label>
+      <svg class="ap-zoek-icoon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="M15.5 15.5 21 21" />
+      </svg>
       <input
+        id="artiest-zoek"
         type="search"
-        placeholder="zoek een artiest"
+        placeholder="ZOEK EEN ARTIEST"
+        autocomplete="off"
+        bind:this={zoekVeld}
         bind:value={zoekterm}
         oninput={() => (zichtbaarAantal = stapGrootte)}
       />
-    </label>
-  </fieldset>
+      {#if zoekterm}
+        <button
+          type="button"
+          class="ap-zoek-wis"
+          aria-label="Zoekopdracht wissen"
+          onclick={() => {
+            zoekterm = "";
+            zichtbaarAantal = stapGrootte;
+            zoekVeld?.focus();
+          }}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      {/if}
+    </search>
+  </div>
 
   {#if !geladen}
     <ul class="ap-grid" aria-hidden="true">
@@ -235,6 +265,15 @@
   }
 
   /* fieldset zonder de standaard rand en ruimte van de browser */
+  /* filters links, zoeken rechts; op een smal scherm onder elkaar */
+  .ap-balk {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    padding: 0 8px 32px;
+  }
   .ap-filters {
     display: flex;
     flex-wrap: wrap;
@@ -242,7 +281,7 @@
     min-width: 0;
     margin: 0;
     border: 0;
-    padding: 0 8px 28px;
+    padding: 0;
   }
   .ap-filter {
     padding: 10px 22px;
@@ -266,28 +305,76 @@
     background: var(--color-bg);
     color: var(--color-fg);
   }
+  /* zoekveld: zwarte pil met oranje vergrootglas, paarse schaduw bij focus */
   .ap-zoek {
-    flex: 1 1 220px;
-    max-width: 340px;
-    margin-left: auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 260px;
+    max-width: 380px;
+  }
+  .ap-zoek-icoon {
+    position: absolute;
+    left: 18px;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    pointer-events: none;
   }
   .ap-zoek input {
     width: 100%;
-    box-sizing: border-box;
-    padding: 10px 18px;
-    border: 1.5px solid var(--color-bg);
+    height: 48px;
+    padding: 0 48px 0 48px;
+    border: 2px solid var(--color-bg);
     border-radius: 26px;
-    background: transparent;
-    color: var(--color-bg);
+    background: var(--color-bg);
+    color: var(--color-fg);
     font:
-      400 13px/1 "Space Mono",
+      700 13px/1 "Space Mono",
       monospace;
+    letter-spacing: 0.08em;
+    transition: box-shadow 0.15s;
   }
   .ap-zoek input::placeholder {
-    color: rgba(11, 11, 11, 0.55);
+    color: #8d8d8d;
+  }
+  /* het eigen wis-kruisje van de browser; we hebben een eigen knop */
+  .ap-zoek input::-webkit-search-cancel-button {
+    appearance: none;
   }
   .ap-zoek input:focus {
-    outline: 2px solid var(--color-primary);
+    outline: none;
+    box-shadow: 5px 5px 0 var(--color-primary);
+  }
+  .ap-zoek-wis {
+    position: absolute;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+  }
+  .ap-zoek-wis svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .ap-zoek-wis:hover {
+    background: var(--color-fg);
+  }
+  .ap-zoek-wis:focus-visible {
+    outline: 2px solid var(--color-fg);
     outline-offset: 2px;
   }
   .ap-visueel-verborgen {
@@ -521,8 +608,8 @@
       grid-template-columns: 1fr;
     }
     .ap-zoek {
+      flex-basis: 100%;
       max-width: none;
-      margin-left: 0;
     }
   }
 </style>

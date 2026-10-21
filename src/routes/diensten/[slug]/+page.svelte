@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
 
@@ -25,11 +26,79 @@
     { eager: true, import: "default" }
   );
   const galerij = $derived(
-    (dienst.galerij ?? []).map((g) => ({
+    (dienst.galerij ?? []).map((g, i) => ({
       ...g,
+      i,
       src: galerijFotos[`../../../lib/assets/pictures/${dienst.slug}/${g.foto}.avif`],
     }))
   );
+
+  // Collage: de foto's worden verdeeld over kolommen (steeds op de kortste),
+  // en elke kolom rekt op tot de hoogste. Zo eindigt de onderkant precies recht.
+  // Telefoon 2 kolommen, groter 3.
+  let aantalKolommen = $state(3);
+  onMount(() => {
+    const smal = window.matchMedia("(max-width: 640px)");
+    const zet = () => (aantalKolommen = smal.matches ? 2 : 3);
+    zet();
+    smal.addEventListener("change", zet);
+    return () => smal.removeEventListener("change", zet);
+  });
+  // hoogte per breedte, bv. "4 / 5" geeft 1,25
+  const hoogte = (verhouding) => {
+    const [b, h] = verhouding.split("/").map(Number);
+    return h / b;
+  };
+  const RUIMTE = 0.08; // ruimte tussen twee foto's, als deel van de kolombreedte
+  const kolomHoogte = (fotos) =>
+    fotos.reduce((som, g) => som + hoogte(g.verhouding), 0) + RUIMTE * Math.max(0, fotos.length - 1);
+  const spreiding = (lijst) => {
+    const h = lijst.map(kolomHoogte);
+    return Math.max(...h) - Math.min(...h);
+  };
+  const kolommen = $derived.by(() => {
+    // 1. hoogste foto's eerst, steeds in de kortste kolom
+    const lijst = Array.from({ length: aantalKolommen }, () => []);
+    for (const g of [...galerij].sort((a, b) => hoogte(b.verhouding) - hoogte(a.verhouding))) {
+      lijst.reduce((min, k) => (kolomHoogte(k) < kolomHoogte(min) ? k : min)).push(g);
+    }
+    // 2. foto's tussen kolommen ruilen of verplaatsen zolang het verschil kleiner wordt
+    let beter = true;
+    while (beter) {
+      beter = false;
+      for (let a = 0; a < lijst.length; a++) {
+        for (let b = 0; b < lijst.length; b++) {
+          if (a === b) continue;
+          for (let i = 0; i < lijst[a].length; i++) {
+            // verplaatsen van a naar b
+            const nu = spreiding(lijst);
+            const [g] = lijst[a].splice(i, 1);
+            lijst[b].push(g);
+            if (lijst[a].length && spreiding(lijst) < nu - 0.001) {
+              beter = true;
+              break;
+            }
+            lijst[b].pop();
+            lijst[a].splice(i, 0, g);
+            // ruilen met elke foto in b
+            for (let j = 0; j < lijst[b].length; j++) {
+              [lijst[a][i], lijst[b][j]] = [lijst[b][j], lijst[a][i]];
+              if (spreiding(lijst) < nu - 0.001) {
+                beter = true;
+                break;
+              }
+              [lijst[a][i], lijst[b][j]] = [lijst[b][j], lijst[a][i]];
+            }
+            if (beter) break;
+          }
+          if (beter) break;
+        }
+        if (beter) break;
+      }
+    }
+    // 3. binnen een kolom de oorspronkelijke volgorde aanhouden
+    return lijst.map((k) => k.sort((x, y) => x.i - y.i));
+  });
 </script>
 
 <svelte:head>
@@ -78,18 +147,23 @@
 {#if galerij.length}
   <section class="dp-galerij" aria-label="Foto's van {dienst.heading}">
     <h2 class="dp-galerij-kop">IN BEELD</h2>
-    <ul class="dp-collage">
-      {#each galerij as g, i}
-        <li
-          class="dp-collage-item dp-schaduw-{i % 3}"
-          style:aspect-ratio={g.verhouding}
-        >
-          <img src={g.src} alt={g.titel} loading="lazy" />
-          <!-- de alt-tekst zegt het al; zonder aria-hidden leest een schermlezer het twee keer -->
-          <span class="dp-galerij-titel" aria-hidden="true">{g.titel}</span>
-        </li>
+    <div class="dp-collage" style:--kolommen={aantalKolommen}>
+      {#each kolommen as kolom}
+        <ul class="dp-kolom">
+          {#each kolom as g (g.foto)}
+            <li
+              class="dp-collage-item dp-schaduw-{g.i % 3}"
+              style:aspect-ratio={g.verhouding}
+              style:flex-grow={hoogte(g.verhouding)}
+            >
+              <img src={g.src} alt={g.titel} loading="lazy" />
+              <!-- de alt-tekst zegt het al; zonder aria-hidden leest een schermlezer het twee keer -->
+              <span class="dp-galerij-titel" aria-hidden="true">{g.titel}</span>
+            </li>
+          {/each}
+        </ul>
       {/each}
-    </ul>
+    </div>
   </section>
 {/if}
 
@@ -261,18 +335,31 @@
     letter-spacing: 0.16em;
   }
   /* Pinterest-indeling: kolommen met foto's van wisselende hoogte */
+  /* kolommen even hoog (grid stretch); in een kolom groeien de foto's mee,
+     zodat de onderkant van alle kolommen precies gelijk ligt */
   .dp-collage {
+    --tussenruimte: 30px;
+    display: grid;
+    grid-template-columns: repeat(var(--kolommen, 3), minmax(0, 1fr));
+    gap: var(--tussenruimte);
+    padding: 0 10px 0 0;
+  }
+  .dp-kolom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tussenruimte);
     list-style: none;
     margin: 0;
-    padding: 0 10px 0 0;
-    columns: 3;
-    column-gap: 30px;
+    padding: 0;
   }
   .dp-collage-item {
     --schaduw: 10px;
     position: relative;
-    margin: 0 0 30px;
-    break-inside: avoid;
+    /* flex-grow staat per foto in de HTML: naar verhouding van de hoogte */
+    flex-shrink: 1;
+    flex-basis: auto;
+    min-height: 0;
+    margin: 0;
     background: #1b1b1b;
     box-shadow: var(--schaduw) var(--schaduw) 0 var(--color-primary);
   }
@@ -310,13 +397,11 @@
       padding-right: 20px;
     }
     .dp-collage {
+      --tussenruimte: 18px;
       padding-right: 6px;
-      columns: 2;
-      column-gap: 18px;
     }
     .dp-collage-item {
       --schaduw: 6px;
-      margin-bottom: 18px;
     }
     .dp-galerij-titel {
       padding: 6px 9px;
