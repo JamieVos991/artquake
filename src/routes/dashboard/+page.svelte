@@ -15,6 +15,7 @@
   import { db, auth } from "$lib/firebase.js";
   import { markeerCrewBrowser } from "$lib/crew.js";
   import { uploadFoto, verwijderFoto } from "$lib/fotoUpload.js";
+  import { locatieSuggesties, standaardLocatie, standaardPrijs } from "$lib/data/agendaTekst.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { artiestSocials } from "$lib/data/socials.js";
@@ -29,7 +30,7 @@
   // reeds aanwezige data uit het oude admin-systeem.
   const typeSuggesties = [
     "Open entree",
-    "Optreden",
+    "Optredens",
     "Expositie",
     "Workshop",
     "Besloten",
@@ -38,14 +39,16 @@
   const standaardKleur = standaardAgendaKleur;
 
   let band = $state("");
-  let place = $state("");
+  let place = $state(standaardLocatie);
   let type = $state("");
   let kleur = $state(standaardKleur);
   let date = $state("");
   let startTime = $state("");
   let endTime = $state("");
-  let prijs = $state("");
+  let prijs = $state(standaardPrijs);
   let imageUrl = $state("");
+  // poster van de activiteit; komt vaak later dan de aankondiging
+  let posterUrl = $state("");
   let fotoUitsnede = $state("");
   let beschrijving = $state("");
   let submitting = $state(false);
@@ -212,7 +215,7 @@
   function ruimFotoOp(url, eigenId) {
     if (!url) return;
     const nogInGebruik = [...agendaItems, ...artiesten].some(
-      (x) => x.id !== eigenId && x.imageUrl === url
+      (x) => x.id !== eigenId && (x.imageUrl === url || x.posterUrl === url)
     );
     if (!nogInGebruik) verwijderFoto(url);
   }
@@ -232,6 +235,7 @@
     try {
       await deleteDoc(doc(db, "agenda", a.id));
       ruimFotoOp(a.imageUrl, a.id);
+      ruimFotoOp(a.posterUrl, a.id);
       // wie dit item aan het bewerken was, krijgt weer een leeg formulier
       if (bewerkId === a.id) {
         ruimUploadsOp(agendaUploads);
@@ -332,14 +336,15 @@
   function leegFormulier() {
     bewerkId = null;
     band = "";
-    place = "";
+    place = standaardLocatie;
     type = "";
     kleur = standaardKleur;
     date = "";
     startTime = "";
     endTime = "";
-    prijs = "";
+    prijs = standaardPrijs;
     imageUrl = "";
+    posterUrl = "";
     fotoUitsnede = "";
     beschrijving = "";
   }
@@ -356,6 +361,7 @@
     endTime = a.endTime ?? "";
     prijs = a.prijs ?? "";
     imageUrl = a.imageUrl ?? "";
+    posterUrl = a.posterUrl ?? "";
     fotoUitsnede = a.fotoUitsnede ?? "";
     beschrijving = a.beschrijving ?? "";
     error = "";
@@ -525,6 +531,22 @@
     }
   }
 
+  let posterVoortgang = $state(null);
+  async function kiesAgendaPoster(e) {
+    const bestand = e.currentTarget.files?.[0];
+    e.currentTarget.value = "";
+    if (!bestand) return;
+    uploadFout = "";
+    try {
+      posterUrl = await uploadFoto(bestand, "agenda-images", (p) => (posterVoortgang = p));
+      agendaUploads.add(posterUrl);
+    } catch (err) {
+      uploadFout = err.message;
+    } finally {
+      posterVoortgang = null;
+    }
+  }
+
   async function addAgendaItem(e) {
     e.preventDefault();
     error = "";
@@ -540,11 +562,14 @@
       endTime,
       prijs,
       imageUrl,
+      posterUrl,
       fotoUitsnede,
       beschrijving,
     };
     // de foto die nu in de agenda staat (vóór het opslaan, de lijst wordt direct bijgewerkt)
-    const oudeFoto = bewerkId ? agendaItems.find((x) => x.id === bewerkId)?.imageUrl : "";
+    const oudItem = bewerkId ? agendaItems.find((x) => x.id === bewerkId) : null;
+    const oudeFoto = oudItem?.imageUrl ?? "";
+    const oudePoster = oudItem?.posterUrl ?? "";
     const id = bewerkId;
     try {
       if (bewerkId) {
@@ -562,7 +587,9 @@
       }
       // vervangen of weggehaalde foto en niet gekozen uploads opruimen
       if (oudeFoto && oudeFoto !== imageUrl) ruimFotoOp(oudeFoto, id);
-      ruimUploadsOp(agendaUploads, imageUrl);
+      if (oudePoster && oudePoster !== posterUrl) ruimFotoOp(oudePoster, id);
+      for (const url of agendaUploads) if (url !== imageUrl && url !== posterUrl) verwijderFoto(url);
+      agendaUploads.clear();
       leegFormulier();
       success = true;
     } catch (err) {
@@ -874,7 +901,12 @@
             </label>
             <label class="db-veld">
               <span>Locatie</span>
-              <input type="text" placeholder="bijv. Artquake, Heerhugowaard" bind:value={place} />
+              <input type="text" list="locatie-suggesties" placeholder="bijv. Alkmaars Bierhuis, Alkmaar" bind:value={place} />
+              <datalist id="locatie-suggesties">
+                {#each locatieSuggesties as l}
+                  <option value={l}></option>
+                {/each}
+              </datalist>
             </label>
             <div class="db-veld-rij">
               <label class="db-veld">
@@ -961,8 +993,38 @@
             {/if}
             <label class="db-veld">
               <span>Beschrijving</span>
-              <textarea placeholder="korte omschrijving (optioneel)" rows="3" bind:value={beschrijving}></textarea>
+              <textarea
+                placeholder="verschijnt in de popup op de website, bv. wie er optreden of wie de workshop geeft (optioneel); een lege regel begint een nieuwe alinea"
+                rows="4"
+                bind:value={beschrijving}
+              ></textarea>
             </label>
+            <fieldset class="db-veld">
+              <legend>Poster (optioneel, kan ook later)</legend>
+              <div class="db-foto-upload">
+                {#if posterUrl}
+                  <img class="db-foto-voorbeeld db-poster-voorbeeld" src={posterUrl} alt="" />
+                {/if}
+                <label class="db-verwijder db-foto-kies" class:is-bezig={posterVoortgang !== null}>
+                  {#if posterVoortgang !== null}
+                    Uploaden… {posterVoortgang}%
+                  {:else}
+                    {posterUrl ? "Andere poster kiezen" : "Poster kiezen"}
+                  {/if}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={posterVoortgang !== null}
+                    onchange={kiesAgendaPoster}
+                  />
+                </label>
+                {#if posterUrl && posterVoortgang === null}
+                  <button type="button" class="db-verwijder" onclick={() => (posterUrl = "")}>
+                    Poster weghalen
+                  </button>
+                {/if}
+              </div>
+            </fieldset>
 
             {#if error}
               <p class="db-fout">{error}</p>
@@ -971,7 +1033,7 @@
               <p class="db-gelukt">{succesTekst}</p>
             {/if}
 
-            <button class="db-knop db-knop-breed" type="submit" disabled={submitting || uploadVoortgang !== null}>
+            <button class="db-knop db-knop-breed" type="submit" disabled={submitting || uploadVoortgang !== null || posterVoortgang !== null}>
               {submitting ? "Bezig…" : bewerkId ? "Opslaan" : "Toevoegen"}
             </button>
             {#if bewerkId}
@@ -1486,6 +1548,12 @@
     aspect-ratio: 16 / 9;
     object-fit: cover;
     border: 2px solid var(--color-bg);
+  }
+  /* poster helemaal tonen (vaak staand) */
+  .db-poster-voorbeeld {
+    width: 80px;
+    aspect-ratio: auto;
+    object-fit: contain;
   }
   .db-foto-kies {
     position: relative;

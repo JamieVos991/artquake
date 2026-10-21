@@ -8,6 +8,7 @@ const kleurPerType = {
 	workshop: "#8a19e8", // paars
 	masterclass: "#8a19e8",
 	optreden: "#0b0b0b", // zwart
+	optredens: "#0b0b0b",
 	"open entree": "#f4f1ea", // crème
 	expositie: "#b57bf5", // lichtpaars
 	besloten: "#4a0ba0", // donkerpaars

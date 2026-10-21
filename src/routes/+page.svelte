@@ -3,6 +3,7 @@
   import logo from "$lib/assets/artquake-logo.avif";
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
+  import { agendaPrijs, agendaType } from "$lib/data/agendaTekst.js";
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
@@ -473,10 +474,11 @@
             style:background={kleur}
             style:color={agendaTekstKleur(kleur)}
           >
-            {#if ev.imageUrl}
+            <!-- nog geen foto maar wel een poster: dan de poster als plaatje -->
+            {#if ev.imageUrl || ev.posterUrl}
               <img
                 class="agenda-foto"
-                src={ev.imageUrl}
+                src={ev.imageUrl || ev.posterUrl}
                 alt=""
                 loading="lazy"
                 style:object-position={agendaFotoPositie(ev)}
@@ -495,9 +497,9 @@
                 >
               {/if}
               {#if ev.place}<span>{ev.place}</span>{/if}
-              {#if ev.prijs}<strong>{ev.prijs}</strong>{/if}
+              <strong>{agendaPrijs(ev)}</strong>
             </p>
-            <span class="agenda-type">{ev.type}</span>
+            <span class="agenda-type">{agendaType(ev)}</span>
           </li>
         {/each}
       {/if}
