@@ -16,6 +16,7 @@
   import { markeerCrewBrowser } from "$lib/crew.js";
   import { uploadFoto, verwijderFoto } from "$lib/fotoUpload.js";
   import { locatieSuggesties, standaardLocatie, standaardPrijs } from "$lib/data/agendaTekst.js";
+  import { agendaPoster, ingebouwdePoster } from "$lib/data/agendaPosters.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { artiestSocials } from "$lib/data/socials.js";
@@ -210,6 +211,28 @@
     }
   }
 
+  // ── ingebouwde posters naar Storage ──
+  // Een paar posters stonden eerst in de website zelf (zie agendaPosters.js).
+  // Die worden hier één keer geüpload en aan het agenda-item gekoppeld, zodat
+  // je ze daarna gewoon kunt vervangen of weghalen.
+  const overgezet = new Set();
+  async function zetIngebouwdePostersOver() {
+    for (const item of agendaItems) {
+      const ingebouwd = ingebouwdePoster(item);
+      if (!ingebouwd || overgezet.has(item.id)) continue;
+      overgezet.add(item.id);
+      try {
+        const blob = await fetch(ingebouwd.url).then((r) => r.blob());
+        const bestand = new File([blob], `${ingebouwd.naam}.avif`, { type: blob.type || "image/avif" });
+        const url = await uploadFoto(bestand, "agenda-images");
+        await updateDoc(doc(db, "agenda", item.id), { posterUrl: url, posterOvergezet: true });
+      } catch {
+        // lukt het nu niet, dan de volgende keer dat het dashboard opent
+        overgezet.delete(item.id);
+      }
+    }
+  }
+
   // ── foto's opruimen in Firebase Storage ──
   // Verwijdert een foto, tenzij een ander agenda-item of een artiest hem nog gebruikt.
   function ruimFotoOp(url, eigenId) {
@@ -228,8 +251,54 @@
     uploads.clear();
   }
 
+  // ── posters (eigen blok) ──
+  // per komende activiteit direct een poster kiezen, vervangen of weghalen
+  let komendeActiviteiten = $derived(
+    agendaItems.filter((a) => a.date && a.date >= vandaagAlsDatum())
+  );
+  let aantalMetPoster = $derived(komendeActiviteiten.filter((a) => agendaPoster(a)).length);
+  let posterBezigId = $state(null);
+  let posterBezigVoortgang = $state(null);
+  let posterMelding = $state("");
+
+  async function kiesPosterVoor(a, e) {
+    const bestand = e.currentTarget.files?.[0];
+    e.currentTarget.value = "";
+    if (!bestand) return;
+    posterMelding = "";
+    posterBezigId = a.id;
+    const oud = a.posterUrl;
+    try {
+      const url = await uploadFoto(bestand, "agenda-images", (p) => (posterBezigVoortgang = p));
+      await updateDoc(doc(db, "agenda", a.id), { posterUrl: url, posterOvergezet: true });
+      if (oud && oud !== url) ruimFotoOp(oud, a.id);
+      posterMelding = `Poster van "${a.band}" is opgeslagen.`;
+    } catch (err) {
+      posterMelding = err.message || "Opslaan mislukt. Probeer het opnieuw.";
+    } finally {
+      posterBezigId = null;
+      posterBezigVoortgang = null;
+    }
+  }
+
+  async function haalPosterWeg(a) {
+    if (!confirm(`Poster van "${a.band}" weghalen?`)) return;
+    posterMelding = "";
+    posterBezigId = a.id;
+    const oud = a.posterUrl;
+    try {
+      await updateDoc(doc(db, "agenda", a.id), { posterUrl: "", posterOvergezet: true });
+      ruimFotoOp(oud, a.id);
+      posterMelding = `Poster van "${a.band}" is weggehaald.`;
+    } catch {
+      posterMelding = "Weghalen mislukt. Probeer het opnieuw.";
+    } finally {
+      posterBezigId = null;
+    }
+  }
+
   async function verwijderAgendaItem(a) {
-    if (!confirm(`"${a.band ?? "Dit agenda-item"}" op ${formatDatum(a.date)} verwijderen?`))
+    if (!confirm(`"${a.band ?? "Dit agenda item"}" op ${formatDatum(a.date)} verwijderen?`))
       return;
     verwijderBezig = a.id;
     try {
@@ -272,6 +341,7 @@
             )
           );
         agendaGeladen = true;
+        zetIngebouwdePostersOver();
       },
       () => {
         agendaGeladen = true;
@@ -577,13 +647,13 @@
           ...velden,
           gewijzigdOp: serverTimestamp(),
         });
-        succesTekst = "Agenda-item is opgeslagen.";
+        succesTekst = "Agenda item is opgeslagen.";
       } else {
         await addDoc(collection(db, "agenda"), {
           ...velden,
           createdAt: serverTimestamp(),
         });
-        succesTekst = "Agenda-item is toegevoegd.";
+        succesTekst = "Agenda item is toegevoegd.";
       }
       // vervangen of weggehaalde foto en niet gekozen uploads opruimen
       if (oudeFoto && oudeFoto !== imageUrl) ruimFotoOp(oudeFoto, id);
@@ -860,7 +930,11 @@
                     {/if}
                     <span>
                       <strong>{a.band ?? "–"}</strong>
-                      <span>{a.place ?? "–"}{a.type ? ` · ${a.type}` : ""}</span>
+                      <span
+                        >{a.place ?? "–"}{a.type ? ` · ${a.type}` : ""}{agendaPoster(a)
+                          ? " · met poster"
+                          : ""}</span
+                      >
                     </span>
                   </span>
                   <span class="db-regel-datum">{formatDatum(a.date)}</span>
@@ -871,7 +945,7 @@
                     type="button"
                     class="db-verwijder db-bewerk"
                     onclick={() => bewerkAgendaItem(a)}
-                    aria-label="{a.band ?? 'Agenda-item'} bewerken"
+                    aria-label="{a.band ?? 'Agenda item'} bewerken"
                   >
                     Bewerk
                   </button>
@@ -880,7 +954,7 @@
                     class="db-verwijder"
                     disabled={verwijderBezig === a.id}
                     onclick={() => verwijderAgendaItem(a)}
-                    aria-label="{a.band ?? 'Agenda-item'} verwijderen"
+                    aria-label="{a.band ?? 'Agenda item'} verwijderen"
                   >
                     {verwijderBezig === a.id ? "…" : "Verwijder"}
                   </button>
@@ -892,7 +966,7 @@
 
         <section class="db-blok db-formulier-blok" id="agenda-formulier">
           <header class="db-blok-kop">
-            <h2>{bewerkId ? "Agenda-item bewerken" : "Agenda-item toevoegen"}</h2>
+            <h2>{bewerkId ? "Agenda item bewerken" : "Agenda item toevoegen"}</h2>
           </header>
           <form class="db-formulier" onsubmit={addAgendaItem}>
             <label class="db-veld">
@@ -1049,6 +1123,69 @@
           </form>
         </section>
       </div>
+
+      <!-- posters: per komende activiteit -->
+      <section class="db-blok db-posters-blok" id="posters">
+        <header class="db-blok-kop">
+          <h2>Posters</h2>
+          <span class="db-blok-info"
+            >{aantalMetPoster} van {komendeActiviteiten.length} komende activiteiten hebben een poster</span
+          >
+        </header>
+        {#if posterMelding}
+          <p class="db-gelukt db-melding" role="status">{posterMelding}</p>
+        {/if}
+        {#if !agendaGeladen}
+          <p class="db-leeg">Laden…</p>
+        {:else if komendeActiviteiten.length === 0}
+          <p class="db-leeg">Er staan geen komende activiteiten in de agenda.</p>
+        {:else}
+          <ul class="db-posters">
+            {#each komendeActiviteiten as a (a.id)}
+              {@const poster = agendaPoster(a)}
+              {@const bezig = posterBezigId === a.id}
+              <li class="db-poster">
+                <div class="db-poster-beeld" class:db-poster-leeg={!poster}>
+                  {#if poster}
+                    <img src={poster} alt="Poster van {a.band}" loading="lazy" />
+                  {:else}
+                    <span>Nog geen poster</span>
+                  {/if}
+                </div>
+                <p class="db-poster-naam">
+                  <span>{formatDatum(a.date)}</span>
+                  <strong>{a.band ?? "–"}</strong>
+                </p>
+                <div class="db-poster-knoppen">
+                  <label class="db-verwijder db-foto-kies" class:is-bezig={bezig}>
+                    {#if bezig && posterBezigVoortgang !== null}
+                      Uploaden… {posterBezigVoortgang}%
+                    {:else}
+                      {poster ? "Vervangen" : "Poster kiezen"}
+                    {/if}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={posterBezigId !== null}
+                      onchange={(e) => kiesPosterVoor(a, e)}
+                    />
+                  </label>
+                  {#if poster}
+                    <button
+                      type="button"
+                      class="db-verwijder"
+                      disabled={posterBezigId !== null}
+                      onclick={() => haalPosterWeg(a)}
+                    >
+                      Weghalen
+                    </button>
+                  {/if}
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </section>
 
       <!-- artiesten -->
       <div class="db-rij db-rij-agenda" id="artiesten">
@@ -1570,6 +1707,63 @@
     opacity: 0.7;
   }
   /* het echte bestandsveld ligt onzichtbaar over de knop */
+  /* posters: raster van staande kaarten */
+  .db-posters-blok {
+    margin-bottom: 40px;
+  }
+  .db-posters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .db-poster {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .db-poster-beeld {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 2px solid var(--color-bg);
+    background: var(--color-bg);
+  }
+  .db-poster-beeld img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 0;
+  }
+  .db-poster-leeg {
+    background: transparent;
+    border-style: dashed;
+    color: var(--db-zacht);
+    font: 700 11px/1.3 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .db-poster-naam {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    font: 400 12px/1.3 var(--font-mono);
+    color: var(--db-zacht);
+  }
+  .db-poster-naam strong {
+    color: var(--color-bg);
+    font: 800 14px/1.2 var(--font-display);
+  }
+  .db-poster-knoppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+  }
   .db-foto-kies input {
     position: absolute;
     inset: 0;

@@ -4,6 +4,7 @@
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
   import { agendaPrijs, agendaType } from "$lib/data/agendaTekst.js";
+  import { agendaPoster } from "$lib/data/agendaPosters.js";
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
@@ -475,10 +476,10 @@
             style:color={agendaTekstKleur(kleur)}
           >
             <!-- nog geen foto maar wel een poster: dan de poster als plaatje -->
-            {#if ev.imageUrl || ev.posterUrl}
+            {#if ev.imageUrl || agendaPoster(ev)}
               <img
                 class="agenda-foto"
-                src={ev.imageUrl || ev.posterUrl}
+                src={ev.imageUrl || agendaPoster(ev)}
                 alt=""
                 loading="lazy"
                 style:object-position={agendaFotoPositie(ev)}

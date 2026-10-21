@@ -8,8 +8,7 @@
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { isCrewBrowser, markeerCrewBrowser } from "$lib/crew.js";
   import { navigatie } from "$lib/data/navigatie.js";
-  import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
-  import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
+  import { agendaPoster } from "$lib/data/agendaPosters.js";
   import dansFoto from "$lib/assets/fotos/hero/meiden-die-dansen.avif";
   import zingFoto from "$lib/assets/fotos/hero/zangeres-met-gitaar.avif";
   import optredenFoto from "$lib/assets/fotos/hero/optreden.avif";
@@ -117,9 +116,10 @@
       const n = new Date();
       const vandaag = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
       agenda = (await haalCollectieOp("agenda"))
-        .filter((a) => a.date && a.date >= vandaag)
+        // alleen komende activiteiten waarvoor een poster is gekozen
+        .filter((a) => a.date && a.date >= vandaag && agendaPoster(a))
         .sort((a, b) => `${a.date}${a.startTime ?? ""}`.localeCompare(`${b.date}${b.startTime ?? ""}`))
-        .slice(0, 3);
+        .slice(0, 4);
     } catch {
       agenda = [];
     }
@@ -147,9 +147,9 @@
     focusTerug = false;
   }
 
-  function formatDatum(d) {
-    const [y, m, day] = d.split("-");
-    return `${y}-${m}-${day}`;
+  function korteDatum(d) {
+    const [, m, dag] = d.split("-");
+    return `${dag}.${m}`;
   }
 
   let menuEl = $state();
@@ -257,54 +257,31 @@
         </figure>
       </nav>
 
-      <aside class="menu-rechts" aria-label="Agenda">
+      <aside class="menu-rechts" aria-label="Komende activiteiten">
         <header class="menu-rechts-kop">
-          <h2>NU IN DE AGENDA</h2>
+          <p>BINNENKORT · ALLES GRATIS</p>
+          <h2>OP DE POSTER</h2>
         </header>
-        <ol class="menu-agenda">
+        <!-- de eerstvolgende activiteiten met een poster, als posters aan de muur -->
+        <ol class="menu-posters">
           {#if !agendaGeladen}
-            {#each Array(3) as _}
-              <li class="menu-event menu-skel" aria-hidden="true"><span></span><span></span></li>
+            {#each Array(4) as _}
+              <li class="menu-poster menu-poster-skel" aria-hidden="true"></li>
             {/each}
           {:else if agenda.length === 0}
-            <li class="menu-leeg">Binnenkort meer agenda items.</li>
+            <li class="menu-leeg">Binnenkort nieuwe posters.</li>
           {:else}
             {#each agenda as ev (ev.id)}
-              <li class="menu-event">
-                <span
-                  class="menu-thumb"
-                  style:background={agendaKleur(ev)}
-                  style:color={agendaTekstKleur(agendaKleur(ev))}
-                >
-                  {#if ev.imageUrl}
-                    <img
-                      src={ev.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      style:object-position={agendaFotoPositie(ev)}
-                    />
-                  {:else}
-                    <span>{ev.date.slice(8, 10)}.{ev.date.slice(5, 7)}</span>
-                  {/if}
-                </span>
-                <span class="menu-event-info">
-                  <time datetime={ev.date}>{formatDatum(ev.date)}</time>
-                  <strong>{ev.band}</strong>
-                  <span class="menu-event-meta"
-                    >{[
-                      ev.place,
-                      ev.startTime && `${ev.startTime}${ev.endTime ? ` – ${ev.endTime}` : ""}`,
-                      ev.prijs,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}</span
-                  >
-                </span>
+              <li class="menu-poster">
+                <a href="{base}/#agenda" onclick={() => (open = false)}>
+                  <img src={agendaPoster(ev)} alt="" loading="lazy" />
+                  <span class="menu-poster-datum">{korteDatum(ev.date)}</span>
+                  <span class="menu-visueel-verborgen">{ev.band}</span>
+                </a>
               </li>
             {/each}
           {/if}
         </ol>
-        <a class="menu-alles" href="{base}/#agenda" onclick={() => (open = false)}>BEKIJK DE HELE AGENDA</a>
       </aside>
 
       <button type="button" class="menu-sluit" aria-label="Menu sluiten" onclick={sluitMenu}>
@@ -395,11 +372,8 @@
   .menu-rechts > * {
     animation: menu-item-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
   }
-  .menu-rechts > .menu-agenda {
+  .menu-rechts > .menu-posters {
     animation-delay: 0.45s;
-  }
-  .menu-rechts > .menu-alles {
-    animation-delay: 0.55s;
   }
   @media (prefers-reduced-motion: reduce) {
     .menu-item,
@@ -553,92 +527,101 @@
     overflow-y: auto;
   }
   .menu-rechts-kop {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
     padding-bottom: 14px;
     border-bottom: 1px solid var(--color-bg);
+  }
+  .menu-rechts-kop p {
+    margin: 0 0 6px;
+    font: 700 11px/1 var(--font-mono);
+    letter-spacing: 0.14em;
+    color: var(--color-primary);
   }
   .menu-rechts-kop h2 {
     margin: 0;
     font-weight: 900;
-    font-size: clamp(20px, 1.8vw, 26px);
+    font-stretch: 110%;
+    font-size: clamp(22px, 2.2vw, 32px);
     letter-spacing: -0.01em;
   }
-  .menu-agenda {
-    margin: 0;
-    padding: 0;
+
+  /* posterwand: twee kolommen staande posters, om en om iets scheef */
+  .menu-posters {
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 18px;
+    margin: 22px 0 0;
+    padding: 0 8px 8px 0;
     list-style: none;
   }
-  .menu-event {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--color-bg);
+  .menu-poster {
+    --schuin: -1.5deg;
+    --schaduw: var(--color-primary);
+    transform: rotate(var(--schuin));
+    transition: transform 0.15s;
   }
-  .menu-thumb {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 16 / 9;
-    border: 1px solid color-mix(in srgb, var(--color-bg) 20%, transparent);
-    border-radius: 6px;
+  .menu-poster:nth-child(even) {
+    --schuin: 1.5deg;
+    --schaduw: var(--color-accent);
+  }
+  .menu-poster:hover,
+  .menu-poster:focus-within {
+    transform: rotate(0) scale(1.03);
+  }
+  /* elke poster helemaal zichtbaar, in zijn eigen verhouding */
+  .menu-poster a {
+    position: relative;
+    display: block;
     overflow: hidden;
-    font-weight: 900;
-    font-size: clamp(22px, 2.4vw, 34px);
-    letter-spacing: -0.02em;
+    background: var(--color-bg);
+    border: 3px solid var(--color-bg);
+    box-shadow: 6px 6px 0 var(--schaduw);
+    text-decoration: none;
   }
-  .menu-thumb img {
+  .menu-poster a:focus-visible {
+    outline: 3px solid var(--color-bg);
+    outline-offset: 4px;
+  }
+  .menu-poster img {
+    display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
   }
-  .menu-event-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-  }
-  .menu-event-info time,
-  .menu-event-meta {
-    font: 400 10px/1.3 var(--font-mono);
+  .menu-poster-datum {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 5px 8px;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font: 700 12px/1 var(--font-mono);
     letter-spacing: 0.06em;
   }
-  .menu-event-info strong {
-    font-weight: 900;
-    font-size: 15px;
-    line-height: 1.15;
-    text-transform: uppercase;
+  .menu-visueel-verborgen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
-  .menu-event-meta {
-    margin-top: auto;
-    text-transform: uppercase;
+  .menu-poster-skel {
+    aspect-ratio: 3 / 4;
+    background: color-mix(in srgb, var(--color-bg) 8%, transparent);
   }
   .menu-leeg {
+    grid-column: 1 / -1;
     padding: 24px 0;
     font: 400 13px/1.5 var(--font-mono);
   }
-  .menu-skel span {
-    display: block;
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--color-bg) 8%, transparent);
-  }
-  .menu-skel span:first-child {
-    aspect-ratio: 16 / 9;
-  }
-  .menu-skel span:last-child {
-    height: 40px;
-  }
-  .menu-alles {
-    margin-top: 16px;
-    color: var(--color-bg);
-    text-decoration: none;
-    font: 400 11px/1 var(--font-mono);
-    letter-spacing: 0.08em;
-  }
-  .menu-alles:hover {
-    color: var(--color-primary);
+  @media (prefers-reduced-motion: reduce) {
+    .menu-poster,
+    .menu-poster:hover,
+    .menu-poster:focus-within {
+      transition: none;
+      transform: rotate(var(--schuin));
+    }
   }
 
   /* sluitknop */
