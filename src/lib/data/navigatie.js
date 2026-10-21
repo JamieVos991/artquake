@@ -1,5 +1,6 @@
 // Hoofdnavigatie: gebruikt door het hamburgermenu en de footer.
-// Reserveren staat hier bewust niet in: dat loopt (voorlopig) via Login.
+// Reserveren staat hier niet in: dat is alleen voor de crew en verschijnt in het
+// menu (boven Dashboard) zodra je bent ingelogd, zie HamburgerMenu.svelte.
 export const navigatie = [
 	{ label: "Home", href: "/", info: "JONG TALENT LAAT ZICH ZIEN EN HOREN", foto: "dans" },
 	{ label: "Wat we doen", href: "/#services", info: "PODIUM · WORKSHOPS · COACHING", foto: "teken" },

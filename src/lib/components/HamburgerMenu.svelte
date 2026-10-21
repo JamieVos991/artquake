@@ -28,7 +28,7 @@
     schrijf: schrijfFoto,
     zing: zingFoto,
   };
-  // wie is ingelogd, ziet Dashboard in plaats van Login en kan uitloggen
+  // wie is ingelogd, ziet Reserveren en Dashboard in plaats van Login en kan uitloggen
   // Firebase (inloggen) wordt alleen geladen in een browser waar de crew al
   // eens heeft ingelogd, en pas als de pagina klaar is met laden
   let ingelogd = $state(false);
@@ -52,10 +52,14 @@
 
   const items = $derived(
     navigatie
-      .map((it) =>
+      // ingelogd: Login wordt Reserveren + Dashboard (reserveren is alleen voor de crew)
+      .flatMap((it) =>
         ingelogd && it.href === "/login"
-          ? { ...it, label: "Dashboard", href: "/dashboard" }
-          : it
+          ? [
+              { label: "Reserveren", href: "/reserveren", info: "OEFENRUIMTE · STUDIO · ATELIER", foto: "pand" },
+              { ...it, label: "Dashboard", href: "/dashboard" },
+            ]
+          : [it]
       )
       .concat(
         ingelogd
@@ -526,12 +530,13 @@
     color: var(--color-bg);
     overflow-y: auto;
   }
+  /* overal dezelfde ruimte (16px): label, titel, lijn en wat eronder staat */
   .menu-rechts-kop {
-    padding-bottom: 14px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--color-bg);
   }
   .menu-rechts-kop p {
-    margin: 0 0 6px;
+    margin: 0 0 16px;
     font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.14em;
     color: var(--color-primary);
@@ -550,7 +555,7 @@
     align-items: start;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 18px;
-    margin: 22px 0 0;
+    margin: 16px 0 0;
     padding: 0 8px 8px 0;
     list-style: none;
   }
@@ -612,7 +617,7 @@
   }
   .menu-leeg {
     grid-column: 1 / -1;
-    padding: 24px 0;
+    padding: 0;
     font: 400 13px/1.5 var(--font-mono);
   }
   @media (prefers-reduced-motion: reduce) {

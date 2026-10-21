@@ -498,9 +498,12 @@
                 >
               {/if}
               {#if ev.place}<span>{ev.place}</span>{/if}
-              <strong>{agendaPrijs(ev)}</strong>
             </p>
-            <span class="agenda-type">{agendaType(ev)}</span>
+            <!-- type met de prijs eronder (bv. OPEN ENTREE / GRATIS) -->
+            <span class="agenda-type">
+              {#if agendaType(ev)}<span>{agendaType(ev)}</span>{/if}
+              <strong>{agendaPrijs(ev)}</strong>
+            </span>
           </li>
         {/each}
       {/if}
@@ -1192,9 +1195,8 @@
   }
   .agenda-row {
     display: grid;
-    grid-template-columns:
-      88px minmax(0, 110px) minmax(0, 1fr) minmax(0, 240px)
-      minmax(0, 150px);
+    /* vaste kolommen (zodat alle regels recht onder elkaar staan); de naam krijgt de rest */
+    grid-template-columns: 88px 90px minmax(0, 1fr) minmax(0, 220px) 110px;
     gap: 20px;
     align-items: center;
     padding: 14px 22px 14px 14px;
@@ -1218,6 +1220,9 @@
     font-stretch: 110%;
     font-size: clamp(20px, 2.4vw, 34px);
     line-height: 1;
+    /* lange woorden (muziekproductie) afbreken in plaats van over de tijd heen lopen */
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
   .agenda-meta {
     margin: 0;
@@ -1226,11 +1231,12 @@
     gap: 2px;
     font: 400 15px/1.4 var(--font-mono);
   }
-  .agenda-meta strong {
-    font-weight: 700;
-  }
   .agenda-type {
     justify-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
     font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -1653,6 +1659,7 @@
     }
     .agenda-type {
       justify-self: start;
+      align-items: flex-start;
     }
     .talent-grid {
       grid-template-columns: 1fr;
@@ -1730,22 +1737,24 @@
       gap: 20px;
     }
     /* telefoon: een kaart met de foto over de volle breedte bovenaan,
-       daaronder datum en type, de naam en de details op één regel */
+       daaronder type en prijs als labels, de datum, de naam en
+       tijd en plaats onder elkaar */
     .agenda-row {
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-areas:
-        "foto foto"
-        "datum type"
-        "naam naam"
-        "meta meta";
-      align-items: center;
-      gap: 6px 12px;
-      padding: 0 0 16px;
+        "foto"
+        "labels"
+        "datum"
+        "naam"
+        "meta";
+      align-items: start;
+      gap: 8px;
+      padding: 0 0 20px;
       overflow: hidden;
     }
     .agenda-row > :not(.agenda-foto) {
-      margin-left: 16px;
-      margin-right: 16px;
+      margin-left: 18px;
+      margin-right: 18px;
     }
     .agenda-foto {
       grid-area: foto;
@@ -1757,38 +1766,42 @@
     .agenda-foto-leeg {
       display: none;
     }
-    /* zonder foto begint de kaart met wat ruimte boven de datum */
-    .agenda-foto-leeg + .agenda-date {
-      margin-top: 16px;
+    /* zonder foto begint de kaart met wat ruimte boven de labels */
+    .agenda-foto-leeg ~ .agenda-type {
+      margin-top: 18px;
+    }
+    /* type en prijs als twee labels naast elkaar */
+    .agenda-type {
+      grid-area: labels;
+      justify-self: start;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .agenda-type > * {
+      padding: 6px 9px;
+      border: 1.5px solid currentColor;
+      border-radius: 4px;
     }
     .agenda-date {
       grid-area: datum;
+      margin-top: 6px;
       font-size: 26px;
-    }
-    .agenda-type {
-      grid-area: type;
-      justify-self: end;
-    }
-    .agenda-foto-leeg ~ .agenda-type {
-      margin-top: 16px;
     }
     .agenda-name {
       grid-area: naam;
       font-size: 24px;
       line-height: 1.05;
+      /* genoeg ruimte op een telefoon: woorden heel laten */
+      hyphens: manual;
     }
     .agenda-meta {
       grid-area: meta;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 2px 0;
-      font-size: 13px;
+      margin-top: 4px;
+      gap: 2px;
+      font-size: 14px;
       opacity: 0.9;
-    }
-    /* details achter elkaar, gescheiden door een puntje */
-    .agenda-meta > * + *::before {
-      content: "·";
-      margin: 0 8px;
     }
   }
 </style>
