@@ -705,20 +705,24 @@
     width: 48px;
     height: 48px;
     padding: 0;
-    background: var(--color-accent);
-    border: 3px solid var(--color-bg);
-    box-shadow: 4px 4px 0 var(--color-bg);
+    /* alleen het kruisje, zonder vlak eromheen (de knop blijft 48px groot om op te tikken) */
+    background: none;
+    border: 0;
+    color: var(--color-bg);
     cursor: pointer;
-    transition: transform 0.12s;
   }
   .ap-sluit:hover {
-    transform: translate(-2px, -2px);
+    color: var(--color-primary);
+  }
+  .ap-sluit:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: -3px;
   }
   .ap-sluit svg {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     fill: none;
-    stroke: var(--color-bg);
+    stroke: currentColor;
     stroke-width: 3;
     stroke-linecap: round;
   }
@@ -895,6 +899,14 @@
     }
     .ap-dialoog-tekst {
       padding: 24px 20px 28px;
+    }
+    /* hier ligt het kruisje op de foto: licht, met een schaduw zodat het overal zichtbaar is */
+    .ap-sluit {
+      color: var(--color-fg);
+      filter: drop-shadow(0 0 3px var(--color-bg)) drop-shadow(0 0 1px var(--color-bg));
+    }
+    .ap-sluit:hover {
+      color: var(--color-accent);
     }
   }
 </style>
