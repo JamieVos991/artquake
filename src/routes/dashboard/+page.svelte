@@ -13,6 +13,7 @@
   } from "firebase/firestore";
   import { onAuthStateChanged } from "firebase/auth";
   import { db, auth } from "$lib/firebase.js";
+  import { markeerCrewBrowser } from "$lib/crew.js";
   import { uploadFoto } from "$lib/fotoUpload.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
@@ -288,6 +289,7 @@
       authGecontroleerd = true;
       stopDataSubscripties();
       if (user) {
+        markeerCrewBrowser(true);
         startDataSubscripties();
       } else {
         goto(`${base}/login`);
@@ -566,6 +568,7 @@
 
 <svelte:head>
   <title>Dashboard | Artquake Admin</title>
+  <meta name="robots" content="noindex" />
 </svelte:head>
 
 {#if !authGecontroleerd}

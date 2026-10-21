@@ -42,16 +42,16 @@
 
   $effect(() => {
     if (!videoEl) return;
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (reducedMotion) return;
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+    // speelt vanzelf als hij in beeld komt, behalve bij "minder beweging";
+    // dat wordt elke keer opnieuw bekeken, de instelling kan veranderd zijn.
+    // Zelf op play drukken kan altijd.
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !rustig.matches) {
           videoEl.play().catch(() => {});
-        } else {
+        } else if (!entry.isIntersecting) {
           videoEl.pause();
         }
       },
@@ -459,8 +459,8 @@
       font-size: 18px;
     }
     .route-unmute {
+      top: 6px;
       right: 6px;
-      bottom: 46px;
       padding: 7px 10px;
       font-size: 10px;
     }

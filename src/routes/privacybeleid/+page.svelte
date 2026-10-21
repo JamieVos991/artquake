@@ -2,7 +2,11 @@
   import JuridischPagina from "$lib/components/JuridischPagina.svelte";
 </script>
 
-<JuridischPagina titel="Privacybeleid" bijgewerkt="oktober 2026">
+<JuridischPagina
+  titel="Privacybeleid"
+  bijgewerkt="oktober 2026"
+  beschrijving="Lees hoe Stichting Villa Artquake omgaat met je gegevens bij contact, reserveringen en bezoekstatistieken, en welke rechten je hebt."
+>
   <p>
     Stichting Villa Artquake, gevestigd aan Sara de Bronovoland 7 te
     Heerhugowaard, is verantwoordelijk voor de verwerking van persoonsgegevens
@@ -52,7 +56,11 @@
     voor ons verwerken:
   </p>
   <ul>
-    <li>Google Firebase: opslag van reserveringen en bezoekstatistieken</li>
+    <li>Google Firebase: opslag van reserveringen, agenda en artiesten</li>
+    <li>
+      Plausible Analytics: anonieme bezoekstatistieken, zonder cookies en
+      zonder persoonsgegevens, met servers in de EU
+    </li>
     <li>EmailJS: het versturen van de verificatiecode en bevestigingsmail</li>
     <li>FormSubmit: het doorsturen van berichten uit het contactformulier</li>
     <li>Google Fonts: het laden van de lettertypes op de website</li>

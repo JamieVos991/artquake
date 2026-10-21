@@ -3,8 +3,7 @@
   import logo from "$lib/assets/artquake-logo.avif";
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
-  import { collection, onSnapshot } from "firebase/firestore";
-  import { db } from "$lib/firebase.js";
+  import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten as services } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
@@ -36,14 +35,15 @@
   // door het midden van het scherm scrolt, en stopt hij als je verder scrolt.
   // Niet bij "minder beweging" (prefers-reduced-motion).
   function speelInBeeld(node) {
-    const touch = window.matchMedia("(hover: none)").matches;
-    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!touch || rustig) return;
+    if (!window.matchMedia("(hover: none)").matches) return;
+    const rustig = window.matchMedia("(prefers-reduced-motion: reduce)");
     const video = node.querySelector("video");
     const observer = new IntersectionObserver(
       ([entry]) => {
-        node.classList.toggle("is-in-beeld", entry.isIntersecting);
-        if (entry.isIntersecting) video?.play().catch(() => {});
+        // elke keer opnieuw kijken: de instelling kan veranderd zijn
+        const speel = entry.isIntersecting && !rustig.matches;
+        node.classList.toggle("is-in-beeld", speel);
+        if (speel) video?.play().catch(() => {});
         else video?.pause();
       },
       // alleen de strook in het midden van het scherm telt
@@ -72,44 +72,28 @@
   }
 
   onMount(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "agenda"),
-      (snapshot) => {
+    haalCollectieOp("agenda")
+      .then((docs) => {
         const vandaag = vandaagAlsDatum();
-        agendaItems = snapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
+        agendaItems = docs
           .filter((a) => a.date && a.date >= vandaag)
           .sort((a, b) =>
             `${a.date}${a.startTime ?? ""}`.localeCompare(
               `${b.date}${b.startTime ?? ""}`
             )
           );
-        agendaGeladen = true;
-      },
-      () => {
-        agendaGeladen = true;
-      }
-    );
+      })
+      .catch(() => {})
+      .finally(() => (agendaGeladen = true));
 
-    const unsubscribeArtiesten = onSnapshot(
-      collection(db, "artiesten"),
-      (snapshot) => {
-        const alleArtiesten = snapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((a) => a.naam);
+    haalCollectieOp("artiesten")
+      .then((docs) => {
+        const alleArtiesten = docs.filter((a) => a.naam);
         aantalArtiesten = alleArtiesten.length;
         uitgelichteArtiesten = kiesWillekeurig(alleArtiesten, 3);
-        artiestenGeladen = true;
-      },
-      () => {
-        artiestenGeladen = true;
-      }
-    );
-
-    return () => {
-      unsubscribe();
-      unsubscribeArtiesten();
-    };
+      })
+      .catch(() => {})
+      .finally(() => (artiestenGeladen = true));
   });
 
   function formatAgendaDatum(d) {
@@ -319,6 +303,10 @@
 
 <svelte:head>
   <title>Artquake | Jong talent laat zich zien en horen</title>
+  <meta
+    name="description"
+    content="Artquake in Heerhugowaard geeft jonge makers een podium en een netwerk: Talent Night, exposities, jamsessies, workshops, coaching en gratis oefenruimtes."
+  />
   {#if firstHeroImage}
     <link rel="preload" as="image" href={firstHeroImage} fetchpriority="high" />
   {/if}
@@ -326,7 +314,7 @@
 
 <header class="hero-shell">
   <a class="brand" href={base}>
-    <img class="brand-logo" src={logo} alt="Artquake, creative space" />
+    <img class="brand-logo" src={logo} alt="Artquake, naar home" />
   </a>
 
   <section class="hero" id="hero" aria-label="Introductie">
@@ -599,7 +587,7 @@
 
   <section class="video-section" id="pand" aria-label="Het Artquake pand">
     <header class="section-head">
-      <h2 class="section-eyebrow eyebrow-purple">HET ARTQUAKE PAND</h2>
+      <h2 class="section-eyebrow eyebrow-lila">HET ARTQUAKE PAND</h2>
       <span class="section-rule"></span>
     </header>
     <h3 class="video-title">
@@ -900,8 +888,10 @@
   .hl-purple-dark {
     color: var(--color-primary-dark);
   }
+  /* altijd donkere letters op oranje: crème op oranje is niet goed leesbaar */
   .hl-orange-block {
     background: var(--color-accent);
+    color: var(--color-bg);
     padding: 0 8px;
   }
   .mission-side {
@@ -942,6 +932,10 @@
   }
   .eyebrow-purple {
     color: var(--color-primary);
+  }
+  /* lichtpaars voor kleine tekst op zwart: donkerpaars is daar te donker */
+  .eyebrow-lila {
+    color: var(--color-primary-light);
   }
   .section-rule {
     flex: 1;
@@ -1229,7 +1223,6 @@
       monospace;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    opacity: 0.75;
     white-space: nowrap;
   }
   .agenda-empty {

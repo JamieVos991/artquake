@@ -1,28 +1,11 @@
-import { browser } from '$app/environment';
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+// De volledige Firebase-SDK: inloggen, database en bestandsopslag. Alleen
+// in gebruik op de crewpagina's (login, dashboard, reserveren). Openbare
+// pagina's lezen via $lib/publiekeData.js, dat scheelt een halve megabyte.
+// Bezoekstatistieken lopen via Plausible (app.html), niet via Firebase.
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { isSupported, getAnalytics } from 'firebase/analytics';
+import { app, auth } from './firebaseApp.js';
 
-const firebaseConfig = {
-	apiKey: 'AIzaSyDlmqdPTEsJOcbwbjL1Luy51CnE52slGfo',
-	authDomain: 'artquake-6fceb.firebaseapp.com',
-	projectId: 'artquake-6fceb',
-	storageBucket: 'artquake-6fceb.firebasestorage.app',
-	messagingSenderId: '202630612295',
-	appId: '1:202630612295:web:68bcc60a9cb14425f07862',
-	measurementId: 'G-N5F8LC5D7V'
-};
-
-export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+export { app, auth };
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-
-export let analytics;
-if (browser) {
-	isSupported().then((supported) => {
-		if (supported) analytics = getAnalytics(app);
-	});
-}

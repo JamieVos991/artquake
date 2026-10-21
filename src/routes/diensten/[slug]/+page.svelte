@@ -31,11 +31,12 @@
 
 <svelte:head>
   <title>{dienst.heading} | Artquake</title>
+  <meta name="description" content={dienst.metaBeschrijving ?? dienst.intro} />
 </svelte:head>
 
 <header class="dp-header">
   <a class="dp-brand" href={base || "/"}>
-    <img class="dp-logo" src={logo} alt="Artquake, creative space" />
+    <img class="dp-logo" src={logo} alt="Artquake, naar home" />
   </a>
 </header>
 

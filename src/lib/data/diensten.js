@@ -25,6 +25,9 @@ export const diensten = [
 		bg: "purple",
 		big: true,
 		intro: "Het podium voor opkomend talent",
+		// metaBeschrijving: de tekst die Google onder de link laat zien
+		metaBeschrijving:
+			"Talent Night: 5 keer per jaar in poppodium B3 in Sint Pancras. Jonge artiesten op één podium voor publiek, vrienden en scouts. Dé uitgaansavond voor jongeren.",
 		// een lege regel (\n\n) begint een nieuwe alinea
 		text: "5 Keer per jaar Talent Night in poppodium B3 in Sint Pancras. Op zo'n avond staan meerdere artiesten kort achter elkaar op hetzelfde podium, voor een zaal vol publiek, vrienden, familie en scouts. Het is dé plek om ervaring op te doen, uitgedaagd en gezien te worden!\n\nTegelijkertijd is Talent Night dé uitgaansavond voor en door jongeren uit Dijk & Waard en omgeving. Voor liefhebbers van live-muziek, dansen en feesten!",
 	},
@@ -38,6 +41,8 @@ export const diensten = [
 		videoNaast: true,
 		bg: "cream",
 		intro: "Beeldend werk in de hoofdrol",
+		metaBeschrijving:
+			"Exposities van Artquake: jonge makers laten hun schilderijen, fotografie, keramiek en meer zien aan publiek. Wij regelen de locatie, opbouw en promotie.",
 		text: "Artquake Beeldend draait om kunst maken, samen ons werk laten zien op markten of exposities, en leren praten over je werk in een fijne omgeving.\n\nHet is een plek waar je jouw talent voor schilderen, fotografie, tekenen, textiel, keramiek en schrijven kunt ontdekken, samen met andere jonge kunstliefhebbers.\n\nVan schilderijen tot fotografie en installaties: op onze exposities laat je je werk zien aan een publiek dat er speciaal voor komt. Wij regelen de locatie, de opbouw en de promotie, zodat jij je kunt richten op je werk.",
 	},
 	{
@@ -50,6 +55,8 @@ export const diensten = [
 		bg: "cream",
 		outline: true,
 		intro: "Samen muziek maken, zonder script",
+		metaBeschrijving:
+			"Jamsessies bij Artquake in Heerhugowaard: geen setlist, geen druk. Muzikanten van elk niveau spelen samen, experimenteren en ontmoeten elkaar.",
 		text: "Geen setlist, geen druk. Gewoon instappen en meespelen. Op onze jamsessies komen muzikanten van verschillende niveaus en genres samen om te experimenteren en elkaar te ontmoeten.\n\nOf je nu voor het eerst met anderen speelt of al jaren op het podium staat: iedereen is welkom. Neem je instrument mee, of kom luisteren en ontdek met wie het klikt.\n\nUit een jam kan zomaar iets nieuws ontstaan: een band, een samenwerking of gewoon een goede avond.",
 	},
 	{
@@ -62,6 +69,8 @@ export const diensten = [
 		bg: "purple",
 		wide: true,
 		intro: "Beeld waarmee je jezelf laat zien",
+		metaBeschrijving:
+			"Fotoshoots in de eigen fotostudio van Artquake: samen met een fotograaf maak je beeld voor je social media, profiel of affiche, dat je direct kunt gebruiken.",
 		text: "Goede foto's zijn onmisbaar voor een artiest: voor social media, je profiel of een affiche. Tijdens onze fotoshoots werk je samen met een fotograaf aan beeld dat past bij wie je bent en waar je naartoe wilt.\n\nIn het Artquake pand hebben we een eigen fotostudio. Samen bedenk je de stijl, en je gaat naar huis met foto's die je direct kunt gebruiken.",
 	},
 	{
@@ -75,6 +84,8 @@ export const diensten = [
 		wide: true,
 		long: true,
 		intro: "Leren van professionals uit het vak",
+		metaBeschrijving:
+			"Workshops en masterclasses bij Artquake: ervaren professionals delen hun kennis over muziek, kunst en performance. Je gaat naar huis met concrete handvatten.",
 		text: "In onze workshops en masterclasses delen ervaren professionals hun kennis op het gebied van muziek, kunst, performance en meer.\n\nIn een workshop ga je zelf aan de slag. In een masterclass kijk je mee met iemand die er zijn of haar vak van heeft gemaakt. Van techniek tot presentatie: je gaat naar huis met concrete handvatten om verder te groeien.",
 	},
 	{
@@ -88,6 +99,8 @@ export const diensten = [
 		// coaching gaat in overleg, dus geen verwijzing naar de agenda
 		geenAgenda: true,
 		intro: "Begeleiding op maat, voor makers, bands en dansgroepen",
+		metaBeschrijving:
+			"Coaching bij Artquake: persoonlijke begeleiding voor jonge makers, bands en dansgroepen. Van artistieke ontwikkeling tot zelfvertrouwen op het podium.",
 		text: "Iedere maker heeft andere doelen en andere twijfels. Wij helpen je om je eigen pad te vinden, of dat nu gaat over artistieke ontwikkeling, zelfvertrouwen op het podium of het uitstippelen van de volgende stap.\n\nDat kan in een persoonlijk traject, maar ook samen: we coachen bands en dansgroepen. Van samen leren repeteren en een set opbouwen tot staan als één geheel op het podium.\n\nJe hoeft daarvoor niet al ver te zijn. Zo begeleidt onder andere Emre ook bands die nog helemaal aan het begin staan (zie het filmpje).\n\nJe werkt samen met een coach uit onze crew. Samen kijk je waar je nu staat, waar je naartoe wilt en wat daarvoor nodig is.",
 	},
 	{
@@ -101,6 +114,8 @@ export const diensten = [
 		// opdrachten gaan in overleg, dus geen verwijzing naar de agenda
 		geenAgenda: true,
 		intro: "Onze makers voor jouw bedrijf, organisatie of event",
+		metaBeschrijving:
+			"Boek jonge makers van Artquake voor je bedrijf, school of event: optredens, workshops, visuele kunst of een creatieve invulling op maat.",
 		text: "Bedrijven, scholen, gemeenten en organisatoren van events kunnen bij Artquake terecht voor optredens, workshops, visuele kunst of een creatieve invulling op maat.\n\nZo krijgen onze makers betaalde opdrachten en een breder podium, en krijg jij als opdrachtgever een uniek en verzorgd resultaat.\n\nVertel ons wat je zoekt, dan denken we mee over wie of wat daarbij past.",
 	},
 	{

@@ -305,7 +305,10 @@
     margin: 0;
     padding: 0;
   }
+  /* ruimer tikgebied (min. 24px hoog) zodat links op telefoon goed te raken zijn */
   .footer-col a {
+    display: inline-block;
+    padding: 4px 0;
     color: inherit;
     text-decoration: none;
   }
@@ -337,6 +340,8 @@
     gap: 20px;
   }
   .footer-bottom a {
+    display: inline-block;
+    padding: 7px 0;
     color: inherit;
     text-decoration: underline;
   }

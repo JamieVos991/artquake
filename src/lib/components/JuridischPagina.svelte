@@ -2,16 +2,19 @@
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
 
-  let { titel, bijgewerkt, children } = $props();
+  let { titel, bijgewerkt, beschrijving, children } = $props();
 </script>
 
 <svelte:head>
   <title>{titel} | Artquake</title>
+  {#if beschrijving}
+    <meta name="description" content={beschrijving} />
+  {/if}
 </svelte:head>
 
 <header class="jp-header">
   <a class="jp-brand" href={base || "/"}>
-    <img class="jp-logo" src={logo} alt="Artquake, creative space" />
+    <img class="jp-logo" src={logo} alt="Artquake, naar home" />
   </a>
 </header>
 

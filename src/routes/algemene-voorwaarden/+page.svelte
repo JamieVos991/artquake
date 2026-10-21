@@ -2,7 +2,11 @@
   import JuridischPagina from "$lib/components/JuridischPagina.svelte";
 </script>
 
-<JuridischPagina titel="Algemene voorwaarden" bijgewerkt="oktober 2026">
+<JuridischPagina
+  titel="Algemene voorwaarden"
+  bijgewerkt="oktober 2026"
+  beschrijving="De algemene voorwaarden van Stichting Villa Artquake: over het gebruik van de website, reserveringen, gedragsregels en aansprakelijkheid."
+>
   <p>
     Deze algemene voorwaarden zijn van toepassing op alle diensten van
     Stichting Villa Artquake, gevestigd aan Sara de Bronovoland 7 te

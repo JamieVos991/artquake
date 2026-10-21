@@ -3,7 +3,8 @@
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-  import { auth } from "$lib/firebase.js";
+  import { auth } from "$lib/firebaseApp.js";
+  import { markeerCrewBrowser } from "$lib/crew.js";
 
   let email = $state("");
   let password = $state("");
@@ -14,6 +15,7 @@
   // na inloggen terug naar de pagina waar je vandaan kwam (alleen eigen paden),
   // anders naar het dashboard
   function gaVerder() {
+    markeerCrewBrowser(true);
     const next = new URLSearchParams(window.location.search).get("next");
     const veilig = next && next.startsWith("/") && !next.startsWith("//");
     goto(`${base}${veilig ? next : "/dashboard"}`, { replaceState: true });
@@ -43,6 +45,7 @@
 
 <svelte:head>
   <title>Inloggen | Artquake Admin</title>
+  <meta name="robots" content="noindex" />
 </svelte:head>
 
 <div class="scene">

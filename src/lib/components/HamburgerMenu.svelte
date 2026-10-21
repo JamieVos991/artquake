@@ -5,9 +5,8 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { collection, getDocs } from "firebase/firestore";
-  import { onAuthStateChanged, signOut } from "firebase/auth";
-  import { db, auth } from "$lib/firebase.js";
+  import { haalCollectieOp } from "$lib/publiekeData.js";
+  import { isCrewBrowser, markeerCrewBrowser } from "$lib/crew.js";
   import { navigatie } from "$lib/data/navigatie.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
@@ -31,8 +30,26 @@
     zing: zingFoto,
   };
   // wie is ingelogd, ziet Dashboard in plaats van Login en kan uitloggen
+  // Firebase (inloggen) wordt alleen geladen in een browser waar de crew al
+  // eens heeft ingelogd, en pas als de pagina klaar is met laden
   let ingelogd = $state(false);
-  onMount(() => onAuthStateChanged(auth, (user) => (ingelogd = !!user)));
+  onMount(() => {
+    if (!isCrewBrowser()) return;
+    let stop;
+    const laad = async () => {
+      const [{ auth }, { onAuthStateChanged }] = await Promise.all([
+        import("$lib/firebaseApp.js"),
+        import("firebase/auth"),
+      ]);
+      stop = onAuthStateChanged(auth, (user) => {
+        ingelogd = !!user;
+        if (!user) markeerCrewBrowser(false);
+      });
+    };
+    const idle = window.requestIdleCallback ?? ((cb) => setTimeout(cb, 1500));
+    idle(() => laad().catch(() => {}));
+    return () => stop?.();
+  });
 
   const items = $derived(
     navigatie
@@ -57,7 +74,13 @@
     open = false;
     // eerst weg van een pagina die login vereist, dan pas uitloggen
     await goto(base || "/");
+    const [{ auth }, { signOut }] = await Promise.all([
+      import("$lib/firebaseApp.js"),
+      import("firebase/auth"),
+    ]);
     await signOut(auth);
+    markeerCrewBrowser(false);
+    ingelogd = false;
   }
 
   let open = $state(false);
@@ -93,9 +116,7 @@
     try {
       const n = new Date();
       const vandaag = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
-      const snap = await getDocs(collection(db, "agenda"));
-      agenda = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
+      agenda = (await haalCollectieOp("agenda"))
         .filter((a) => a.date && a.date >= vandaag)
         .sort((a, b) => `${a.date}${a.startTime ?? ""}`.localeCompare(`${b.date}${b.startTime ?? ""}`))
         .slice(0, 3);

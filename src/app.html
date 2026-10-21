@@ -10,10 +10,26 @@
 		<meta name="text-scale" content="scale" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- lettertypes laden zonder de pagina op te houden: de tekst verschijnt
+		     meteen en wisselt naar Archivo/Space Mono zodra die binnen zijn -->
 		<link
+			rel="preload"
+			as="style"
 			href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Space+Mono:wght@400;700&display=swap"
-			rel="stylesheet"
+			onload="this.onload=null;this.rel='stylesheet'"
 		/>
+		<noscript>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Space+Mono:wght@400;700&display=swap"
+			/>
+		</noscript>
+		<!-- Privacy-friendly analytics by Plausible -->
+		<script async src="https://plausible.io/js/pa-L1_Ek66ILEgM7kmrI214g.js"></script>
+		<script>
+			window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+			plausible.init()
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

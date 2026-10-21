@@ -2,8 +2,7 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
-  import { collection, onSnapshot } from "firebase/firestore";
-  import { db } from "$lib/firebase.js";
+  import { haalCollectieOp } from "$lib/publiekeData.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
@@ -44,30 +43,26 @@
   }
 
   onMount(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "artiesten"),
-      (snapshot) => {
-        artiesten = snapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((a) => a.naam)
-          .sort(() => Math.random() - 0.5);
-        geladen = true;
-      },
-      () => {
-        geladen = true;
-      }
-    );
-    return unsubscribe;
+    haalCollectieOp("artiesten")
+      .then((docs) => {
+        artiesten = docs.filter((a) => a.naam).sort(() => Math.random() - 0.5);
+      })
+      .catch(() => {})
+      .finally(() => (geladen = true));
   });
 </script>
 
 <svelte:head>
   <title>Artiesten | Artquake</title>
+  <meta
+    name="description"
+    content="Ontdek de jonge makers van Artquake: bands, singer-songwriters, dansers, DJ's en beeldend kunstenaars uit Dijk & Waard en omgeving. Ook te boeken voor je event."
+  />
 </svelte:head>
 
 <header class="ap-header">
   <a class="ap-brand" href={base || "/"}>
-    <img class="ap-logo" src={logo} alt="Artquake, creative space" />
+    <img class="ap-logo" src={logo} alt="Artquake, naar home" />
   </a>
 </header>
 
@@ -433,7 +428,6 @@
     font:
       400 13px/1.5 "Space Mono",
       monospace;
-    opacity: 0.85;
   }
   .ap-profiel {
     align-self: flex-start;

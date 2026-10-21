@@ -395,7 +395,10 @@
   const studioObj = $derived(studios.find((s) => s.id === selectedStudio));
 </script>
 
-<svelte:head><title>Reserveren | Artquake</title></svelte:head>
+<svelte:head>
+  <title>Reserveren | Artquake</title>
+  <meta name="robots" content="noindex" />
+</svelte:head>
 
 {#if !ingelogd}
   <div class="shell auth-gate">
