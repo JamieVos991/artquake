@@ -180,7 +180,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 24px 40px;
+    /* logo even groot en op dezelfde plek als op de homepage */
+    padding: 40px 30px;
     background: var(--color-bg);
     color: var(--color-fg);
   }
@@ -188,7 +189,7 @@
     display: block;
   }
   .dp-logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     display: block;
   }
@@ -414,11 +415,16 @@
       padding: 6px 9px;
       font-size: 9px;
     }
-    .dp-header,
     .dp-intro,
     .dp-body {
       padding-left: 20px;
       padding-right: 20px;
+    }
+    .dp-header {
+      padding: 28px 16px;
+    }
+    .dp-logo {
+      height: 92px;
     }
   }
 </style>

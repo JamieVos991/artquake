@@ -279,14 +279,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 40px;
+    /* logo even groot en op dezelfde plek als op de homepage */
+    padding: 40px 30px;
     background: var(--color-bg);
   }
   .ap-brand {
     display: block;
   }
   .ap-logo {
-    height: 80px;
+    height: 120px;
     width: auto;
     display: block;
   }
@@ -603,7 +604,8 @@
     overflow-wrap: break-word;
   }
   .ap-desc {
-    margin: 0;
+    /* dichter onder de naam: de kaart heeft 10px tussenruimte, hier 4px */
+    margin: -6px 0 0;
     font:
       400 13px/1.5 "Space Mono",
       monospace;
@@ -860,11 +862,16 @@
 
   /* responsive */
   @media (max-width: 640px) {
-    .ap-header,
     .ap-intro,
     .ap-section {
       padding-left: 20px;
       padding-right: 20px;
+    }
+    .ap-header {
+      padding: 28px 16px;
+    }
+    .ap-logo {
+      height: 92px;
     }
     .ap-grid {
       grid-template-columns: 1fr;
