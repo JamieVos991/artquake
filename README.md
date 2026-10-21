@@ -48,7 +48,23 @@ Document ID toevoegen aan `beheerders`.
 
 ## Media
 
-- Foto's staan als AVIF in `src/lib/assets/pictures/`.
-- De blokken bij "Wat we doen" tonen korte preview-clips uit `src/lib/assets/videos/preview/`
-  (8 seconden, zonder geluid). Nieuwe video? Maak er ook een clip met dezelfde naam bij,
-  anders laadt het blok de hele video.
+Alles staat in `src/lib/assets/`. Namen: kleine letters, woorden met streepjes, geen spaties.
+
+```
+fotos/
+  hero/                  wisselende foto's bovenaan de homepage (en in het menu)
+  crew/                  één foto per crewlid, bijv. mado.avif
+  pand/                  foto van het pand
+  diensten/<slug>/       galerijfoto's van een dienstpagina, bijv. diensten/exposities/
+videos/
+  diensten/<slug>.mp4            video op de dienstpagina
+  diensten/preview/<slug>.mp4    korte clip voor het blok op de homepage
+  pand/dewi-rondleiding.mp4
+```
+
+- Foto's als AVIF (max 1200 px). De volgorde, titel en verhouding van galerijfoto's
+  staan in `src/lib/data/diensten.js` (zonder `.avif`).
+- Een dienst krijgt vanzelf een video als er een bestand met de slug als naam staat.
+  Maak er ook een preview-clip (8 seconden, zonder geluid) met dezelfde naam bij,
+  anders laadt het blok op de homepage de hele video.
+- Originele (grote) bestanden horen niet in het project.

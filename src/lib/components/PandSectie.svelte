@@ -1,6 +1,6 @@
 <script>
-  import dewiUitlegVideo from "$lib/assets/videos/dewi-uitleg.mp4";
-  import pandFoto from "$lib/assets/pictures/pand/artquake-pand-voorkant.avif";
+  import dewiUitlegVideo from "$lib/assets/videos/pand/dewi-rondleiding.mp4";
+  import pandFoto from "$lib/assets/fotos/pand/artquake-pand-voorkant.avif";
 
   // Stops op het pad (coördinaten in het SVG-raster van 1160×1280).
   // kant: op welk stuk van het pad de stop ligt, bepaalt de richting van het label.

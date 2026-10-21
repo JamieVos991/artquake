@@ -4,24 +4,28 @@
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
-  import { diensten as services } from "$lib/data/diensten.js";
+  import { diensten } from "$lib/data/diensten.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
 
   // De blokken tonen een korte preview-clip (8 sec, klein, zonder geluid) i.p.v.
   // de hele video; die staat op de dienstpagina zelf. Geen clip? Dan de video.
-  const dienstVideos = import.meta.glob("../lib/assets/videos/*.mp4", {
+  // Video's heten zoals de slug van de dienst: videos/diensten/<slug>.mp4
+  const dienstVideos = import.meta.glob("../lib/assets/videos/diensten/*.mp4", {
     eager: true,
     import: "default",
   });
-  const previewClips = import.meta.glob("../lib/assets/videos/preview/*.mp4", {
+  const previewClips = import.meta.glob("../lib/assets/videos/diensten/preview/*.mp4", {
     eager: true,
     import: "default",
   });
-  const dienstVideo = (naam) =>
-    previewClips[`../lib/assets/videos/preview/${naam}.mp4`] ??
-    dienstVideos[`../lib/assets/videos/${naam}.mp4`];
+  const services = diensten.map((d) => ({
+    ...d,
+    video:
+      previewClips[`../lib/assets/videos/diensten/preview/${d.slug}.mp4`] ??
+      dienstVideos[`../lib/assets/videos/diensten/${d.slug}.mp4`],
+  }));
 
   // video in een blok: speelt alleen terwijl je erop staat
   function speelVideo(e) {
@@ -102,7 +106,7 @@
     return `${day}.${m}`;
   }
 
-  const heroModules = import.meta.glob("../lib/assets/pictures/hero/*.{avif,webp,jpg,jpeg}", {
+  const heroModules = import.meta.glob("../lib/assets/fotos/hero/*.{avif,webp,jpg,jpeg}", {
     eager: true,
     import: "default",
   });
@@ -165,12 +169,12 @@
     return kleuren;
   }
 
-  const crewFotos = import.meta.glob("../lib/assets/pictures/crew/*.avif", {
+  const crewFotos = import.meta.glob("../lib/assets/fotos/crew/*.avif", {
     eager: true,
     import: "default",
   });
   const crewFoto = (naam) =>
-    crewFotos[`../lib/assets/pictures/crew/${naam}.avif`];
+    crewFotos[`../lib/assets/fotos/crew/${naam}.avif`];
 
   const crewRuw = [
     {
@@ -391,7 +395,7 @@
           {#if s.video}
             <video
               class="service-video"
-              src={dienstVideo(s.video)}
+              src={s.video}
               muted
               loop
               playsinline

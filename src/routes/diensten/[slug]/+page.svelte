@@ -8,28 +8,27 @@
   // SvelteKit deze pagina; zo volgt de inhoud de nieuwe dienst mee
   const dienst = $derived(data.dienst);
 
-  const videos = import.meta.glob("../../../lib/assets/videos/*.mp4", {
+  const videos = import.meta.glob("../../../lib/assets/videos/diensten/*.mp4", {
     eager: true,
     import: "default",
   });
+  // de video heet zoals de slug; geen bestand = geen video
   const video = $derived.by(() => {
-    const bestand = dienst.video
-      ? videos[`../../../lib/assets/videos/${dienst.video}.mp4`]
-      : null;
+    const bestand = videos[`../../../lib/assets/videos/diensten/${dienst.slug}.mp4`];
     return bestand && dienst.videoStart ? `${bestand}#t=${dienst.videoStart}` : bestand;
   });
 
   // galerijfoto's staan in een map met dezelfde naam als de slug,
-  // bijv. pictures/talent-night/ of pictures/coaching/
+  // bijv. fotos/diensten/talent-night/
   const galerijFotos = import.meta.glob(
-    "../../../lib/assets/pictures/*/*.avif",
+    "../../../lib/assets/fotos/diensten/*/*.avif",
     { eager: true, import: "default" }
   );
   const galerij = $derived(
     (dienst.galerij ?? []).map((g, i) => ({
       ...g,
       i,
-      src: galerijFotos[`../../../lib/assets/pictures/${dienst.slug}/${g.foto}.avif`],
+      src: galerijFotos[`../../../lib/assets/fotos/diensten/${dienst.slug}/${g.foto}.avif`],
     }))
   );
 

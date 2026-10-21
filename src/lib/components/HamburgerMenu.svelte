@@ -10,14 +10,14 @@
   import { navigatie } from "$lib/data/navigatie.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
-  import dansFoto from "$lib/assets/pictures/hero/meiden-die-dansen.avif";
-  import zingFoto from "$lib/assets/pictures/hero/zangeres-met-gitaar.avif";
-  import optredenFoto from "$lib/assets/pictures/hero/optreden.avif";
-  import zingenFoto from "$lib/assets/pictures/hero/meiden-die-zingen.avif";
-  import tekenFoto from "$lib/assets/pictures/hero/meid-die-tekent.avif";
-  import schrijfFoto from "$lib/assets/pictures/hero/meid-die-schrijft.avif";
-  import interieurFoto from "$lib/assets/pictures/hero/interieur-tekening.avif";
-  import pandFoto from "$lib/assets/pictures/pand/artquake-pand-voorkant.avif";
+  import dansFoto from "$lib/assets/fotos/hero/meiden-die-dansen.avif";
+  import zingFoto from "$lib/assets/fotos/hero/zangeres-met-gitaar.avif";
+  import optredenFoto from "$lib/assets/fotos/hero/optreden.avif";
+  import zingenFoto from "$lib/assets/fotos/hero/meiden-die-zingen.avif";
+  import tekenFoto from "$lib/assets/fotos/hero/meid-die-tekent.avif";
+  import schrijfFoto from "$lib/assets/fotos/hero/meid-die-schrijft.avif";
+  import interieurFoto from "$lib/assets/fotos/hero/interieur-tekening.avif";
+  import pandFoto from "$lib/assets/fotos/pand/artquake-pand-voorkant.avif";
 
   const fotos = {
     dans: dansFoto,
