@@ -10,7 +10,8 @@
   <p>
     Deze algemene voorwaarden zijn van toepassing op alle diensten van
     Stichting Villa Artquake, gevestigd aan Sara de Bronovoland 7 te
-    Heerhugowaard.
+    Heerhugowaard, ingeschreven bij de Kamer van Koophandel onder nummer
+    80065384.
   </p>
 
   <h2>Gebruik van de website</h2>

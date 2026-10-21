@@ -157,7 +157,7 @@
     </ul>
   </nav>
   <p class="footer-bottom">
-    <span>© 2026 ARTQUAKE</span>
+    <span>© 2026 ARTQUAKE · KVK 80065384</span>
     <span class="footer-legal">
       <a href="{base}/privacybeleid">Privacybeleid</a>
       <a href="{base}/algemene-voorwaarden">Algemene voorwaarden</a>
@@ -375,6 +375,8 @@
     border-top: 2px solid var(--color-gray-800);
     display: flex;
     justify-content: space-between;
+    /* de links hebben ruimte boven en onder (groter tikvlak); zo staat alles op één lijn */
+    align-items: center;
     font: 700 11px/1 var(--font-mono);
     letter-spacing: 0.14em;
     color: var(--color-gray-300);
@@ -382,6 +384,8 @@
   .footer-legal {
     display: flex;
     gap: 20px;
+    /* net als de rest van de regel in hoofdletters; kleine letters lijken lager te staan */
+    text-transform: uppercase;
   }
   .footer-bottom a {
     display: inline-block;

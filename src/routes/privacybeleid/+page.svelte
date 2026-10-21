@@ -9,7 +9,7 @@
 >
   <p>
     Stichting Villa Artquake, gevestigd aan Sara de Bronovoland 7 te
-    Heerhugowaard, is verantwoordelijk voor de verwerking van persoonsgegevens
+    Heerhugowaard (KvK 80065384), is verantwoordelijk voor de verwerking van persoonsgegevens
     zoals beschreven in dit privacybeleid.
   </p>
 
