@@ -11,13 +11,17 @@
 
   // De pagina kan bij het bouwen zijn gemaakt; daarna kan het item in het
   // dashboard zijn aangepast. Daarom bij het openen altijd de nieuwste versie ophalen.
+  // Bestaat het item niet meer (verwijderd, of automatisch opgeruimd), dan een melding.
   let vers = $state(null);
+  let wegId = $state(null);
   const item = $derived(vers?.id === data.item.id ? vers : data.item);
+  const weg = $derived(wegId === data.item.id);
   $effect(() => {
     const id = data.item.id;
     haalDocumentOp("agenda", id)
       .then((nieuw) => {
         if (nieuw) vers = nieuw;
+        else wegId = id;
       })
       .catch(() => {});
   });
@@ -44,7 +48,7 @@
 </script>
 
 <svelte:head>
-  <title>{item.band} | Artquake</title>
+  <title>{weg ? "Bestaat niet (meer)" : item.band} | Artquake</title>
   <meta
     name="description"
     content={[item.ondertitel, langeDatum(item.date), item.place, agendaPrijs(item)].filter(Boolean).join(" · ")}
@@ -57,6 +61,17 @@
 />
 
 <!-- kop: datum en titel groot, in de kleur van het item, met de foto ernaast -->
+{#if weg}
+  <section class="ac-kop ac-weg">
+    <a class="ac-terug" href="{base}/#agenda" aria-label="Terug naar de agenda">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H6M12 5l-7 7 7 7" /></svg>
+    </a>
+    <div class="ac-kop-tekst">
+      <h1 class="ac-titel">Deze activiteit bestaat niet (meer).</h1>
+      <a class="ac-weg-link" href="{base}/#agenda">Bekijk wat er nu op de agenda staat</a>
+    </div>
+  </section>
+{:else}
 <section
   class="ac-kop"
   style:background={kleur}
@@ -95,7 +110,7 @@
         <dd>{datumMetDag}</dd>
       </div>
       {#if item.place}
-        <div>
+        <div class="ac-locatie">
           <dt>Locatie</dt>
           <dd>{item.place}</dd>
         </div>
@@ -122,6 +137,7 @@
     </div>
   </div>
 </section>
+{/if}
 
 <style>
 
@@ -178,6 +194,20 @@
     .ac-terug {
       transition: none;
     }
+  }
+  /* activiteit bestaat niet meer */
+  .ac-weg {
+    grid-template-columns: 1fr;
+    min-height: 60vh;
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .ac-weg-link {
+    align-self: flex-start;
+    margin-top: 12px;
+    color: inherit;
+    font: 400 16px/1.5 var(--font-mono);
+    text-underline-offset: 4px;
   }
   .ac-datum {
     margin: 0;
@@ -325,6 +355,17 @@
   @media (max-width: 640px) {
     .ac-kop {
       padding: 88px 20px 36px;
+    }
+    /* locatie is vaak lang: op een telefoon over de hele breedte, onderaan */
+    .ac-locatie {
+      grid-column: 1 / -1;
+      order: 1;
+    }
+    .ac-gegevens {
+      gap: 28px 20px;
+    }
+    .ac-gegevens dd {
+      font-size: 20px;
     }
     /* menuknop op een telefoon: 14px van boven, 48px hoog */
     .ac-terug {

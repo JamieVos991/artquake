@@ -12,6 +12,12 @@ const config = {
 		adapter: adapter({
 			fallback: '404.html'
 		}),
+		prerender: {
+			// De pagina's van activiteiten (/agenda/[id]) worden bij het bouwen uit
+			// Firestore gehaald. Lukt dat even niet, dan niet de hele build laten
+			// mislukken: die pagina's werken dan via 404.html (zie agenda/[id]/+page.js).
+			handleUnseenRoutes: 'ignore'
+		},
 		paths: {
 			// de site staat op jamievos991.github.io/artquake; bij een eigen
 			// domein wordt dit '' (zie ook src/lib/data/site.js)

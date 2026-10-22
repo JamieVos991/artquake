@@ -218,6 +218,35 @@
   // Die worden hier één keer geüpload en aan het agenda-item gekoppeld, zodat
   // je ze daarna gewoon kunt vervangen of weghalen.
   const overgezet = new Set();
+  // ── oude activiteiten opruimen ──
+  // Activiteiten die langer dan BEWAAR_MAANDEN voorbij zijn, worden verwijderd,
+  // met hun foto en poster in Storage. Er is geen eigen server, dus dit gebeurt
+  // zodra iemand van de crew het dashboard opent.
+  const BEWAAR_MAANDEN = 3;
+  function opruimGrens() {
+    const d = new Date();
+    d.setMonth(d.getMonth() - BEWAAR_MAANDEN);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  const opgeruimd = new Set();
+  async function ruimOudeActiviteitenOp() {
+    const grens = opruimGrens();
+    for (const item of agendaItems) {
+      if (!item.date || item.date >= grens || opgeruimd.has(item.id)) continue;
+      opgeruimd.add(item.id);
+      // niet opruimen wat iemand op dit moment aan het bewerken is
+      if (bewerkId === item.id) continue;
+      try {
+        await deleteDoc(doc(db, "agenda", item.id));
+        ruimFotoOp(item.imageUrl, item.id);
+        ruimFotoOp(item.posterUrl, item.id);
+      } catch {
+        // lukt het nu niet, dan de volgende keer
+        opgeruimd.delete(item.id);
+      }
+    }
+  }
+
   async function zetIngebouwdePostersOver() {
     for (const item of agendaItems) {
       const ingebouwd = ingebouwdePoster(item);
@@ -344,6 +373,7 @@
           );
         agendaGeladen = true;
         zetIngebouwdePostersOver();
+        ruimOudeActiviteitenOp();
       },
       () => {
         agendaGeladen = true;
@@ -911,6 +941,9 @@
             <h2>Agenda</h2>
             <span class="db-blok-info">{komendeAgenda} op komst</span>
           </header>
+          <p class="db-uitleg">
+            Activiteiten worden {BEWAAR_MAANDEN} maanden na de datum automatisch verwijderd, met foto en poster.
+          </p>
           {#if !agendaGeladen}
             <p class="db-leeg">Laden…</p>
           {:else if agendaItems.length === 0}
@@ -1627,6 +1660,11 @@
     line-height: 0.9;
     letter-spacing: -0.02em;
     text-transform: uppercase;
+  }
+  .db-uitleg {
+    margin: -6px 0 16px;
+    color: var(--db-zacht);
+    font: 400 13px/1.5 var(--font-mono);
   }
   .db-blok-info {
     margin-right: auto;
