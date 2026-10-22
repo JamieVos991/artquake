@@ -21,7 +21,7 @@
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { artiestSocials } from "$lib/data/socials.js";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
-  import { agendaKleur, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
+  import { agendaKleur, agendaContrast, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
   // uitloggen gaat via het menu
@@ -45,6 +45,8 @@
   let place = $state(standaardLocatie);
   let type = $state("");
   let kleur = $state(standaardKleur);
+  // contrast tussen de gekozen kleur en de tekst die de website erop zet (WCAG: minimaal 4,5)
+  const kleurContrast = $derived(agendaContrast({ kleur, type }));
   let date = $state("");
   let startTime = $state("");
   let endTime = $state("");
@@ -1061,6 +1063,13 @@
                 />
               </label>
             </div>
+            {#if kleurContrast < 4.5}
+              <p class="db-waarschuwing" role="status">
+                Met deze kleur is de tekst op de website slecht te lezen (contrast
+                {kleurContrast.toFixed(1).replace(".", ",")} : 1, minimaal 4,5 : 1). Kies een iets lichtere of
+                donkerdere kleur.
+              </p>
+            {/if}
             <label class="db-veld">
               <span>Prijs</span>
               <input type="text" list="prijs-suggesties" placeholder="bijv. Gratis of € 5,-" bind:value={prijs} />
@@ -2007,6 +2016,13 @@
   }
   .db-fout {
     color: var(--color-error);
+  }
+  .db-waarschuwing {
+    margin: 0;
+    padding: 10px 12px;
+    border-left: 4px solid var(--color-error);
+    background: color-mix(in srgb, var(--color-error) 10%, transparent);
+    font: 400 13px/1.5 var(--font-mono);
   }
   .db-melding {
     margin-bottom: 12px;

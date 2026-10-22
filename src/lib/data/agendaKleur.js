@@ -30,3 +30,24 @@ export function agendaTekstKleur(hex) {
 	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 	return luminance > 0.6 ? "#0b0b0b" : "#f4f1ea";
 }
+
+// Contrast (WCAG) tussen twee kleuren, van 1 (geen) tot 21 (zwart op wit).
+// Gewone tekst moet minimaal 4,5 halen.
+function relatieveLuminantie(hex) {
+	const c = hex.replace("#", "");
+	const [r, g, b] = [0, 2, 4].map((i) => {
+		const v = parseInt(c.substring(i, i + 2), 16) / 255;
+		return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+	});
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+export function contrast(a, b) {
+	const [licht, donker] = [relatieveLuminantie(a), relatieveLuminantie(b)].sort((x, y) => y - x);
+	return (licht + 0.05) / (donker + 0.05);
+}
+
+// Contrast tussen een agendakleur en de tekstkleur die de site erop zet
+export function agendaContrast(item) {
+	const kleur = agendaKleur(item);
+	return contrast(kleur, agendaTekstKleur(kleur));
+}
