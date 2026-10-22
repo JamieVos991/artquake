@@ -85,7 +85,6 @@
   <h2>Contact</h2>
   <p>
     Heb je vragen over dit privacybeleid? Neem dan contact op via
-    <a href="mailto:info@art-quake.com">info@art-quake.com</a> of bel ons op
-    <a href="tel:+31640129447">+31 6 401 29 447</a>.
+    <a href="mailto:info@art-quake.com">info@art-quake.com</a>.
   </p>
 </JuridischPagina>

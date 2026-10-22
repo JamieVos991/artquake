@@ -74,7 +74,6 @@
   <h2>Contact</h2>
   <p>
     Vragen over deze voorwaarden? Neem contact op via
-    <a href="mailto:info@art-quake.com">info@art-quake.com</a> of bel
-    <a href="tel:+31640129447">+31 6 401 29 447</a>.
+    <a href="mailto:info@art-quake.com">info@art-quake.com</a>.
   </p>
 </JuridischPagina>
