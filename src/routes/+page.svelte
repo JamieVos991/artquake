@@ -65,6 +65,9 @@
 
   let agendaItems = $state([]);
   let agendaGeladen = $state(false);
+  // eerst 5 activiteiten, met "Laad meer" telkens 5 erbij (zoals bij de artiesten)
+  const agendaStap = 5;
+  let agendaAantal = $state(agendaStap);
   let uitgelichteArtiesten = $state([]);
   let aantalArtiesten = $state(0);
   let artiestenGeladen = $state(false);
@@ -466,7 +469,7 @@
       {:else if agendaItems.length === 0}
         <li class="agenda-empty">Binnenkort meer agenda items.</li>
       {:else}
-        {#each agendaItems as ev (ev.id)}
+        {#each agendaItems.slice(0, agendaAantal) as ev (ev.id)}
           {@const kleur = agendaKleur(ev)}
           <li
             class="agenda-row"
@@ -496,6 +499,11 @@
         {/each}
       {/if}
     </ol>
+    {#if agendaGeladen && agendaAantal < agendaItems.length}
+      <button class="agenda-meer" type="button" onclick={() => (agendaAantal += agendaStap)}
+        >LAAD MEER</button
+      >
+    {/if}
   </section>
 
   <section class="talent" id="talent" aria-label="Makers van nu">
@@ -1155,6 +1163,27 @@
     border-bottom: 4px solid var(--color-bg);
     overflow-x: clip;
   }
+  /* zelfde knop als "Laad meer" op de artiestenpagina */
+  .agenda-meer {
+    display: block;
+    margin: 36px auto 0;
+    padding: 14px 32px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: none;
+    border-radius: 26px;
+    font: 800 14px/1 var(--font-display);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .agenda-meer:hover {
+    opacity: 0.8;
+  }
+  .agenda-meer:focus-visible {
+    outline: 3px solid var(--color-bg);
+    outline-offset: 3px;
+  }
   .agenda-head {
     display: flex;
     align-items: flex-end;
@@ -1538,7 +1567,7 @@
     place-items: center;
     margin: 0;
     color: var(--color-muted);
-    font: 400 11px/1.4 var(--font-mono);
+    font: 400 16px/1.4 var(--font-mono);
   }
   .crew-meta {
     position: absolute;
@@ -1565,10 +1594,12 @@
   .crew-role {
     margin: 0;
     color: var(--color-accent);
-    font: 700 11px/1.2 var(--font-mono);
+    font: 700 16px/1.2 var(--font-mono);
     letter-spacing: 0.06em;
   }
+  /* iets breder dan de andere kaarten, zodat de tekst op 16px past */
   .crew-intro {
+    width: clamp(260px, 24vw, 320px);
     display: flex;
     flex-direction: column;
     padding: 22px;
@@ -1593,7 +1624,7 @@
   }
   .crew-intro-tekst {
     margin-top: auto !important;
-    font: 400 12px/1.6 var(--font-mono);
+    font: 400 16px/1.4 var(--font-mono);
   }
 
   /* video */
@@ -1702,6 +1733,9 @@
     }
     .crew-card {
       width: 68vw;
+    }
+    .crew-intro {
+      width: 76vw;
     }
     .service-big,
     .service-wide,
