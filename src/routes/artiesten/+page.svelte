@@ -8,6 +8,7 @@
   import { socialsVan } from "$lib/data/socials.js";
   import { artiestSlug, vindArtiestBijSlug } from "$lib/data/artiestLink.js";
   import { afterNavigate, replaceState } from "$app/navigation";
+  import { bewaarInvoer } from "$lib/bewaardeInvoer.svelte.js";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
 
@@ -42,6 +43,16 @@
     );
   });
   let getoondeArtiesten = $derived(gefilterdeArtiesten.slice(0, zichtbaarAantal));
+
+  // zoekterm en filter blijven staan na verversen
+  bewaarInvoer(
+    "artiesten-zoeken",
+    () => ({ zoekterm, actieveFilter }),
+    (x) => {
+      zoekterm = x.zoekterm ?? "";
+      if (filters.includes(x.actieveFilter)) actieveFilter = x.actieveFilter;
+    }
+  );
 
   function kiesFilter(f) {
     actieveFilter = f;

@@ -16,12 +16,13 @@
   import { markeerCrewBrowser } from "$lib/crew.js";
   import { uploadFoto, verwijderFoto } from "$lib/fotoUpload.js";
   import { locatieSuggesties, standaardLocatie, standaardPrijs } from "$lib/data/agendaTekst.js";
-  import { agendaPoster, ingebouwdePoster } from "$lib/data/agendaPosters.js";
+  import { agendaPoster } from "$lib/data/agendaPosters.js";
   import { stuurReserveringMail, studioNamen } from "$lib/reserveringMail.js";
   import { artiestFotoPositie } from "$lib/data/fotoPosities.js";
   import { artiestSocials } from "$lib/data/socials.js";
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaContrast, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
+  import { bewaarInvoer } from "$lib/bewaardeInvoer.svelte.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
   // uitloggen gaat via het menu
@@ -215,11 +216,6 @@
     }
   }
 
-  // ── ingebouwde posters naar Storage ──
-  // Een paar posters stonden eerst in de website zelf (zie agendaPosters.js).
-  // Die worden hier één keer geüpload en aan het agenda-item gekoppeld, zodat
-  // je ze daarna gewoon kunt vervangen of weghalen.
-  const overgezet = new Set();
   // ── oude activiteiten opruimen ──
   // Activiteiten die langer dan BEWAAR_MAANDEN voorbij zijn, worden verwijderd,
   // met hun foto en poster in Storage. Er is geen eigen server, dus dit gebeurt
@@ -245,23 +241,6 @@
       } catch {
         // lukt het nu niet, dan de volgende keer
         opgeruimd.delete(item.id);
-      }
-    }
-  }
-
-  async function zetIngebouwdePostersOver() {
-    for (const item of agendaItems) {
-      const ingebouwd = ingebouwdePoster(item);
-      if (!ingebouwd || overgezet.has(item.id)) continue;
-      overgezet.add(item.id);
-      try {
-        const blob = await fetch(ingebouwd.url).then((r) => r.blob());
-        const bestand = new File([blob], `${ingebouwd.naam}.avif`, { type: blob.type || "image/avif" });
-        const url = await uploadFoto(bestand, "agenda-images");
-        await updateDoc(doc(db, "agenda", item.id), { posterUrl: url, posterOvergezet: true });
-      } catch {
-        // lukt het nu niet, dan de volgende keer dat het dashboard opent
-        overgezet.delete(item.id);
       }
     }
   }
@@ -303,7 +282,7 @@
     const oud = a.posterUrl;
     try {
       const url = await uploadFoto(bestand, "agenda-images", (p) => (posterBezigVoortgang = p));
-      await updateDoc(doc(db, "agenda", a.id), { posterUrl: url, posterOvergezet: true });
+      await updateDoc(doc(db, "agenda", a.id), { posterUrl: url });
       if (oud && oud !== url) ruimFotoOp(oud, a.id);
       posterMelding = `Poster van "${a.band}" is opgeslagen.`;
     } catch (err) {
@@ -320,7 +299,7 @@
     posterBezigId = a.id;
     const oud = a.posterUrl;
     try {
-      await updateDoc(doc(db, "agenda", a.id), { posterUrl: "", posterOvergezet: true });
+      await updateDoc(doc(db, "agenda", a.id), { posterUrl: "" });
       ruimFotoOp(oud, a.id);
       posterMelding = `Poster van "${a.band}" is weggehaald.`;
     } catch {
@@ -374,7 +353,6 @@
             )
           );
         agendaGeladen = true;
-        zetIngebouwdePostersOver();
         ruimOudeActiviteitenOp();
       },
       () => {
@@ -555,6 +533,36 @@
     artiestFout = "";
     artiestGelukt = "";
   }
+
+  // ── formulieren bewaren bij verversen ──
+  // Ook welk item je aan het bewerken was, en welke foto's al zijn geüpload maar
+  // nog niet opgeslagen (die worden anders bij annuleren niet opgeruimd).
+  bewaarInvoer(
+    "dashboard-agenda",
+    () => ({
+      bewerkId, band, ondertitel, place, type, kleur, date, startTime, endTime,
+      prijs, imageUrl, posterUrl, fotoUitsnede, beschrijving,
+      uploads: [...agendaUploads],
+    }),
+    (x) => {
+      ({ bewerkId, band, ondertitel, place, type, kleur, date, startTime, endTime,
+        prijs, imageUrl, posterUrl, fotoUitsnede, beschrijving } = x);
+      for (const url of x.uploads ?? []) agendaUploads.add(url);
+    }
+  );
+  bewaarInvoer(
+    "dashboard-artiest",
+    () => ({
+      artiestBewerkId, aNaam, aType, aBeschrijving, aBio, aImageUrl, aFotoPositie,
+      aSocials: { ...aSocials },
+      uploads: [...artiestUploads],
+    }),
+    (x) => {
+      ({ artiestBewerkId, aNaam, aType, aBeschrijving, aBio, aImageUrl, aFotoPositie } = x);
+      for (const s of artiestSocials) aSocials[s.veld] = x.aSocials?.[s.veld] ?? "";
+      for (const url of x.uploads ?? []) artiestUploads.add(url);
+    }
+  );
 
   async function kiesArtiestFoto(e) {
     const bestand = e.currentTarget.files?.[0];
@@ -737,6 +745,22 @@
   let komendeAgenda = $derived(
     agendaItems.filter((a) => a.date && a.date >= vandaagAlsDatum()).length
   );
+
+  bewaarInvoer(
+    "dashboard-zoeken",
+    () => ({ reserveringZoek, artiestZoek }),
+    (x) => ({ reserveringZoek = "", artiestZoek = "" } = x)
+  );
+
+  // Een teruggezet formulier kan horen bij een item dat inmiddels weg is
+  // (verwijderd of opgeruimd): dan wordt het een nieuw item.
+  $effect(() => {
+    if (agendaGeladen && bewerkId && !agendaItems.some((a) => a.id === bewerkId)) bewerkId = null;
+  });
+  $effect(() => {
+    if (artiestenGeladen && artiestBewerkId && !artiesten.some((a) => a.id === artiestBewerkId))
+      artiestBewerkId = null;
+  });
 
   function initialen(naam) {
     return (naam ?? "?")

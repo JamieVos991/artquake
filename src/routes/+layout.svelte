@@ -5,6 +5,7 @@
   import HamburgerMenu from '$lib/components/HamburgerMenu.svelte';
   import { diensten } from '$lib/data/diensten.js';
   import { navigatie } from '$lib/data/navigatie.js';
+  import { bewaarInvoer } from '$lib/bewaardeInvoer.svelte.js';
 
   let { children } = $props();
 
@@ -16,6 +17,17 @@
   let ctaVersturen = $state(false);
   let ctaVerstuurd = $state(false);
   let ctaFout = $state('');
+
+  // half getypt bericht blijft staan na verversen (het verborgen spamveld niet)
+  bewaarInvoer(
+    'contact',
+    () => ({ naam: ctaNaam, email: ctaEmail, bericht: ctaBericht }),
+    (x) => {
+      ctaNaam = x.naam ?? '';
+      ctaEmail = x.email ?? '';
+      ctaBericht = x.bericht ?? '';
+    }
+  );
 
   async function verstuurContact(e) {
     e.preventDefault();
