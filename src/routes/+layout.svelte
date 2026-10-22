@@ -18,6 +18,13 @@
   let ctaVerstuurd = $state(false);
   let ctaFout = $state('');
 
+  // knop "naar boven" (alleen op een telefoon): verschijnt na een stukje scrollen
+  let scrollY = $state(0);
+  function naarBoven() {
+    const rustig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: rustig ? 'auto' : 'smooth' });
+  }
+
   // half getypt bericht blijft staan na verversen (het verborgen spamveld niet)
   bewaarInvoer(
     'contact',
@@ -68,6 +75,8 @@
 
 <!-- alleen zichtbaar als je met de Tab-toets begint: springt over het menu heen -->
 <a class="skip-link" href="#inhoud">Naar de inhoud</a>
+
+<svelte:window bind:scrollY />
 
 <HamburgerMenu />
 
@@ -178,7 +187,71 @@
   </p>
 </footer>
 
+<button
+  type="button"
+  class="naar-boven"
+  class:is-zichtbaar={scrollY > 600}
+  aria-label="Naar boven"
+  tabindex={scrollY > 600 ? 0 : -1}
+  onclick={naarBoven}
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 19V6M5 12l7-7 7 7" /></svg>
+</button>
+
 <style>
+  /* zelfde knop als het menu (oranje vierkant), rechtsonder; alleen op een telefoon */
+  .naar-boven {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .naar-boven {
+      position: fixed;
+      right: 14px;
+      bottom: 18px;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      background: var(--color-accent);
+      border: 3px solid var(--color-bg);
+      box-shadow: 4px 4px 0 var(--color-bg);
+      color: var(--color-bg);
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition:
+        opacity 0.2s,
+        transform 0.2s,
+        visibility 0.2s;
+    }
+    .naar-boven.is-zichtbaar {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+    .naar-boven:focus-visible {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 3px;
+    }
+    .naar-boven svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+    .naar-boven {
+      transition: none;
+    }
+  }
+
   .skip-link {
     position: fixed;
     top: 12px;

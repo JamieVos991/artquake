@@ -954,13 +954,22 @@
     .ap-dialoog-tekst {
       padding: 24px 20px 28px;
     }
-    /* hier ligt het kruisje op de foto: licht, met een schaduw zodat het overal zichtbaar is */
+    /* hier ligt het kruisje op de foto: zelfde oranje vierkant als het menu,
+       zodat het op elke foto goed te zien is */
     .ap-sluit {
-      color: var(--color-fg);
-      filter: drop-shadow(0 0 3px var(--color-bg)) drop-shadow(0 0 1px var(--color-bg));
+      top: 14px;
+      right: 14px;
+      background: var(--color-accent);
+      border: 3px solid var(--color-bg);
+      box-shadow: 4px 4px 0 var(--color-bg);
+      color: var(--color-bg);
     }
     .ap-sluit:hover {
-      color: var(--color-accent);
+      color: var(--color-bg);
+    }
+    .ap-sluit svg {
+      width: 22px;
+      height: 22px;
     }
   }
 </style>

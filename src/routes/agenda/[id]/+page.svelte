@@ -119,6 +119,11 @@
           <dd>{agendaType(item)}</dd>
         </div>
       {/if}
+      <!-- alleen op een telefoon: daar staat de prijs hier in plaats van rechtsboven -->
+      <div class="ac-kosten">
+        <dt>Kosten</dt>
+        <dd>{agendaPrijs(item)}</dd>
+      </div>
     </dl>
 
     <div class="ac-tekst">
@@ -286,6 +291,9 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
+  .ac-kosten {
+    display: none;
+  }
   .ac-midden {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -347,6 +355,16 @@
     }
     .ac-gegevens dd {
       font-size: 20px;
+    }
+    /* prijs als gewone categorie naast Type; het blok rechtsboven valt weg */
+    .ac-prijs {
+      display: none;
+    }
+    .ac-boven:not(:has(.ac-lead)) {
+      display: none;
+    }
+    .ac-kosten {
+      display: block;
     }
     /* menuknop op een telefoon: 14px van boven, 48px hoog */
     .ac-terug {
