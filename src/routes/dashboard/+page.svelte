@@ -875,7 +875,7 @@
 
         <article class="db-kaart db-kaart-paars">
           <span class="db-label db-label-donker">Artiesten</span>
-          <h2>{artiesten.length} {artiesten.length === 1 ? "artiest" : "artiesten"} op de website</h2>
+          <h2>{actieveArtiesten} {actieveArtiesten === 1 ? "artiest" : "artiesten"} op de website</h2>
           <div class="db-voortgang">
             <p><span>Podium · Expo</span><span>{aantalPodium} · {artiesten.length - aantalPodium}</span></p>
             <div class="db-balk"><i style:width="{artiesten.length ? (aantalPodium / artiesten.length) * 100 : 0}%"></i></div>
@@ -1609,15 +1609,18 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    margin-bottom: 32px;
+    /* ruime witruimte boven en onder de paginatitel */
+    margin: 32px 0 64px;
     /* ruimte voor de menuknop rechtsboven */
     padding-right: 64px;
+    container-type: inline-size;
   }
   .db-kop h1 {
     margin: 0;
     font-weight: 900;
     font-stretch: 125%;
-    font-size: clamp(44px, 6.4vw, 92px);
+    /* zo groot als past naast de menuknop */
+    font-size: clamp(32px, 15cqi, 140px);
     line-height: 0.85;
     letter-spacing: -0.035em;
     text-transform: uppercase;
@@ -1934,6 +1937,13 @@
     padding: 0;
     list-style: none;
   }
+  /* telefoon: altijd twee posters naast elkaar */
+  @media (max-width: 560px) {
+    .db-posters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px 14px;
+    }
+  }
   .db-poster {
     display: flex;
     flex-direction: column;
@@ -2215,6 +2225,9 @@
     .db {
       --db-schaduw: 6px;
       padding: 20px 20px 48px;
+    }
+    .db-kop {
+      margin: 36px 0 48px;
     }
     .db-kaarten,
     .db-rij {
