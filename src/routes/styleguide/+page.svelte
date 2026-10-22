@@ -1,6 +1,17 @@
 <script>
   import { base } from "$app/paths";
   import logo from "$lib/assets/artquake-logo.avif";
+  import voorbeeldFoto from "$lib/assets/fotos/hero/optreden.avif";
+  import { artiestSocials } from "$lib/data/socials.js";
+  import { agendaKleur, agendaTekstKleur, agendaContrast } from "$lib/data/agendaKleur.js";
+
+  // voorbeeldregels voor de agenda: de kleur hoort bij het type
+  const voorbeeldAgenda = [
+    { type: "Workshop", datum: "05.11", naam: "Workshop muziekproductie" },
+    { type: "Optredens", datum: "07.11", naam: "Artquake in het Alkmaars Bierhuis" },
+    { type: "Open entree", datum: "25.10", naam: "Jamsessie / Open podium" },
+    { type: "Expositie", datum: "14.12", naam: "Groepsexpositie" },
+  ];
 
   // Kleuren komen uit src/lib/styles/stylesheet.css
   const kleurGroepen = [
@@ -94,7 +105,9 @@
           </div>
           <div class="sg-kleur-info">
             <strong>{g.naam}</strong>
-            <span class="sg-hex">{g.tinten.map((t) => t.hex).join(", ")}</span>
+            {#each g.tinten as t}
+              <span class="sg-hex">{t.token} · {t.hex}</span>
+            {/each}
             <span class="sg-rol">{g.rol}</span>
           </div>
         </li>
@@ -209,16 +222,106 @@
       </div>
     </div>
   </section>
+
+  <!-- 05 iconen -->
+  <section class="sg-sectie">
+    <h2 class="sg-kop"><span>05</span> Iconen en icoonknoppen</h2>
+    <div class="sg-iconen">
+      <div>
+        <span class="k-menu" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="sg-spec">Menu · 56px, mobiel 48px</span>
+      </div>
+      <div>
+        <span class="k-vierkant" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M19 12H6M12 5l-7 7 7 7" /></svg>
+        </span>
+        <span class="sg-spec">Terug · zelfde knop als het menu</span>
+      </div>
+      <div>
+        <span class="k-vierkant k-vierkant-creme" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="vlak"><rect x="5.5" y="4.5" width="4.5" height="15" /><rect x="14" y="4.5" width="4.5" height="15" /></svg>
+        </span>
+        <span class="sg-spec">Pauze (hero) · crème</span>
+      </div>
+      <div>
+        <span class="k-kruis" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </span>
+        <span class="sg-spec">Sluiten (popup) · alleen het kruisje, klikvlak 48px</span>
+      </div>
+    </div>
+    <h3 class="sg-subkop sg-subkop-ruim">Socials</h3>
+    <ul class="sg-socials">
+      {#each artiestSocials as x}
+        <li>
+          <span class="k-social" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class:lijn={x.lijn}><path d={x.icoon} /></svg>
+          </span>
+          <span class="sg-spec">{x.label}</span>
+        </li>
+      {/each}
+    </ul>
+    <span class="sg-spec">
+      Rond · 48px · zwarte rand · hover: zwart vlak met crème icoon · merkiconen van Simple Icons (CC0)
+    </span>
+    <span class="sg-spec">Geen emoji's: iconen zijn altijd SVG in de tekstkleur.</span>
+  </section>
+
+  <!-- 06 agenda en posters -->
+  <section class="sg-sectie">
+    <h2 class="sg-kop"><span>06</span> Agenda en posters</h2>
+    <h3 class="sg-subkop">Agendaregel</h3>
+    <ul class="sg-agenda">
+      {#each voorbeeldAgenda as ev}
+        {@const kleur = agendaKleur(ev)}
+        <li class="o-agenda" style:background={kleur} style:color={agendaTekstKleur(kleur)}>
+          <img src={voorbeeldFoto} alt="" />
+          <span class="o-agenda-datum">{ev.datum}</span>
+          <strong>{ev.naam}</strong>
+          <span class="o-agenda-contrast">{ev.type} · {agendaContrast(ev).toFixed(1).replace(".", ",")} : 1</span>
+        </li>
+      {/each}
+    </ul>
+    <span class="sg-spec">
+      Foto, datum en titel; de rest staat op de pagina van de activiteit · de kleur hoort bij het type
+      (in het dashboard aan te passen) · tekst wordt zwart of crème
+    </span>
+    <span class="sg-spec">
+      Contrast tekst/achtergrond minimaal 4,5 : 1 (WCAG); het dashboard waarschuwt bij een te lage waarde
+    </span>
+
+    <div class="sg-onderdelen sg-onderdelen-ruim">
+      <div>
+        <h3 class="sg-subkop">Poster in het menu</h3>
+        <div class="o-poster">
+          <span class="o-poster-datum">07.11</span>
+          <img src={voorbeeldFoto} alt="" />
+        </div>
+        <span class="sg-spec">Iets scheef (±1,5°) · harde schaduw paars of oranje · oranje datumsticker</span>
+      </div>
+      <div>
+        <h3 class="sg-subkop">3D-effect</h3>
+        <figure class="o-3d"><img src={voorbeeldFoto} alt="" /></figure>
+        <span class="sg-spec">Zwarte rand 3px · harde schaduw 12px · oranje als de achtergrond donker kan zijn</span>
+      </div>
+      <div>
+        <h3 class="sg-subkop">Prijs</h3>
+        <span class="o-prijs">Gratis</span>
+        <span class="sg-spec">Gevuld zwart blok · Archivo 800 · alle activiteiten van Artquake zijn gratis</span>
+      </div>
+    </div>
+  </section>
 </div>
 
 <style>
+  /* logo even groot en op dezelfde plek als op de homepage */
   .sg-header {
-    padding: 24px 40px;
+    padding: 40px 30px;
     background: var(--color-bg);
   }
   .sg-header img {
     display: block;
-    height: 80px;
+    height: 120px;
     width: auto;
   }
 
@@ -581,6 +684,161 @@
     background: var(--color-primary);
   }
 
+  /* iconen */
+  .sg-iconen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 28px;
+  }
+  .k-vierkant {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    background: var(--color-accent);
+    border: 3px solid var(--color-bg);
+    box-shadow: 4px 4px 0 var(--color-bg);
+  }
+  .k-vierkant-creme {
+    background: var(--color-fg);
+  }
+  .k-vierkant svg,
+  .k-kruis svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .k-vierkant svg.vlak {
+    fill: var(--color-bg);
+    stroke: none;
+  }
+  .k-kruis {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+  }
+  .sg-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+  }
+  .sg-socials li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .k-social {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--color-bg);
+    border-radius: 50%;
+  }
+  .k-social svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--color-bg);
+  }
+  .k-social svg.lijn {
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  /* agenda en posters */
+  .sg-agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+  }
+  .o-agenda {
+    display: grid;
+    grid-template-columns: 64px 80px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 18px 10px 10px;
+  }
+  .o-agenda img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+  }
+  .o-agenda-datum {
+    font: 700 26px/1 var(--font-display);
+  }
+  .o-agenda strong {
+    font-weight: 900;
+    font-stretch: 110%;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .o-agenda-contrast {
+    font: 700 11px/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .sg-onderdelen-ruim {
+    margin-top: 48px;
+  }
+  .o-poster {
+    position: relative;
+    width: 150px;
+    margin-bottom: 20px;
+    border: 3px solid var(--color-bg);
+    box-shadow: 6px 6px 0 var(--color-primary);
+    transform: rotate(-1.5deg);
+  }
+  .o-poster img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+  .o-poster-datum {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 5px 8px;
+    background: var(--color-accent);
+    font: 700 12px/1 var(--font-mono);
+    letter-spacing: 0.06em;
+  }
+  .o-3d {
+    width: 200px;
+    margin: 0 12px 24px 0;
+    border: 3px solid var(--color-bg);
+    box-shadow: 12px 12px 0 var(--color-accent);
+  }
+  .o-3d img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .o-prijs {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 12px 18px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font: 800 20px/1 var(--font-display);
+    text-transform: uppercase;
+  }
+
   @media (max-width: 900px) {
     .sg-typo,
     .sg-knoppen,
@@ -595,8 +853,17 @@
       padding-left: 20px;
       padding-right: 20px;
     }
+    .sg-header {
+      padding: 28px 16px;
+    }
     .sg-header img {
-      height: 64px;
+      height: 92px;
+    }
+    .o-agenda {
+      grid-template-columns: 64px minmax(0, 1fr);
+    }
+    .o-agenda img {
+      grid-row: span 3;
     }
   }
 </style>
