@@ -23,6 +23,8 @@
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaContrast, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   import { bewaarInvoer } from "$lib/bewaardeInvoer.svelte.js";
+  import { oudeSocials } from "$lib/data/oudeSocials.js";
+  import { artiestZichtbaar } from "$lib/data/artiestZichtbaar.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
   // uitloggen gaat via het menu
@@ -478,6 +480,39 @@
   let artiesten = $state([]);
   let artiestenGeladen = $state(false);
   let artiestZoek = $state("");
+  let actieveArtiesten = $derived(artiesten.filter(artiestZichtbaar).length);
+  // ── socials van de oude website overnemen (tijdelijk) ──
+  // Alleen in velden die nog leeg zijn; wat al is ingevuld blijft staan.
+  function nieuweSocials(a) {
+    return Object.fromEntries(
+      Object.entries(oudeSocials[a.id] ?? {}).filter(([veld]) => !a[veld]?.trim())
+    );
+  }
+  let metNieuweSocials = $derived(artiesten.filter((a) => Object.keys(nieuweSocials(a)).length));
+  let socialsBezig = $state(false);
+  let socialsMelding = $state("");
+
+  async function neemOudeSocialsOver() {
+    const lijst = metNieuweSocials;
+    if (!confirm(`Socials van de oude website invullen bij ${lijst.length} artiest(en)? Wat al is ingevuld blijft staan.`))
+      return;
+    socialsBezig = true;
+    socialsMelding = "";
+    let gelukt = 0;
+    for (const a of lijst) {
+      try {
+        await updateDoc(doc(db, "artiesten", a.id), nieuweSocials(a));
+        gelukt++;
+      } catch {
+        // de rest gewoon doorlopen
+      }
+    }
+    socialsMelding =
+      gelukt === lijst.length
+        ? `Socials ingevuld bij ${gelukt} artiest(en).`
+        : `Socials ingevuld bij ${gelukt} van de ${lijst.length}. Klik nog een keer voor de rest.`;
+    socialsBezig = false;
+  }
   let aantalPodium = $derived(artiesten.filter((a) => a.type === "Podium").length);
   let gefilterdeArtiesten = $derived(
     artiesten.filter((a) =>
@@ -494,6 +529,8 @@
   let aSocials = $state(Object.fromEntries(artiestSocials.map((x) => [x.veld, ""])));
   let aImageUrl = $state("");
   let aFotoPositie = $state("");
+  // inactief: staat niet op de website, maar blijft in het dashboard bewaard
+  let aInactief = $state(false);
   let artiestOpslaan = $state(false);
   let artiestFout = $state("");
   let artiestGelukt = $state("");
@@ -508,6 +545,7 @@
     for (const x of artiestSocials) aSocials[x.veld] = "";
     aImageUrl = "";
     aFotoPositie = "";
+    aInactief = false;
   }
 
   function bewerkArtiest(a) {
@@ -520,6 +558,7 @@
     for (const x of artiestSocials) aSocials[x.veld] = a[x.veld] ?? "";
     aImageUrl = a.imageUrl ?? "";
     aFotoPositie = a.fotoPositie ?? "";
+    aInactief = !!a.inactief;
     artiestFout = "";
     artiestGelukt = "";
     document
@@ -553,12 +592,13 @@
   bewaarInvoer(
     "dashboard-artiest",
     () => ({
-      artiestBewerkId, aNaam, aType, aBeschrijving, aBio, aImageUrl, aFotoPositie,
+      artiestBewerkId, aNaam, aType, aBeschrijving, aBio, aImageUrl, aFotoPositie, aInactief,
       aSocials: { ...aSocials },
       uploads: [...artiestUploads],
     }),
     (x) => {
       ({ artiestBewerkId, aNaam, aType, aBeschrijving, aBio, aImageUrl, aFotoPositie } = x);
+      aInactief = !!x.aInactief;
       for (const s of artiestSocials) aSocials[s.veld] = x.aSocials?.[s.veld] ?? "";
       for (const url of x.uploads ?? []) artiestUploads.add(url);
     }
@@ -592,6 +632,7 @@
       ...Object.fromEntries(artiestSocials.map((x) => [x.veld, aSocials[x.veld].trim()])),
       imageUrl: aImageUrl,
       fotoPositie: aFotoPositie,
+      inactief: aInactief,
     };
     const oudeFoto = artiestBewerkId ? artiesten.find((x) => x.id === artiestBewerkId)?.imageUrl : "";
     const id = artiestBewerkId;
@@ -610,6 +651,26 @@
       artiestFout = "Opslaan mislukt. Probeer het opnieuw.";
     } finally {
       artiestOpslaan = false;
+    }
+  }
+
+  async function zetWeerActief(a) {
+    // zonder foto kan een artiest niet op de website: open het formulier om er een toe te voegen
+    if (!a.imageUrl) {
+      bewerkArtiest(a);
+      aInactief = false;
+      // de melding staat in het formulier, daar scrolt bewerkArtiest naartoe
+      artiestFout = `${a.naam} heeft nog geen foto. Voeg er een toe en sla op, dan staat ${a.naam} weer op de website.`;
+      return;
+    }
+    verwijderBezig = a.id;
+    try {
+      await updateDoc(doc(db, "artiesten", a.id), { inactief: false });
+      if (artiestBewerkId === a.id) aInactief = false;
+    } catch {
+      alert("Lukte niet. Probeer het opnieuw.");
+    } finally {
+      verwijderBezig = null;
     }
   }
 
@@ -1271,8 +1332,25 @@
         <section class="db-blok">
           <header class="db-blok-kop">
             <h2>Artiesten</h2>
-            <span class="db-blok-info">{artiesten.length} op de website</span>
+            <span class="db-blok-info">
+              {actieveArtiesten} op de website{artiesten.length > actieveArtiesten
+                ? `, ${artiesten.length - actieveArtiesten} inactief`
+                : ""}
+            </span>
+            {#if metNieuweSocials.length}
+              <button
+                type="button"
+                class="db-verwijder db-top-knop"
+                disabled={socialsBezig}
+                onclick={neemOudeSocialsOver}
+              >
+                {socialsBezig ? "Bezig…" : `Socials van oude site (${metNieuweSocials.length})`}
+              </button>
+            {/if}
           </header>
+          {#if socialsMelding}
+            <p class="db-gelukt db-melding" role="status">{socialsMelding}</p>
+          {/if}
           <input
             class="db-zoek"
             type="search"
@@ -1287,7 +1365,11 @@
           {:else}
             <ul class="db-lijst">
               {#each gefilterdeArtiesten as a (a.id)}
-                <li class="db-regel db-regel-artiest" class:is-bewerkt={artiestBewerkId === a.id}>
+                <li
+                  class="db-regel db-regel-artiest"
+                  class:is-bewerkt={artiestBewerkId === a.id}
+                  class:is-inactief={!artiestZichtbaar(a)}
+                >
                   <span class="db-regel-wie">
                     {#if a.imageUrl}
                       <img
@@ -1302,7 +1384,9 @@
                     {/if}
                     <span>
                       <strong>{a.naam ?? "–"}</strong>
-                      <span>{[a.type, a.beschrijving].filter(Boolean).join(" · ")}</span>
+                      <span>
+                        {[a.type, a.beschrijving].filter(Boolean).join(" · ")}
+                      </span>
                     </span>
                   </span>
                   <button
@@ -1313,15 +1397,29 @@
                   >
                     Bewerk
                   </button>
-                  <button
-                    type="button"
-                    class="db-verwijder"
-                    disabled={verwijderBezig === a.id}
-                    onclick={() => verwijderArtiest(a)}
-                    aria-label="{a.naam ?? 'Artiest'} verwijderen"
-                  >
-                    {verwijderBezig === a.id ? "…" : "Verwijder"}
-                  </button>
+                  {#if !artiestZichtbaar(a)}
+                    <!-- niet op de website; klikken zet de artiest weer terug (zonder foto: eerst een foto) -->
+                    <button
+                      type="button"
+                      class="db-verwijder db-inactief-knop"
+                      disabled={verwijderBezig === a.id}
+                      onclick={() => zetWeerActief(a)}
+                      aria-label="{a.naam ?? 'Artiest'} is inactief, weer op de website zetten"
+                      title={a.imageUrl ? "Klik om weer op de website te zetten" : "Geen foto: voeg een foto toe"}
+                    >
+                      {verwijderBezig === a.id ? "…" : "Inactief"}
+                    </button>
+                  {:else}
+                    <button
+                      type="button"
+                      class="db-verwijder"
+                      disabled={verwijderBezig === a.id}
+                      onclick={() => verwijderArtiest(a)}
+                      aria-label="{a.naam ?? 'Artiest'} verwijderen"
+                    >
+                      {verwijderBezig === a.id ? "…" : "Verwijder"}
+                    </button>
+                  {/if}
                 </li>
               {/each}
             </ul>
@@ -1409,6 +1507,14 @@
                   {/each}
                 </div>
               </fieldset>
+            {/if}
+
+            <label class="db-vinkje">
+              <input type="checkbox" bind:checked={aInactief} />
+              <span>Inactief: niet op de website tonen</span>
+            </label>
+            {#if !aImageUrl}
+              <p class="db-uitleg">Zonder foto staat een artiest niet op de website.</p>
             {/if}
 
             {#if artiestFout}
@@ -1730,6 +1836,31 @@
   }
   .db-regel-artiest {
     grid-template-columns: minmax(0, 1fr) 64px 84px;
+  }
+  /* inactieve artiest: staat niet op de website, daarom wat vager */
+  .db-regel.is-inactief .db-regel-wie {
+    opacity: 0.55;
+  }
+  .db-verwijder.db-inactief-knop {
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+  .db-verwijder.db-inactief-knop:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .db-vinkje {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 400 16px/1.3 var(--font-mono);
+    cursor: pointer;
+  }
+  .db-vinkje input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--color-bg);
   }
   .db-zoek {
     width: 100%;

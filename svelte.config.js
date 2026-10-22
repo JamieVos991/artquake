@@ -19,9 +19,9 @@ const config = {
 			handleUnseenRoutes: 'ignore'
 		},
 		paths: {
-			// de site staat op jamievos991.github.io/artquake; bij een eigen
+			// de site staat op jamievos991.github.io/artquake-website; bij een eigen
 			// domein wordt dit '' (zie ook src/lib/data/site.js)
-			base: process.env.NODE_ENV === 'production' ? '/artquake' : ''
+			base: process.env.NODE_ENV === 'production' ? '/artquake-website' : ''
 		}
 	}
 };

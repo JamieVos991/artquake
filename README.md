@@ -1,7 +1,7 @@
 # Artquake
 
 Website van Stichting Villa Artquake in Heerhugowaard: jong talent laat zich zien en horen.
-Live op https://jamievos991.github.io/artquake/
+Live op https://jamievos991.github.io/artquake-website/
 
 Gebouwd met SvelteKit (Svelte 5) als statische site op GitHub Pages, met Firebase voor de
 gegevens en de inlog van de crew.

@@ -4,7 +4,6 @@
   import { haalDocumentOp } from "$lib/publiekeData.js";
   import { agendaKleur, agendaTekstKleur } from "$lib/data/agendaKleur.js";
   import { agendaPrijs, agendaType, langeDatum } from "$lib/data/agendaTekst.js";
-  import { agendaPoster } from "$lib/data/agendaPosters.js";
   import { agendaFotoPositie } from "$lib/data/agendaFoto.js";
 
   let { data } = $props();
@@ -27,7 +26,6 @@
   });
 
   const kleur = $derived(agendaKleur(item));
-  const poster = $derived(agendaPoster(item));
   const tijd = $derived(
     item.startTime ? `${item.startTime}${item.endTime ? ` – ${item.endTime}` : ""}` : ""
   );
@@ -129,11 +127,6 @@
       {:else}
         <p>Meer informatie volgt binnenkort. Vragen? Neem gerust contact met ons op.</p>
       {/each}
-      {#if poster}
-        <figure class="ac-poster">
-          <img src={poster} alt="Poster: {item.band}" />
-        </figure>
-      {/if}
     </div>
   </div>
 </section>
@@ -324,18 +317,6 @@
   .ac-tekst p {
     margin: 0;
     font: 400 16px/1.65 var(--font-mono);
-  }
-  .ac-poster {
-    max-width: 420px;
-    margin: 16px 0 0;
-    border: 3px solid var(--color-bg);
-    box-shadow: 10px 10px 0 var(--color-primary);
-    background: var(--color-bg);
-  }
-  .ac-poster img {
-    display: block;
-    width: 100%;
-    height: auto;
   }
 
   @media (max-width: 860px) {

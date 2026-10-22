@@ -4,6 +4,7 @@
   import { base } from "$app/paths";
   import PandSectie from "$lib/components/PandSectie.svelte";
   import { agendaPoster } from "$lib/data/agendaPosters.js";
+  import { artiestZichtbaar } from "$lib/data/artiestZichtbaar.js";
   import DeelVoorbeeld from "$lib/components/DeelVoorbeeld.svelte";
   import { haalCollectieOp } from "$lib/publiekeData.js";
   import { diensten } from "$lib/data/diensten.js";
@@ -95,7 +96,7 @@
 
     haalCollectieOp("artiesten")
       .then((docs) => {
-        const alleArtiesten = docs.filter((a) => a.naam);
+        const alleArtiesten = docs.filter(artiestZichtbaar);
         aantalArtiesten = alleArtiesten.length;
         uitgelichteArtiesten = kiesWillekeurig(alleArtiesten, 3);
       })

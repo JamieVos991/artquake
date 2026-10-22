@@ -9,6 +9,7 @@
   import { artiestSlug, vindArtiestBijSlug } from "$lib/data/artiestLink.js";
   import { afterNavigate, replaceState } from "$app/navigation";
   import { bewaarInvoer } from "$lib/bewaardeInvoer.svelte.js";
+  import { artiestZichtbaar } from "$lib/data/artiestZichtbaar.js";
 
   const bgVolgorde = ["dark", "purple", "orange", "cream"];
 
@@ -108,7 +109,7 @@
   onMount(() => {
     haalCollectieOp("artiesten")
       .then((docs) => {
-        artiesten = docs.filter((a) => a.naam).sort(() => Math.random() - 0.5);
+        artiesten = docs.filter(artiestZichtbaar).sort(() => Math.random() - 0.5);
         if (wachtendeHash) openUitHash(wachtendeHash);
       })
       .catch(() => {})
@@ -270,16 +271,36 @@
       <button type="button" class="ap-sluit" aria-label="Sluiten" onclick={sluitArtiest}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
       </button>
-      <figure class="ap-dialoog-foto">
-        {#if gekozen.imageUrl}
-          <img
-            src={gekozen.imageUrl}
-            alt=""
-            style:object-position={artiestFotoPositie(gekozen)}
-            style:transform={artiestFotoZoom(gekozen)}
-          />
+      <!-- links: foto met de socials eronder; blijft staan als de tekst lang is -->
+      <div class="ap-dialoog-zij">
+        <figure class="ap-dialoog-foto">
+          {#if gekozen.imageUrl}
+            <img
+              src={gekozen.imageUrl}
+              alt=""
+              style:object-position={artiestFotoPositie(gekozen)}
+              style:transform={artiestFotoZoom(gekozen)}
+            />
+          {/if}
+        </figure>
+        {#if gekozenSocials.length}
+          <div class="ap-dialoog-volg">
+            <h3 class="ap-dialoog-kop">VOLG {gekozen.naam.toUpperCase()}</h3>
+            <ul class="ap-socials">
+              {#each gekozenSocials as x}
+                <li>
+                  <a href={x.href} target="_blank" rel="noopener noreferrer" title={x.label}>
+                    <svg viewBox="0 0 24 24" class:ap-icoon-lijn={x.lijn} aria-hidden="true" focusable="false"
+                      ><path d={x.icoon} /></svg
+                    >
+                    <span class="ap-visueel-verborgen">{x.label} (opent in een nieuw tabblad)</span>
+                  </a>
+                </li>
+              {/each}
+            </ul>
+          </div>
         {/if}
-      </figure>
+      </div>
       <div class="ap-dialoog-tekst">
         <h2 class="ap-dialoog-naam" id="ap-dialoog-naam" style:--tekens={gekozen.naam.length}>{gekozen.naam}</h2>
         {#if gekozen.beschrijving}
@@ -290,21 +311,6 @@
         {:else}
           <p class="ap-dialoog-bio">Meer over {gekozen.naam} volgt binnenkort.</p>
         {/each}
-        {#if gekozenSocials.length}
-          <h3 class="ap-dialoog-kop">VOLG {gekozen.naam.toUpperCase()}</h3>
-          <ul class="ap-socials">
-            {#each gekozenSocials as x}
-              <li>
-                <a href={x.href} target="_blank" rel="noopener noreferrer" title={x.label}>
-                  <svg viewBox="0 0 24 24" class:ap-icoon-lijn={x.lijn} aria-hidden="true" focusable="false"
-                    ><path d={x.icoon} /></svg
-                  >
-                  <span class="ap-visueel-verborgen">{x.label} (opent in een nieuw tabblad)</span>
-                </a>
-              </li>
-            {/each}
-          </ul>
-        {/if}
       </div>
     </div>
   {/if}
@@ -675,7 +681,7 @@
     overflow: hidden;
   }
   .ap-dialoog {
-    width: min(820px, calc(100% - 32px));
+    width: min(940px, calc(100% - 32px));
     max-width: none;
     max-height: calc(100dvh - 48px);
     padding: 0;
@@ -706,8 +712,22 @@
     position: relative;
     display: grid;
     /* foto smal links, tekst krijgt de meeste ruimte */
-    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
     align-items: start;
+  }
+  /* linkerkolom schuift mee tot bovenaan en blijft dan staan (de popup scrolt zelf) */
+  .ap-dialoog-zij {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 32px 0 32px 32px;
+  }
+  .ap-dialoog-volg {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
   .ap-sluit {
     position: absolute;
@@ -743,7 +763,7 @@
   .ap-dialoog-foto {
     position: relative;
     /* ingelijst: kleiner dan de tekstkolom, dus los met rand en schaduw */
-    margin: 28px 0 28px 28px;
+    margin: 0 8px 8px 0;
     aspect-ratio: 4 / 5;
     background: var(--color-bg);
     border: 3px solid var(--color-bg);
@@ -763,7 +783,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 72px 36px 36px;
+    /* boven ruimte voor het kruisje */
+    padding: 76px 44px 44px;
   }
   .ap-dialoog-naam {
     margin: 0;
@@ -777,7 +798,7 @@
     overflow-wrap: break-word;
   }
   .ap-dialoog-soort {
-    margin: 0;
+    margin: 0 0 8px;
     color: var(--color-primary);
     font: 700 14px/1.4 var(--font-mono);
     letter-spacing: 0.06em;
@@ -911,6 +932,14 @@
   @media (max-width: 720px) {
     .ap-dialoog-binnen {
       grid-template-columns: 1fr;
+    }
+    /* de linkerkolom valt weg: foto bovenaan, socials onder de tekst */
+    .ap-dialoog-zij {
+      display: contents;
+    }
+    .ap-dialoog-volg {
+      order: 1;
+      padding: 0 20px 28px;
     }
     .ap-dialoog-foto {
       aspect-ratio: 4 / 3;

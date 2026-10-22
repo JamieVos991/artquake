@@ -2,7 +2,7 @@ import { base } from "$app/paths";
 import { SITE_DOMEIN, nietIndexeren } from "$lib/data/site.js";
 
 // robots.txt wordt bij het bouwen gemaakt. Let op: zoekmachines lezen alleen
-// de robots.txt in de hoofdmap van een domein. Op jamievos991.github.io/artquake
+// de robots.txt in de hoofdmap van een domein. Op jamievos991.github.io/artquake-website
 // telt dit bestand dus nog niet, op een eigen domein wel.
 export const prerender = true;
 
