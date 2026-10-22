@@ -114,8 +114,23 @@
   );
   const actieveIndex = $derived(hoverIndex >= 0 ? hoverIndex : Math.max(huidigeIndex, 0));
 
-  async function laadAgenda() {
-    if (agendaGeladen) return;
+  // De posters worden al opgehaald als de pagina klaar is met laden (niet pas bij
+  // openen). Anders staan er bij de eerste keer openen even lege kaders die daarna
+  // verspringen naar de posters of naar "Binnenkort nieuwe posters".
+  let agendaBezig = null;
+  function laadAgenda() {
+    agendaBezig ??= haalAgendaOp();
+    return agendaBezig;
+  }
+  onMount(() => {
+    const idle = window.requestIdleCallback ?? ((cb) => setTimeout(cb, 1500));
+    idle(async () => {
+      await laadAgenda();
+      // de posterafbeeldingen alvast in de cache, zodat ze niet pas bij openen inladen
+      for (const ev of agenda) new Image().src = agendaPoster(ev);
+    });
+  });
+  async function haalAgendaOp() {
     try {
       const n = new Date();
       const vandaag = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
