@@ -23,7 +23,6 @@
   import { agendaFotoUitsneden, agendaFotoPositie } from "$lib/data/agendaFoto.js";
   import { agendaKleur, agendaContrast, standaardAgendaKleur } from "$lib/data/agendaKleur.js";
   import { bewaarInvoer } from "$lib/bewaardeInvoer.svelte.js";
-  import { oudeSocials } from "$lib/data/oudeSocials.js";
   import { artiestZichtbaar } from "$lib/data/artiestZichtbaar.js";
   let authGecontroleerd = $state(false);
   let ingelogdeGebruiker = $state(null);
@@ -481,38 +480,6 @@
   let artiestenGeladen = $state(false);
   let artiestZoek = $state("");
   let actieveArtiesten = $derived(artiesten.filter(artiestZichtbaar).length);
-  // ── socials van de oude website overnemen (tijdelijk) ──
-  // Alleen in velden die nog leeg zijn; wat al is ingevuld blijft staan.
-  function nieuweSocials(a) {
-    return Object.fromEntries(
-      Object.entries(oudeSocials[a.id] ?? {}).filter(([veld]) => !a[veld]?.trim())
-    );
-  }
-  let metNieuweSocials = $derived(artiesten.filter((a) => Object.keys(nieuweSocials(a)).length));
-  let socialsBezig = $state(false);
-  let socialsMelding = $state("");
-
-  async function neemOudeSocialsOver() {
-    const lijst = metNieuweSocials;
-    if (!confirm(`Socials van de oude website invullen bij ${lijst.length} artiest(en)? Wat al is ingevuld blijft staan.`))
-      return;
-    socialsBezig = true;
-    socialsMelding = "";
-    let gelukt = 0;
-    for (const a of lijst) {
-      try {
-        await updateDoc(doc(db, "artiesten", a.id), nieuweSocials(a));
-        gelukt++;
-      } catch {
-        // de rest gewoon doorlopen
-      }
-    }
-    socialsMelding =
-      gelukt === lijst.length
-        ? `Socials ingevuld bij ${gelukt} artiest(en).`
-        : `Socials ingevuld bij ${gelukt} van de ${lijst.length}. Klik nog een keer voor de rest.`;
-    socialsBezig = false;
-  }
   let aantalPodium = $derived(artiesten.filter((a) => a.type === "Podium").length);
   let gefilterdeArtiesten = $derived(
     artiesten.filter((a) =>
@@ -1337,20 +1304,7 @@
                 ? `, ${artiesten.length - actieveArtiesten} inactief`
                 : ""}
             </span>
-            {#if metNieuweSocials.length}
-              <button
-                type="button"
-                class="db-verwijder db-top-knop"
-                disabled={socialsBezig}
-                onclick={neemOudeSocialsOver}
-              >
-                {socialsBezig ? "Bezig…" : `Socials van oude site (${metNieuweSocials.length})`}
-              </button>
-            {/if}
           </header>
-          {#if socialsMelding}
-            <p class="db-gelukt db-melding" role="status">{socialsMelding}</p>
-          {/if}
           <input
             class="db-zoek"
             type="search"
